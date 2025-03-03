@@ -1,0 +1,39 @@
+# Binaries & Build Files
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.out
+*.o
+*.log
+*.test
+
+# Golang Dependencies & IDE Configs
+/go/
+vendor/
+bin/
+tmp/
+*.swp
+.idea/
+.vscode/
+*.bak
+
+# Go Module Files
+go.sum
+go.mod
+.env
+
+# Database Migrations & Generated Files
+migrations/
+dump.sql
+db.sqlite
+
+# Logs & Debug Files
+debug.log
+*.log
+*.lock
+
+# Coverage & Test Files
+coverage.*
+*.coverprofile
