@@ -20,8 +20,6 @@ tmp/
 *.bak
 
 # Go Module Files
-go.sum
-go.mod
 .env
 
 # Database Migrations & Generated Files
