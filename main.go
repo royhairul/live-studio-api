@@ -11,9 +11,11 @@ func main() {
 	// Load konfigurasi
 	cfg := config.LoadConfig()
 
-
 	// Koneksi Database
 	database.ConnectDatabase(cfg)
+
+	// Migration
+	database.MigrateDatabase(database.DB)
 
 	// Inisialisasi router
 	r := routes.SetupRouter()
