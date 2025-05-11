@@ -5,9 +5,13 @@ import (
 	"live-studio-api/config"
 	"live-studio-api/database"
 	"live-studio-api/routes"
+	"live-studio-api/validators"
 )
 
 func main() {
+	// Inisialisasi validator
+	validators.InitValidator()
+
 	// Load konfigurasi
 	cfg := config.LoadConfig()
 
