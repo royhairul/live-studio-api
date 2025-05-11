@@ -10,6 +10,10 @@ import (
 // List All Model
 var modelsList = []interface{}{
 	&models.Product{},
+	&models.User{},
+	&models.Studio{},
+	&models.Host{},
+	&models.Akun{},
 }
 
 func MigrateDatabase(db *gorm.DB) {
