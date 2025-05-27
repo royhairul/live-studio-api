@@ -1,5 +1,12 @@
 package dto
 
+type HostResponse struct {
+	ID         uint   `json:"ID"`
+	Name       string `json:"Name"`
+	Phone      string `json:"Phone"`
+	StudioName string `json:"StudioName"`
+}
+
 type CreateHostDTO struct {
 	Name     string `json:"name" binding:"required"`
 	Phone    string `json:"phone" binding:"required" validate:"phoneid"`
