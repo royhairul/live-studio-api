@@ -8,13 +8,15 @@ import (
 )
 
 type Config struct {
-	DBHost      string
-	DBUser      string
-	DBPassword  string
-	DBName      string
-	DBPort      string
-	ServerPort  string
+	DBHost       string
+	DBUser       string
+	DBPassword   string
+	DBName       string
+	DBPort       string
+	ServerPort   string
 	ShopeeAPIKey string
+	JWTToken     string
+	JWTExpiredAt string
 }
 
 // LoadConfig membaca file .env dan mengisi struct Config
@@ -32,5 +34,7 @@ func LoadConfig() *Config {
 		DBPort:      os.Getenv("DB_PORT"),
 		ServerPort:  os.Getenv("SERVER_PORT"),
 		ShopeeAPIKey: os.Getenv("SHOPEE_API_KEY"),
+		JWTToken: os.Getenv("JWT_SECRET"),
+		JWTExpiredAt: os.Getenv("JWT_EXPIRED_AT"),
 	}
 }
