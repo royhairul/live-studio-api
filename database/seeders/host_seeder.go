@@ -1,0 +1,50 @@
+package seeders
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/go-faker/faker/v4"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/models"
+	"github.com/royhairul/live-studio-api/services/studio"
+)
+
+func HostSeeder() {
+
+	// Get All Studios
+	studios, err := studio.GetStudioAll()
+	if err != nil {
+		fmt.Println("❌ Gagal mengambil data studio:", err)
+		return
+	}
+
+	if len(studios) == 0 {
+		fmt.Println("⚠️  Tidak ada studio yang tersedia. Seeder host dilewati.")
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	for _, studio := range studios {
+		// Buat 1–2 host untuk setiap studio
+		hostCount := rand.Intn(2) + 1
+		for i := 0; i < hostCount; i++ {
+			name := faker.Name()
+			phone := faker.Phonenumber()
+
+			host := models.Host{
+				Name:     name,
+				Phone:    phone,
+				StudioID: uint16(studio.ID),
+			}
+
+			if err := database.DB.Create(&host).Error; err != nil {
+				fmt.Printf("❌ Gagal menambahkan host %s untuk Studio %s: %v\n", name, studio.Name, err)
+			} else {
+				fmt.Printf("✅ Host %s berhasil ditambahkan ke Studio %s\n", name, studio.Name)
+			}
+		}
+	}
+
+}
