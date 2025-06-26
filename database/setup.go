@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"live-studio-api/config"
 	"log"
 
+	"github.com/royhairul/live-studio-api/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

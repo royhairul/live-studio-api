@@ -1,10 +1,13 @@
 package database
 
 import (
-	"live-studio-api/models"
 	"log"
 
+	"github.com/royhairul/live-studio-api/models"
 	"gorm.io/gorm"
+
+	AccountEntity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
+	AttendanceEntity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 )
 
 // List All Model
@@ -13,11 +16,26 @@ var modelsList = []interface{}{
 	&models.User{},
 	&models.Studio{},
 	&models.Host{},
-	&models.Akun{},
+	&models.Account{},
+	&models.ResetPassword{},
+
+	// User Relation model
+	&models.UserRelation{},
+
+	// Schedule model
+	&models.Schedule{},
+	&models.ScheduleShift{},
+
+	// Role and Permission
+	&models.Role{},
+	&models.Permission{},
+
+	&AccountEntity.Account{},
+	&AttendanceEntity.Attendance{},
 }
 
 func MigrateDatabase(db *gorm.DB) {
-	
+
 	// Run AutoMigrate for all models
 	if error := db.AutoMigrate(modelsList...); error != nil {
 		log.Fatalf("Failed to migrate database: %v", error)
