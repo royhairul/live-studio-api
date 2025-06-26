@@ -6,6 +6,11 @@ type BaseResponse struct {
 }
 
 func NewBaseResponse(message string, data any) *BaseResponse {
+	if data == nil {
+		return &BaseResponse{
+			Message: message,
+		}
+	}
 	return &BaseResponse{
 		Message: message,
 		Data:    data,
