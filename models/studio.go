@@ -6,5 +6,6 @@ import (
 
 type Studio struct {
 	gorm.Model
-	Nomor string `gorm:"type:varchar(100);not null"`
+	Name    string `gorm:"type:varchar(100);not null"`
+	Address string `gorm:"type:varchar(255)"`
 }
