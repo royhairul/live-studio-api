@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"live-studio-api/database"
-	"live-studio-api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/models"
 )
 
 // GET Products

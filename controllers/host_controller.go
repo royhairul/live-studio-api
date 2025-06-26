@@ -1,22 +1,30 @@
 package controllers
 
 import (
-	"live-studio-api/database"
-	"live-studio-api/dto"
-	"live-studio-api/models"
-	"live-studio-api/validators"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/dto"
+	"github.com/royhairul/live-studio-api/models"
+	"github.com/royhairul/live-studio-api/services/host"
+	"github.com/royhairul/live-studio-api/validators"
 )
 
 // GET Host
 func HostIndex(c *gin.Context) {
-	var hosts []models.Host
-	database.DB.Find(&hosts)
+	hosts, err := host.GetHostAll()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to fetch hosts",
+			"error":   err.Error(),
+		})
+		return
+
+	}
 
 	// Check if host list is empty
-	if len(hosts) == 0 {
+	if len(*hosts) == 0 {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "List Host is empty.",
 			"data":    hosts,
@@ -34,15 +42,13 @@ func HostIndex(c *gin.Context) {
 func HostCreate(c *gin.Context) {
 	var req dto.CreateHostDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
-
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid request",
-			"errors":   err.Error(),
+			"errors":  err.Error(),
 		})
-
 		return
 	}
-	
+
 	if err := validators.Validate.Struct(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Validation failed",
@@ -51,17 +57,9 @@ func HostCreate(c *gin.Context) {
 		return
 	}
 
-	// 3. Mapping DTO ke model
-	host := models.Host{
-		Name:     req.Name,
-		Phone:    req.Phone,
-		StudioID: req.StudioID,
-	}
-
-	// 4. Simpan ke DB dan tangani error
-	if err := database.DB.Create(&host).Error; err != nil {
+	if err := host.CreateHost(&req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to create host",
+			"message": "Failed to create Host",
 			"error":   err.Error(),
 		})
 		return
@@ -69,7 +67,6 @@ func HostCreate(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Host successfully created",
-		"data":    host,
 	})
 }
 
@@ -77,7 +74,7 @@ func HostCreate(c *gin.Context) {
 func HostShow(c *gin.Context) {
 	var host models.Host
 	id := c.Param("id")
-	if err := database.DB.Where("id = ?", id).First(&host).Error; err != nil {
+	if err := database.DB.Preload("Studio").Where("id = ?", id).First(&host).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Host not found",
 			"error":   err.Error(),
@@ -89,7 +86,6 @@ func HostShow(c *gin.Context) {
 		"data":    host,
 	})
 }
-
 
 func HostUpdate(c *gin.Context) {
 	var host models.Host
@@ -145,7 +141,7 @@ func HostDelete(c *gin.Context) {
 	})
 }
 
-//  Genenrate a schedule for a host
+// Genenrate a schedule for a host
 func HostGenerateSchedule(c *gin.Context) {
 	var host models.Host
 	id := c.Param("id")
@@ -159,5 +155,37 @@ func HostGenerateSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Host found",
 		"data":    host,
+	})
+}
+
+func HostGroupedByStudio(c *gin.Context) {
+	var hosts []models.Host
+
+	// Ambil semua host dan preload Studio
+	if err := database.DB.Preload("Studio").Find(&hosts).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to fetch hosts",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// Buat map untuk mengelompokkan host berdasarkan nama studio
+	grouped := make(map[string][]dto.HostResponse)
+
+	for _, h := range hosts {
+		studioName := h.Studio.Name
+		hostResp := dto.HostResponse{
+			ID:         h.ID,
+			Name:       h.Name,
+			Phone:      h.Phone,
+			StudioName: studioName,
+		}
+		grouped[studioName] = append(grouped[studioName], hostResp)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "List of Hosts Grouped by Studio",
+		"data":    grouped,
 	})
 }
