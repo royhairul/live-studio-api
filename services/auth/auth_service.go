@@ -1,22 +1,19 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
-	"live-studio-api/database"
-	"live-studio-api/dto"
-	"live-studio-api/models"
 	"math/rand"
-	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/dto"
+	"github.com/royhairul/live-studio-api/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func Login(userLogin dto.LoginDTO) (string, error) {
 	var user models.User
-	
+
 	if err := database.DB.Where("email = ?", userLogin.Email).First(&user).Error; err != nil {
 		return "", fmt.Errorf("Email not registered.")
 	}
@@ -26,29 +23,12 @@ func Login(userLogin dto.LoginDTO) (string, error) {
 		return "", fmt.Errorf("Invalid email or password")
 	}
 
-	accessExpiryStr := os.Getenv("JWT_EXPIRED_AT")
-	if accessExpiryStr == "" {
-		accessExpiryStr = "24h"
-	}
-
-	accessToken, _ := time.ParseDuration(accessExpiryStr)
-
-	payload := dto.JWTPayloadDTO{
-		ID: user.ID,
-		Username: user.Username,
-		Role: user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessToken)),
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token, err := GenerateTokenJWT(payload)
+	tokenStr, err := GenerateTokenJWT(&user)
 	if err != nil {
 		return "", err
 	}
 
-	return token,nil
+	return tokenStr, nil
 }
 
 func Register(userRegister dto.RegisterDTO) error {
@@ -62,10 +42,11 @@ func Register(userRegister dto.RegisterDTO) error {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(userRegister.Password), bcrypt.DefaultCost)
 
 	newUser := models.User{
+		Name:     userRegister.Name,
 		Username: userRegister.Username,
 		Password: string(hashedPassword),
-		Email: userRegister.Email,
-		Role: userRegister.Role,
+		Email:    userRegister.Email,
+		RoleID:   userRegister.RoleID,
 	}
 
 	if err := database.DB.Create(&newUser).Error; err != nil {
@@ -83,21 +64,21 @@ func ForgotPassword(email string) error {
 
 	// Hapus Token Lama
 	_ = database.DB.Where("email = ?", email).Delete(&models.ResetPassword{})
-	
+
 	// Generate OTP
 	otp := fmt.Sprintf("%06d", rand.Intn(900000)+100000)
-	
+
 	reset := models.ResetPassword{
-		Email: email,
-		Otp: otp,
+		Email:     email,
+		Otp:       otp,
 		ExpiredAt: time.Now().Add(20 * time.Minute),
 	}
 
 	if err := database.DB.Create(&reset).Error; err != nil {
 		return fmt.Errorf("Failed to create reset token")
 	}
-	
-	return nil;
+
+	return nil
 }
 
 func VerifyOtp(otp string) (*models.ResetPassword, error) {
@@ -105,7 +86,7 @@ func VerifyOtp(otp string) (*models.ResetPassword, error) {
 	if err := database.DB.Where("otp = ?", otp).First(&resetOtp).Error; err != nil {
 		return nil, fmt.Errorf("Invalid token")
 	}
-	
+
 	if resetOtp.ExpiredAt.Before(time.Now()) {
 		return nil, fmt.Errorf("Your token is expired")
 	}
@@ -114,8 +95,8 @@ func VerifyOtp(otp string) (*models.ResetPassword, error) {
 }
 
 func ResetPassword(resetPassword dto.ResetPassword) error {
-	resetUser, err := VerifyOtp(resetPassword.Otp);
-	
+	resetUser, err := VerifyOtp(resetPassword.Otp)
+
 	if err != nil {
 		return err
 	}
@@ -130,7 +111,7 @@ func ResetPassword(resetPassword dto.ResetPassword) error {
 	if resetPassword.Password != resetPassword.ConfirmPassword {
 		return fmt.Errorf("passwords do not match")
 	}
-	
+
 	// Hash password baru
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(resetPassword.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -143,40 +124,4 @@ func ResetPassword(resetPassword dto.ResetPassword) error {
 	}
 
 	return nil
-}
-
-func GenerateTokenJWT(payload dto.JWTPayloadDTO) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		return "", fmt.Errorf("JWT secret not set")
-	}
-
-	tokenString, err := token.SignedString([]byte(secret))
-	if err != nil {
-		return "", fmt.Errorf("failed to sign token: %v", err)
-	}
-
-	return tokenString, nil
-}
-
-func VerifyTokenJWT(tokenStr string, secret string) (*dto.JWTPayloadDTO, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &dto.JWTPayloadDTO{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("Unexpected signing method")
-		}
-
-		return []byte(secret), nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(*dto.JWTPayloadDTO)
-	if !ok || !token.Valid {
-		return nil, errors.New("Invalid token claims")
-	}
-
-	return claims, nil
 }

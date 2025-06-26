@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 func GetAccount(userCookie string) (map[string]interface{}, error) {
@@ -49,15 +50,19 @@ func GetAccount(userCookie string) (map[string]interface{}, error) {
 	// 7. Filter hasil jika perlu (contoh: hanya ambil "data")
 	data, ok := raw["data"].(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("unexpected format: missing 'data' field")
+		return nil, fmt.Errorf("Invalid or Expired cookies")
 	}
+
+	// Get uniqueID
+	uniqueIDStr := strconv.FormatFloat(data["shopid"].(float64), 'f', 0, 64)
 
 	// Misal kamu hanya ingin ambil nama dan email saja
 	filtered := map[string]interface{}{
-		"name": data["nickname"],
-		"username": data["username"],
-		"email":    data["email"],
-		"phone":    data["phone"], 
+		"unique_id": uniqueIDStr,
+		"name":      data["nickname"],
+		"username":  data["username"],
+		"email":     data["email"],
+		"phone":     data["phone"],
 	}
 
 	return filtered, nil
