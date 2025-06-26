@@ -4,13 +4,12 @@ go 1.23.0
 
 toolchain go1.23.9
 
-require gorm.io/driver/postgres v1.5.11
-
 require (
-	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
-	github.com/go-faker/faker/v4 v4.6.1 // indirect
-	github.com/kr/text v0.2.0 // indirect
+	github.com/go-faker/faker/v4 v4.6.1
+	gorm.io/driver/postgres v1.5.11
 )
+
+require github.com/kr/text v0.2.0 // indirect
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect
@@ -24,8 +23,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
