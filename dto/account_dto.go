@@ -1,7 +1,8 @@
 package dto
 
 type CreateAccountCookiesDTO struct {
-	Cookies string `json:"cookies" binding:"required"`
+	StudioID uint16 `json:"studio_id" binding:"required"`
+	Cookies  string `json:"cookies" binding:"required"`
 }
 
 type CreateAccountDTO struct {

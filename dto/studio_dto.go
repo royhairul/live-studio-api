@@ -1,5 +1,6 @@
 package dto
 
 type Studio struct {
-	Name string `json:"studioname" binding:"required"`
+	Name    string `json:"name" binding:"required"`
+	Address string `json:"address"`
 }
