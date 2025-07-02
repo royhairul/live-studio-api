@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
-	"github.com/royhairul/live-studio-api/models"
+	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 )
 
 type AttendanceService interface {
@@ -12,5 +12,5 @@ type AttendanceService interface {
 	FindUncheckedOut() ([]*params.AttendanceResponse, error)
 	CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceCheckInSummary, error)
 	CheckOut(req params.AttendanceCheckOutRequest) error
-	GenerateNote(schedule *models.Schedule, attendanceDate time.Time, shiftID uint) string
+	GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string
 }

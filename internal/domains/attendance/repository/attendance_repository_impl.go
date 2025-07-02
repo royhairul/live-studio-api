@@ -1,11 +1,7 @@
 package repository
 
 import (
-	"log"
-	"time"
-
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
-	"github.com/royhairul/live-studio-api/models"
 	"gorm.io/gorm"
 )
 
@@ -93,20 +89,4 @@ func (r *AttendanceRepositoryImpl) FindByScheduleID(id uint) (*entity.Attendance
 		return nil, err
 	}
 	return &attendance, nil
-}
-
-func (r *AttendanceRepositoryImpl) FindScheduleByHostShiftAndDate(hostID uint, shiftID uint, date time.Time) (*models.Schedule, error) {
-	var schedule models.Schedule
-
-	err := r.DB.
-		Preload("Host").
-		Where("host_id = ? AND shift_id = ? OR DATE(date) = ?", hostID, shiftID, date.Format("2006-01-02")).
-		First(&schedule).Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println(schedule)
-	return &schedule, nil
 }

@@ -2,21 +2,25 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
-	"github.com/royhairul/live-studio-api/models"
+	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
+	schedulerepository "github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
 )
 
 type AttendanceServiceImpl struct {
-	repository repository.AttendanceRepository
+	repository   repository.AttendanceRepository
+	scheduleRepo schedulerepository.ScheduleRepository
 }
 
-func NewAttendanceService(repository repository.AttendanceRepository) AttendanceService {
-	return &AttendanceServiceImpl{repository}
+func NewAttendanceService(repository repository.AttendanceRepository, scheduleRepo schedulerepository.ScheduleRepository) AttendanceService {
+	return &AttendanceServiceImpl{repository, scheduleRepo}
 }
 
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
@@ -87,20 +91,26 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 
 	repoWithTx := s.repository.WithTx(tx)
 
+	parsedShiftID, err := strconv.ParseUint(req.ShiftID, 10, 0)
+	if err != nil {
+		// handle error parsing, misalnya return error ke caller
+		return nil, fmt.Errorf("invalid shift ID: %v", err)
+	}
+
 	for _, hostID := range req.HostIDs {
 		var note string
 		var scheduleID *uint
 
-		schedule, err := repoWithTx.FindScheduleByHostShiftAndDate(hostID, req.ShiftID, req.Date)
+		schedule, err := s.scheduleRepo.FindByHostShiftAndDate(hostID, req.ShiftID, req.Date)
 		hostName := fmt.Sprintf("Host ID %d", hostID) // default fallback host name
-		if schedule != nil && schedule.Host != (models.Host{}) {
+		if schedule != nil && schedule.Host != (hostentity.Host{}) {
 			hostName = schedule.Host.Name
 		}
 
 		// Jika ada schedule, cek duplikat attendance
 		if err == nil && schedule != nil {
 			scheduleID = &schedule.ID
-			note = s.GenerateNote(schedule, req.Date, req.ShiftID)
+			note = s.GenerateNote(schedule, req.Date, uint(parsedShiftID))
 
 			_, err := s.repository.FindByScheduleID(schedule.ID)
 			if err == nil {
@@ -114,12 +124,12 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 			}
 		} else {
 			// Tidak ada schedule, tetap dibuat dengan note Tidak ada jadwal
-			note = s.GenerateNote(nil, req.Date, req.ShiftID)
+			note = s.GenerateNote(nil, req.Date, uint(parsedShiftID))
 		}
 
 		attendance := entity.Attendance{
 			Date:    &req.Date,
-			ShiftID: &req.ShiftID,
+			ShiftID: uint(parsedShiftID),
 
 			ScheduleID: scheduleID,
 			HostID:     &hostID,
@@ -178,7 +188,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) e
 	return nil
 }
 
-func (s *AttendanceServiceImpl) GenerateNote(schedule *models.Schedule, attendanceDate time.Time, shiftID uint) string {
+func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string {
 	if schedule == nil || schedule.ID == 0 {
 		return "Tidak ada jadwal"
 	}

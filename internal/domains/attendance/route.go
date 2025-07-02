@@ -6,12 +6,14 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/controller"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/service"
+	schedulerepository "github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
 )
 
 func RegisterRouter(router *gin.RouterGroup) {
 
 	attendanceRepo := repository.NewAttendanceRepository(database.DB)
-	attendanceService := service.NewAttendanceService(attendanceRepo)
+	scheduleRepo := schedulerepository.NewScheduleRepository(database.DB)
+	attendanceService := service.NewAttendanceService(attendanceRepo, scheduleRepo)
 	attendanceController := controller.NewAttendanceController(attendanceService)
 
 	// 5. Setup Route
