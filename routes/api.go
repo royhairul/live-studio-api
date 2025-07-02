@@ -9,7 +9,11 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/account"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance"
 	"github.com/royhairul/live-studio-api/internal/domains/finance"
+	"github.com/royhairul/live-studio-api/internal/domains/host"
 	"github.com/royhairul/live-studio-api/internal/domains/live"
+	"github.com/royhairul/live-studio-api/internal/domains/schedule"
+	"github.com/royhairul/live-studio-api/internal/domains/shift"
+	"github.com/royhairul/live-studio-api/internal/domains/studio"
 	"github.com/royhairul/live-studio-api/middleware"
 )
 
@@ -46,38 +50,38 @@ func SetupRouter() *gin.Engine {
 	route.POST("/api/account", controllers.AccountCreate)
 
 	// Host Routes
-	route.GET("/api/host", controllers.HostIndex)
-	route.POST("/api/host", controllers.HostCreate)
-	route.GET("/api/host/:id", controllers.HostShow)
-	route.PUT("/api/host/:id", controllers.HostUpdate)
-	route.DELETE("/api/host/:id", controllers.HostDelete)
+	// route.GET("/api/host", controllers.HostIndex)
+	// route.POST("/api/host", controllers.HostCreate)
+	// route.GET("/api/host/:id", controllers.HostShow)
+	// route.PUT("/api/host/:id", controllers.HostUpdate)
+	// route.DELETE("/api/host/:id", controllers.HostDelete)
 	route.GET("/api/host/:id/schedule", controllers.HostScheduleByHostID)
 
 	// Host by Studio Routes
-	route.GET("/api/host/group-by-studio", controllers.HostGroupedByStudio)
+	// route.GET("/api/host/group-by-studio", controllers.HostGroupedByStudio)
 
 	// Host Schedule Routes
-	route.GET("/api/host-schedule", controllers.HostScheduleIndex)
-	route.POST("/api/host-schedule", controllers.HostScheduleCreate)
-	route.GET("/api/host-schedule/:id", controllers.HostScheduleShow)
-	route.PUT("/api/host-schedule/:id", controllers.HostScheduleUpdate)
-	route.DELETE("/api/host-schedule/:id", controllers.HostScheduleDelete)
-	route.GET("/api/host-schedule/scheduled", controllers.HostScheduleScheduled)
-	route.POST("/api/host-schedule/switch", controllers.HostScheduleSwitch)
+	// route.GET("/api/host-schedule", controllers.HostScheduleIndex)
+	// route.POST("/api/host-schedule", controllers.HostScheduleCreate)
+	// route.GET("/api/host-schedule/:id", controllers.HostScheduleShow)
+	// route.PUT("/api/host-schedule/:id", controllers.HostScheduleUpdate)
+	// route.DELETE("/api/host-schedule/:id", controllers.HostScheduleDelete)
+	// route.GET("/api/host-schedule/scheduled", controllers.HostScheduleScheduled)
+	// route.POST("/api/host-schedule/switch", controllers.HostScheduleSwitch)
 
 	// Shift Route
-	route.GET("/api/shift", controllers.ScheduleShiftIndex)
-	route.POST("/api/shift", controllers.ScheduleShiftCreate)
-	route.GET("/api/shift/:id", controllers.ScheduleShiftShow)
-	route.PUT("/api/shift/:id", controllers.ScheduleShiftUpdate)
-	route.DELETE("/api/shift/:id", controllers.ScheduleShiftDelete)
+	// route.GET("/api/shift", controllers.ScheduleShiftIndex)
+	// route.POST("/api/shift", controllers.ScheduleShiftCreate)
+	// route.GET("/api/shift/:id", controllers.ScheduleShiftShow)
+	// route.PUT("/api/shift/:id", controllers.ScheduleShiftUpdate)
+	// route.DELETE("/api/shift/:id", controllers.ScheduleShiftDelete)
 
 	// Studio Routes
-	route.GET("/api/studio", controllers.StudioIndex)
-	route.POST("/api/studio", controllers.StudioCreate)
-	route.GET("/api/studio/:id", controllers.StudioShow)
-	route.PUT("/api/studio/:id", controllers.StudioUpdate)
-	route.DELETE("/api/studio/:id", controllers.StudioDelete)
+	// route.GET("/api/studio", controllers.StudioIndex)
+	// route.POST("/api/studio", controllers.StudioCreate)
+	// route.GET("/api/studio/:id", controllers.StudioShow)
+	// route.PUT("/api/studio/:id", controllers.StudioUpdate)
+	// route.DELETE("/api/studio/:id", controllers.StudioDelete)
 
 	// Roles
 	route.GET("api/role", controllers.RoleIndex)
@@ -93,6 +97,10 @@ func SetupRouter() *gin.Engine {
 	// Finance
 	route.GET("api/finance/report", controllers.FinanceGetLiveReport)
 
+	shift.RegisterRoutes(route.Group("/api"))
+	studio.RegisterRoutes(route.Group("/api"))
+	host.RegisterRouter(route.Group("/api"))
+	schedule.RegisterRoutes(route.Group("/api"))
 	account.RegisterRouter(route.Group("/api"))
 	finance.RegisterRouter(route.Group("/api"))
 	attendance.RegisterRouter(route.Group("/api"))
