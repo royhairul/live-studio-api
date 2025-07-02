@@ -6,7 +6,7 @@ import (
 )
 
 func ParseTime(timeStr string) (time.Time, error) {
-	layout := "22:15"
+	layout := "15:05"
 	loc, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		return time.Time{}, fmt.Errorf("error load location time: %w", err)
