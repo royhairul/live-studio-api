@@ -3,35 +3,38 @@ package database
 import (
 	"log"
 
-	"github.com/royhairul/live-studio-api/models"
 	"gorm.io/gorm"
 
-	AccountEntity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
-	AttendanceEntity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
+	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
+	attendanceentity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
+	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
+	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 )
 
 // List All Model
 var modelsList = []interface{}{
-	&models.Product{},
-	&models.User{},
-	&models.Studio{},
-	&models.Host{},
-	&models.Account{},
-	&models.ResetPassword{},
 
-	// User Relation model
-	&models.UserRelation{},
+	// &models.Product{},
+	// &models.User{},
+	// &models.Studio{},
+	// &models.ResetPassword{},
 
-	// Schedule model
-	&models.Schedule{},
-	&models.ScheduleShift{},
+	// // User Relation model
+	// &models.UserRelation{},
 
-	// Role and Permission
-	&models.Role{},
-	&models.Permission{},
+	// // Schedule model
+	// &models.ScheduleShift{},
 
-	&AccountEntity.Account{},
-	&AttendanceEntity.Attendance{},
+	// // Role and Permission
+	// &models.Role{},
+	// &models.Permission{},
+
+	&hostentity.Host{},
+	&accountentity.Account{},
+	&studioentity.Studio{},
+	&scheduleentity.Schedule{},
+	&attendanceentity.Attendance{},
 }
 
 func MigrateDatabase(db *gorm.DB) {

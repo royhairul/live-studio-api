@@ -24,5 +24,8 @@ func ConnectDatabase(cfg *config.Config) {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
+	log.Println("Connected to database succesfully")
+	database.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
 	DB = database
 }
