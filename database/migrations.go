@@ -10,25 +10,26 @@ import (
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/models"
 )
 
 // List All Model
 var modelsList = []interface{}{
 
 	// &models.Product{},
-	// &models.User{},
+	&models.User{},
 	// &models.Studio{},
-	// &models.ResetPassword{},
+	&models.ResetPassword{},
 
 	// // User Relation model
-	// &models.UserRelation{},
+	&models.UserRelation{},
 
 	// // Schedule model
 	// &models.ScheduleShift{},
 
 	// // Role and Permission
-	// &models.Role{},
-	// &models.Permission{},
+	&models.Role{},
+	&models.Permission{},
 
 	&hostentity.Host{},
 	&accountentity.Account{},
