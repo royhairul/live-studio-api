@@ -9,18 +9,19 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
-	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+	hostrepository "github.com/royhairul/live-studio-api/internal/domains/host/repository"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	schedulerepository "github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
 )
 
 type AttendanceServiceImpl struct {
 	repository   repository.AttendanceRepository
+	hostRepo     hostrepository.HostRepository
 	scheduleRepo schedulerepository.ScheduleRepository
 }
 
-func NewAttendanceService(repository repository.AttendanceRepository, scheduleRepo schedulerepository.ScheduleRepository) AttendanceService {
-	return &AttendanceServiceImpl{repository, scheduleRepo}
+func NewAttendanceService(repository repository.AttendanceRepository, hostRepo hostrepository.HostRepository, scheduleRepo schedulerepository.ScheduleRepository) AttendanceService {
+	return &AttendanceServiceImpl{repository, hostRepo, scheduleRepo}
 }
 
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
@@ -34,6 +35,7 @@ func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) 
 	for _, attendance := range attendances {
 		results = append(results, &params.AttendanceResponse{
 			ID:       attendance.ID,
+			HostID:   *attendance.Host.ID,
 			Name:     attendance.Host.Name,
 			Date:     attendance.Date,
 			CheckIn:  attendance.CheckedInAt,
@@ -61,6 +63,7 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 	for _, attendance := range attendances {
 		results = append(results, &params.AttendanceResponse{
 			ID:       attendance.ID,
+			HostID:   *attendance.Host.ID,
 			Name:     attendance.Host.Name,
 			Date:     attendance.Date,
 			CheckIn:  attendance.CheckedInAt,
@@ -98,41 +101,35 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 	}
 
 	for _, hostID := range req.HostIDs {
-		var note string
-		var scheduleID *uint
 
-		schedule, err := s.scheduleRepo.FindByHostShiftAndDate(hostID, req.ShiftID, req.Date)
-		hostName := fmt.Sprintf("Host ID %d", hostID) // default fallback host name
-		if schedule != nil && schedule.Host != (hostentity.Host{}) {
-			hostName = schedule.Host.Name
+		host, err := s.hostRepo.FindByID(hostID.String())
+		if err != nil {
+			return nil, err
 		}
 
-		// Jika ada schedule, cek duplikat attendance
-		if err == nil && schedule != nil {
-			scheduleID = &schedule.ID
-			note = s.GenerateNote(schedule, req.Date, uint(parsedShiftID))
-
-			_, err := s.repository.FindByScheduleID(schedule.ID)
-			if err == nil {
+		// Cari attendance existing
+		existingAttendance, err := s.repository.FindByHostShiftAndDate(hostID, req.ShiftID, req.Date)
+		if err == nil && existingAttendance != nil {
+			if existingAttendance.CheckedOutAt == nil {
+				// Sudah check-in & belum checkout → tolak check-in
 				results = append(results, params.AttendanceCheckInResult{
-					HostName: hostName,
-					Message:  "Host sudah check-in sebelumnya",
+					HostName: host.Name,
+					Message:  fmt.Sprintf("Host %s sudah check-in dan belum checkout", host.Name),
 					Status:   "failed",
 				})
 				failedCount++
 				continue
 			}
-		} else {
-			// Tidak ada schedule, tetap dibuat dengan note Tidak ada jadwal
-			note = s.GenerateNote(nil, req.Date, uint(parsedShiftID))
+			// else: sudah check-in & sudah checkout → boleh check-in lagi
 		}
+
+		note := s.GenerateNote(nil, req.Date, uint(parsedShiftID))
 
 		attendance := entity.Attendance{
 			Date:    &req.Date,
 			ShiftID: uint(parsedShiftID),
 
-			ScheduleID: scheduleID,
-			HostID:     &hostID,
+			HostID: &hostID,
 
 			CheckedInAt: helpers.TimeNow(),
 
@@ -143,7 +140,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		_, err = repoWithTx.Create(&attendance)
 		if err != nil {
 			results = append(results, params.AttendanceCheckInResult{
-				HostName: hostName,
+				HostName: host.Name,
 				Message:  "Gagal menyimpan attendance",
 				Status:   "failed",
 			})
@@ -152,7 +149,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		}
 
 		results = append(results, params.AttendanceCheckInResult{
-			HostName: hostName,
+			HostName: host.Name,
 			Message:  "Berhasil check-in",
 			Status:   "success",
 		})

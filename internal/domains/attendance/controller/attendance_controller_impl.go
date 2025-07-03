@@ -68,6 +68,11 @@ func (c *AttendanceControllerImpl) CheckIn(ctx *gin.Context) {
 		return
 	}
 
+	if results.SuccessCount == 0 {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("Failed attendance for all host", results))
+		return
+	}
+
 	resp := response.NewBaseResponse("attendance checkin successfully", results)
 	ctx.JSON(http.StatusOK, resp)
 }

@@ -1,10 +1,16 @@
 package params
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type AttendanceResponse struct {
-	ID   uint
-	Name string `json:"host_name"`
+	ID uint
+
+	HostID uuid.UUID `json:"host_id"`
+	Name   string    `json:"host_name"`
 
 	Date     *time.Time `json:"date"`
 	CheckIn  *time.Time `json:"check_in"`
