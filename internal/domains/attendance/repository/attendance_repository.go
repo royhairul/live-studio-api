@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"gorm.io/gorm"
 )
@@ -17,4 +20,5 @@ type AttendanceRepository interface {
 	FindUncheckedOutByHost() ([]*entity.Attendance, error)
 	FindByID(id uint) (*entity.Attendance, error)
 	FindByScheduleID(id uint) (*entity.Attendance, error)
+	FindByHostShiftAndDate(hostID uuid.UUID, shiftID string, date time.Time) (*entity.Attendance, error)
 }

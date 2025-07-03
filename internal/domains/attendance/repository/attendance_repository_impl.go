@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"gorm.io/gorm"
 )
@@ -86,6 +89,15 @@ func (r *AttendanceRepositoryImpl) FindUncheckedOutByHost() ([]*entity.Attendanc
 func (r *AttendanceRepositoryImpl) FindByScheduleID(id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
 	if err := r.DB.Where("schedule_id = ?", id).First(&attendance).Error; err != nil {
+		return nil, err
+	}
+	return &attendance, nil
+}
+
+// FindByHostShiftAndDate implements AttendanceRepository.
+func (r *AttendanceRepositoryImpl) FindByHostShiftAndDate(hostID uuid.UUID, shiftID string, date time.Time) (*entity.Attendance, error) {
+	var attendance entity.Attendance
+	if err := r.DB.Where("host_id = ? AND date = ? AND shift_id = ?", hostID, date, shiftID).First(&attendance).Error; err != nil {
 		return nil, err
 	}
 	return &attendance, nil
