@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/royhairul/live-studio-api/helpers"
+	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/service"
 )
 
 type AccountServiceImpl struct {

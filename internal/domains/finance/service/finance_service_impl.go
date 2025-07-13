@@ -3,9 +3,9 @@ package service
 import (
 	"log"
 
+	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/finance/params"
 )
 

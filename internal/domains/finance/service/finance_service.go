@@ -1,7 +1,7 @@
 package service
 
 import (
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
+	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 
 	"github.com/royhairul/live-studio-api/internal/domains/finance/params"
 )

@@ -5,12 +5,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account/controller"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
 	"github.com/royhairul/live-studio-api/internal/domains/account/service"
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee"
-	ShopeeRepo "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/repository"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/service"
+
+	ShopeeRepo "github.com/royhairul/live-studio-api/internal/clients/shopee/repository"
+	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 )
 
 func RegisterRouter(router *gin.RouterGroup) {

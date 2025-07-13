@@ -7,9 +7,9 @@ import (
 	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
 
+	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	AccountRepo "github.com/royhairul/live-studio-api/internal/domains/account/repository"
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/service"
 )
 
 type LiveServiceImpl struct {

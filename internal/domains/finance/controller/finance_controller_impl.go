@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/helpers/response"
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	"github.com/royhairul/live-studio-api/internal/domains/finance/service"
 )
 
