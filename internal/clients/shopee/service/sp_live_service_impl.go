@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/repository"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee/repository"
 )
 
 type ShopeeLiveServiceImpl struct {

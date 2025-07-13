@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee"
-	"github.com/royhairul/live-studio-api/internal/domains/ecommerce/shopee/params"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee"
+	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 )
 
 type ShopeeFinanceRepositoryImpl struct {
