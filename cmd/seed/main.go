@@ -35,6 +35,11 @@ func main() {
 		seeders.RoleSeeder()
 		break
 
+	// Handling superadmin
+	case "superadmin":
+		seeders.SuperadminSeeder()
+		break
+
 	default:
 		fmt.Println("Seeder tidak dikenal:", args[1])
 	}
