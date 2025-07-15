@@ -2,12 +2,17 @@ package main
 
 import (
 	"fmt"
-	"live-studio-api/config"
-	"live-studio-api/database"
-	"live-studio-api/routes"
+
+	"github.com/royhairul/live-studio-api/config"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/routes"
+	"github.com/royhairul/live-studio-api/validators"
 )
 
 func main() {
+	// Inisialisasi validator
+	validators.InitValidator()
+
 	// Load konfigurasi
 	cfg := config.LoadConfig()
 

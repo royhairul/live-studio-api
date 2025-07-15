@@ -1,0 +1,102 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"github.com/royhairul/live-studio-api/helpers/errorhandler"
+	"github.com/royhairul/live-studio-api/helpers/response"
+	"github.com/royhairul/live-studio-api/internal/domains/studio/params"
+	"github.com/royhairul/live-studio-api/internal/domains/studio/service"
+)
+
+type StudioControllerImpl struct {
+	// TODO: add dependencies
+	service  service.StudioService
+	validate *validator.Validate
+}
+
+func NewStudioController(service service.StudioService, validate *validator.Validate) StudioController {
+	return &StudioControllerImpl{service, validate}
+}
+
+// Create implements StudioController.
+func (s *StudioControllerImpl) Create(ctx *gin.Context) {
+	var studioReq params.CreateStudioRequest
+	if err := ctx.ShouldBindJSON(&studioReq); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	if err := s.validate.Struct(studioReq); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	studio, err := s.service.Create(studioReq)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("studio created successfully", studio)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// Delete implements StudioController.
+func (s *StudioControllerImpl) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if err := s.service.Delete(id); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("studio deleted successfully", nil)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// FindAll implements StudioController.
+func (s *StudioControllerImpl) FindAll(ctx *gin.Context) {
+	studios, err := s.service.FindAll()
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved all studio successfully", studios)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// FindByID implements StudioController.
+func (s *StudioControllerImpl) FindByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	studio, err := s.service.FindByID(id)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("studio has found", studio)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// Update implements StudioController.
+func (s *StudioControllerImpl) Update(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var studioReq params.UpdateStudioRequest
+	if err := ctx.ShouldBindJSON(&studioReq); err != nil {
+		errorhandler.HandleError(ctx, err)
+	}
+
+	studio, err := s.service.Update(id, studioReq)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("studio updated successfully", studio)
+	ctx.JSON(http.StatusOK, resp)
+}

@@ -1,0 +1,71 @@
+package seeders
+
+import (
+	"fmt"
+
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/models"
+)
+
+func RoleSeeder() {
+	roles := []struct {
+		Name        string
+		Permissions []string // nama permission
+	}{
+		{
+			Name: "superadmin",
+			Permissions: []string{
+				"host_view", "host_create", "host_edit", "host_delete",
+				"schedule_host_view", "schedule_host_create", "schedule_host_edit", "schedule_host_delete",
+				"shift_view", "shift_create", "shift_edit", "shift_delete",
+				"account_view", "account_create", "account_edit", "account_delete",
+				"live_view", "live_report",
+				"finance_view", "finance_research_view", "finance_research_create",
+				"studio_view", "studio_create", "studio_edit", "studio_delete",
+				"user_view", "user_create", "user_edit", "user_delete",
+				"studio_view", "studio_create", "studio_edit", "studio_delete",
+				"role_view", "role_create", "role_edit", "role_delete",
+			},
+		},
+		{
+			Name: "admin",
+			Permissions: []string{
+				"host_view", "host_create", "host_edit", "host_delete",
+				"schedule_host_view", "schedule_host_create", "schedule_host_edit", "schedule_host_delete",
+				"shift_view", "shift_create", "shift_edit", "shift_delete",
+				"account_view", "account_create", "account_edit", "account_delete",
+				"live_view", "live_report",
+				"finance_view", "finance_research_view", "finance_research_create",
+			},
+		},
+		{
+			Name: "host",
+			Permissions: []string{
+				"schedule_host_view",
+				"shift_view",
+				"live_view",
+			},
+		},
+	}
+
+	for _, r := range roles {
+		var role models.Role
+		if err := database.DB.Where("name = ?", r.Name).FirstOrCreate(&role, models.Role{Name: r.Name}).Error; err != nil {
+			fmt.Printf("❌ Failed to seed role '%s': %v\n", r.Name, err)
+			continue
+		}
+
+		var permissions []models.Permission
+		if err := database.DB.Where("name IN ?", r.Permissions).Find(&permissions).Error; err != nil {
+			fmt.Printf("❌ Failed to find permissions for role '%s': %v\n", r.Name, err)
+			continue
+		}
+
+		if err := database.DB.Model(&role).Association("Permissions").Replace(permissions); err != nil {
+			fmt.Printf("❌ Failed to associate permissions for role '%s': %v\n", r.Name, err)
+			continue
+		}
+
+		fmt.Printf("✅ Role '%s' seeded with %d permissions\n", r.Name, len(permissions))
+	}
+}

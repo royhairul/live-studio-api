@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"live-studio-api/config"
 	"log"
 
+	"github.com/royhairul/live-studio-api/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -23,6 +23,9 @@ func ConnectDatabase(cfg *config.Config) {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
+
+	log.Println("Connected to database succesfully")
+	database.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 
 	DB = database
 }
