@@ -2,11 +2,10 @@ package schedule
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/internal/domains/schedule/controller"
 )
 
-func RegisterRoutes(router *gin.RouterGroup) {
-	controller := ProvideScheduleController()
-
+func RegisterRoutes(router *gin.RouterGroup, controller controller.ScheduleController) {
 	// TODO: define routes
 	route := router.Group("/schedule")
 	{

@@ -2,28 +2,15 @@ package attendance
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/database"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/controller"
-	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
-	"github.com/royhairul/live-studio-api/internal/domains/attendance/service"
-	hostrepository "github.com/royhairul/live-studio-api/internal/domains/host/repository"
-	schedulerepository "github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
 )
 
-func RegisterRouter(router *gin.RouterGroup) {
-
-	attendanceRepo := repository.NewAttendanceRepository(database.DB)
-	scheduleRepo := schedulerepository.NewScheduleRepository(database.DB)
-	hostRepo := hostrepository.NewHostRepository(database.DB)
-	attendanceService := service.NewAttendanceService(attendanceRepo, hostRepo, scheduleRepo)
-	attendanceController := controller.NewAttendanceController(attendanceService)
-
-	// 5. Setup Route
-	attendanceRoutes := router.Group("/attendance")
+func RegisterRouter(router *gin.RouterGroup, controller controller.AttendanceController) {
+	routes := router.Group("/attendance")
 	{
-		attendanceRoutes.GET("", attendanceController.FindAll)
-		attendanceRoutes.GET("/unchecked-out", attendanceController.FindUncheckedOut)
-		attendanceRoutes.POST("/check-in", attendanceController.CheckIn)
-		attendanceRoutes.POST("/check-out", attendanceController.CheckOut)
+		routes.GET("", controller.FindAll)
+		routes.GET("/unchecked-out", controller.FindUncheckedOut)
+		routes.POST("/check-in", controller.CheckIn)
+		routes.POST("/check-out", controller.CheckOut)
 	}
 }
