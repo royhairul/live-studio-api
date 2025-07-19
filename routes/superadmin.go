@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/controllers"
-	"github.com/royhairul/live-studio-api/middleware"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterSuperAdminRoutes(r *gin.Engine) {
@@ -16,5 +16,4 @@ func RegisterSuperAdminRoutes(r *gin.Engine) {
 		superadmin.PUT("user/:id", controllers.UserUpdate)
 		superadmin.DELETE("/user/:id", controllers.UserDelete)
 	}
-
 }
