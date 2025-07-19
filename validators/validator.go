@@ -8,14 +8,18 @@ import (
 
 var Validate *validator.Validate
 
-func InitValidator() {
-	Validate = validator.New()
+func InitValidator() *validator.Validate {
+	validate := validator.New()
 
 	// Custom validation
-	Validate.RegisterValidation("phoneid", func(fl validator.FieldLevel) bool {
+	validate.RegisterValidation("phoneid", func(fl validator.FieldLevel) bool {
 		phone := fl.Field().String()
 		// Check if the phone number matches the regex pattern
 		match, _ := regexp.MatchString(`^08[0-9]{8,11}$`, phone)
 		return match
 	})
+
+	Validate = validate
+
+	return validate
 }
