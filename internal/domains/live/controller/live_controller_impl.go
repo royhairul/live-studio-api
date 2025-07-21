@@ -62,19 +62,16 @@ func (l *LiveControllerImpl) GetLive(ctx *gin.Context) {
 	ticker := time.NewTicker(helpers.RandomDuration(2, 10))
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			realtimeData, err := l.service.GetLive()
-			if err != nil {
-				log.Println("Realtime fetch error:", err)
-				continue
-			}
+	for range ticker.C {
+		realtimeData, err := l.service.GetLive()
+		if err != nil {
+			log.Println("Realtime fetch error:", err)
+			continue
+		}
 
-			if err := conn.WriteJSON(realtimeData); err != nil {
-				log.Println("Websocket write error:", err)
-				return
-			}
+		if err := conn.WriteJSON(realtimeData); err != nil {
+			log.Println("Websocket write error:", err)
+			return
 		}
 	}
 }
