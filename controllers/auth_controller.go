@@ -117,6 +117,7 @@ func ForgotPassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "OTP has been sent to your email",
+		"email":   req.Email,
 	})
 }
 
