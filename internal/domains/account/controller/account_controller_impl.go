@@ -59,11 +59,6 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-// Create implements AccountController.
-func (a *AccountControllerImpl) Create(ctx *gin.Context) {
-	panic("unimplemented")
-}
-
 // Delete implements AccountController.
 func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
@@ -75,9 +70,4 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 
 	resp := response.NewBaseResponse("account deleted successfully", nil)
 	ctx.JSON(http.StatusOK, resp)
-}
-
-// Update implements AccountController.
-func (a *AccountControllerImpl) Update(ctx *gin.Context) {
-	panic("unimplemented")
 }

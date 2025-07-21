@@ -9,7 +9,7 @@ type AccountRepositoryImpl struct {
 	DB *gorm.DB
 }
 
-func NewAccountRepository(db *gorm.DB) *AccountRepositoryImpl {
+func NewAccountRepository(db *gorm.DB) AccountRepository {
 	return &AccountRepositoryImpl{DB: db}
 }
 
