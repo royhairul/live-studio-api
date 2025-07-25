@@ -83,11 +83,19 @@ create_file_from_template "$BASE_DIR/service/${FEATURE_SANITIZED}_service.go" "s
 create_file_from_template "$BASE_DIR/service/${FEATURE_SANITIZED}_service_impl.go" "service" "$(select_template service_impl.tpl)"
 
 # ROUTE
-{
-  echo "package $FEATURE_SANITIZED"
-  echo
-  sed "s/{{Feature}}/$FEATURE_CAPITALIZED/g" "$TEMPLATES_DIR/route.tpl"
-} > "$BASE_DIR/route.go"
+sed \
+  -e "s|{{Feature}}|$FEATURE_CAPITALIZED|g" \
+  -e "s|{{feature}}|$FEATURE_SANITIZED|g" \
+  -e "s|{{Module}}|$GO_MODULE|g" \
+  "$TEMPLATES_DIR/route.tpl" > "$BASE_DIR/route.go"
+
+# MODULE
+sed \
+  -e "s|{{Feature}}|$FEATURE_CAPITALIZED|g" \
+  -e "s|{{feature}}|$FEATURE_SANITIZED|g" \
+  -e "s|{{Module}}|$GO_MODULE|g" \
+  "$TEMPLATES_DIR/module.tpl" > "$BASE_DIR/module.go"
+
 
 # Success message
 GREEN='\033[0;32m'
