@@ -35,7 +35,7 @@ func (c *{{Feature}}ControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("created {{Feature}} successfully", result)
+	resp := response.NewBaseResponse("created {{feature}} successfully", result)
 	ctx.JSON(http.StatusCreated, resp)
 }
 
@@ -60,7 +60,7 @@ func (c *{{Feature}}ControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("updated {{Feature}} successfully", result)
+	resp := response.NewBaseResponse("updated {{feature}} successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -71,7 +71,7 @@ func (c *{{Feature}}ControllerImpl) FindAll(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved all {{Feature}} successfully", result)
+	resp := response.NewBaseResponse("retrieved all {{feature}} successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -84,7 +84,7 @@ func (c *{{Feature}}ControllerImpl) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("{{Feature}} found", result)
+	resp := response.NewBaseResponse("{{feature}} found", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -96,6 +96,6 @@ func (c *{{Feature}}ControllerImpl) Delete(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("deleted {{Feature}} successfully", nil)
+	resp := response.NewBaseResponse("deleted {{feature}} successfully", nil)
 	ctx.JSON(http.StatusOK, resp)
 }
