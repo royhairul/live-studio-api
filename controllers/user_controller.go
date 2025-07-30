@@ -74,7 +74,6 @@ func UserCreate(c *gin.Context) {
 	// Buat user baru
 	user := models.User{
 		Name:     req.Name,
-		Username: req.Username,
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		RoleID:   req.RoleID,
@@ -202,7 +201,6 @@ func UserUpdate(c *gin.Context) {
 	}
 
 	// Update data user
-	user.Username = req.Username
 	user.Email = req.Email
 	user.RoleID = req.RoleID
 

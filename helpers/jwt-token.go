@@ -1,4 +1,4 @@
-package auth
+package helpers
 
 import (
 	"errors"
@@ -7,9 +7,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/royhairul/live-studio-api/database"
 	"github.com/royhairul/live-studio-api/dto"
-	"github.com/royhairul/live-studio-api/models"
+	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 )
 
 func SignToken(payload *dto.JWTPayloadDTO, SECRET_KEY string) (string, error) {
@@ -23,11 +22,7 @@ func SignToken(payload *dto.JWTPayloadDTO, SECRET_KEY string) (string, error) {
 	return tokenString, nil
 }
 
-func GenerateTokenJWT(user *models.User) (string, error) {
-	if err := database.DB.Preload("Role").Where("id = ?", user.ID).First(&user).Error; err != nil {
-		return "", fmt.Errorf("Role %d not found", user.RoleID)
-	}
-
+func GenerateTokenJWT(user *entity.User) (string, error) {
 	secretKey := os.Getenv("JWT_SECRET")
 	if secretKey == "" {
 		return "", fmt.Errorf("JWT secret not set")

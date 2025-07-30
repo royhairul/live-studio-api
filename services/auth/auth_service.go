@@ -43,7 +43,6 @@ func Register(userRegister dto.RegisterDTO) error {
 
 	newUser := models.User{
 		Name:     userRegister.Name,
-		Username: userRegister.Username,
 		Password: string(hashedPassword),
 		Email:    userRegister.Email,
 		RoleID:   userRegister.RoleID,

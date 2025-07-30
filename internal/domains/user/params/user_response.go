@@ -1,5 +1,7 @@
 package params
 
 type UserResponse struct {
-	// TODO: add response fields
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
 }

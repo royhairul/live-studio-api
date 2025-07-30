@@ -34,11 +34,11 @@ func SetupRouter() *gin.Engine {
 	}))
 
 	// User Routes
-	route.POST("/api/login", controllers.Login)
-	route.POST("/api/register", controllers.Register)
-	route.POST("/api/forgot-password", controllers.ForgotPassword)
-	route.POST("/api/verify-otp", controllers.VerifyOtp)
-	route.POST("/api/reset-password", controllers.ResetPassword)
+	// route.POST("/api/login", controllers.Login)
+	// route.POST("/api/register", controllers.Register)
+	// route.POST("/api/forgot-password", controllers.ForgotPassword)
+	// route.POST("/api/verify-otp", controllers.VerifyOtp)
+	// route.POST("/api/reset-password", controllers.ResetPassword)
 
 	route.GET("/api/me", middleware.RequireRoles("superadmin", "admin", "host"), controllers.Me)
 

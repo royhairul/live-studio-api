@@ -6,11 +6,13 @@ import (
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance"
+	"github.com/royhairul/live-studio-api/internal/domains/auth"
 	"github.com/royhairul/live-studio-api/internal/domains/finance"
 	"github.com/royhairul/live-studio-api/internal/domains/host"
 	"github.com/royhairul/live-studio-api/internal/domains/live"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule"
 	"github.com/royhairul/live-studio-api/internal/domains/shift"
+	"github.com/royhairul/live-studio-api/internal/domains/user"
 	"github.com/royhairul/live-studio-api/internal/pkg/httpclient"
 	"github.com/royhairul/live-studio-api/internal/pkg/server"
 	"github.com/royhairul/live-studio-api/routes"
@@ -39,6 +41,7 @@ func main() {
 		),
 
 		// Module Domains
+		auth.Module,
 		host.Module,
 		shift.Module,
 		schedule.Module,
@@ -46,6 +49,7 @@ func main() {
 		account.Module,
 		live.Module,
 		finance.Module,
+		user.Module,
 	)
 
 	app.Run()
