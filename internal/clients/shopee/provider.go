@@ -16,6 +16,13 @@ func NewShopeeSellerClient(client httpclient.Client) *ShopeeClient {
 	}
 }
 
+func NewShopeeAffiliateClient(client httpclient.Client) *ShopeeClient {
+	return &ShopeeClient{
+		Client:  client,
+		BaseURL: "https://affiliate.shopee.co.id",
+	}
+}
+
 func NewShopeeDefaultClient(client httpclient.Client) *ShopeeClient {
 	return &ShopeeClient{
 		Client:  client,
