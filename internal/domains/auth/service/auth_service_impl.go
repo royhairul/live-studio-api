@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/helpers/errorhandler"
@@ -10,6 +13,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 	userrepo "github.com/royhairul/live-studio-api/internal/domains/user/repository"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/gomail.v2"
 )
 
 type AuthServiceImpl struct {
@@ -87,8 +91,27 @@ func (s *AuthServiceImpl) ForgotPassword(email params.ForgotPasswordRequest) (pa
 	if err != nil {
 		return params.ForgotPasswordResponse{}, errors.New("email not registered")
 	}
-
 	otp, err := s.AuthRepository.ForgotPassword(email)
+
+	from := os.Getenv("EMAIL_FROM")
+	password := os.Getenv("EMAIL_PASSWORD")
+	host := os.Getenv("EMAIL_HOST")
+	portStr := os.Getenv("EMAIL_PORT")
+
+	port, _ := strconv.Atoi(portStr)
+
+	d := gomail.NewDialer(host, port, from, password)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", email.Email)
+	m.SetHeader("Subject", "Reset Password OTP")
+	body := fmt.Sprintf("Hello, <br>Your OTP is: <b>%s</b>", otp.Otp)
+	m.SetBody("text/html", body)
+
+	if err := d.DialAndSend(m); err != nil {
+		return params.ForgotPasswordResponse{}, err
+	}
 
 	if err != nil {
 		return params.ForgotPasswordResponse{}, err
