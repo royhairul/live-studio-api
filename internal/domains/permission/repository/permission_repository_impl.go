@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 	"gorm.io/gorm"
+
+	"github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 )
 
 type PermissionRepositoryImpl struct {
-	// TODO: add database instance
 	DB *gorm.DB
 }
 
@@ -15,50 +15,58 @@ func NewPermissionRepository(db *gorm.DB) PermissionRepository {
 }
 
 // Create implements PermissionRepository.
-func (p *PermissionRepositoryImpl) Create(permission *entity.Permission) (*entity.Permission, error) {
-	if err := p.DB.Create(permission).Error; err != nil {
+func (r *PermissionRepositoryImpl) Create(data *entity.Permission) (*entity.Permission, error) {
+	if err := r.DB.Create(data).Error; err != nil {
 		return nil, err
 	}
-
-	return permission, nil
-}
-
-// Delete implements PermissionRepository.
-func (p *PermissionRepositoryImpl) Delete(id string) error {
-	if err := p.DB.Delete(entity.Permission{}, "id = ?", id).Error; err != nil {
-		return err
+	if err := r.DB.First(data).Error; err != nil {
+		return nil, err
 	}
-
-	return nil
+	return data, nil
 }
 
 // FindAll implements PermissionRepository.
-func (p *PermissionRepositoryImpl) FindAll() ([]*entity.Permission, error) {
-	var permissions []*entity.Permission
-
-	if err := p.DB.Find(&permissions).Error; err != nil {
+func (r *PermissionRepositoryImpl) FindAll() ([]*entity.Permission, error) {
+	var items []*entity.Permission
+	if err := r.DB.Find(&items).Error; err != nil {
 		return nil, err
 	}
-
-	return permissions, nil
+	return items, nil
 }
 
 // FindByID implements PermissionRepository.
-func (p *PermissionRepositoryImpl) FindByID(id string) (*entity.Permission, error) {
-	var permission entity.Permission
-
-	if err := p.DB.Where("id = ?", id).First(&permission).Error; err != nil {
+func (r *PermissionRepositoryImpl) FindByID(id string) (*entity.Permission, error) {
+	var item entity.Permission
+	if err := r.DB.Where("id = ?", id).First(&item).Error; err != nil {
 		return nil, err
 	}
-
-	return &permission, nil
+	return &item, nil
 }
 
 // Update implements PermissionRepository.
-func (p *PermissionRepositoryImpl) Update(permission *entity.Permission) (*entity.Permission, error) {
-	if err := p.DB.Model(entity.Permission{}).Where("id = ?", permission.ID).Updates(permission).Error; err != nil {
+func (r *PermissionRepositoryImpl) Update(data *entity.Permission) (*entity.Permission, error) {
+	if err := r.DB.Model(&entity.Permission{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
+	if err := r.DB.First(data).Error; err != nil {
+		return nil, err
+	}
+	return data, nil
+}
 
-	return permission, nil
+// Delete implements PermissionRepository.
+func (r *PermissionRepositoryImpl) Delete(id string) error {
+	if err := r.DB.Delete(&entity.Permission{}, "id = ?", id).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// FindByGroup implements PermissionRepository.
+func (r *PermissionRepositoryImpl) FindByGroup(group string) ([]*entity.Permission, error) {
+	var item []*entity.Permission
+	if err := r.DB.Where("group = ?", group).Find(&item).Error; err != nil {
+		return nil, err
+	}
+	return item, nil
 }

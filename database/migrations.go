@@ -9,7 +9,9 @@ import (
 	attendanceentity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"
+	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 	productentity "github.com/royhairul/live-studio-api/internal/domains/product/entity"
+	roleentity "github.com/royhairul/live-studio-api/internal/domains/role/entity"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 	transactionentity "github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
@@ -31,9 +33,11 @@ var modelsList = []interface{}{
 	// &models.ScheduleShift{},
 
 	// // Role and Permission
-	&models.Role{},
-	&models.Permission{},
+	// &models.Role{},
+	// &models.Permission{},
 
+	&permissionentity.Permission{},
+	&roleentity.Role{},
 	&hostentity.Host{},
 	&accountentity.Account{},
 	&studioentity.Studio{},
