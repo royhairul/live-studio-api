@@ -5,20 +5,20 @@ go 1.23.0
 toolchain go1.23.9
 
 require (
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-faker/faker/v4 v4.6.1
+	github.com/google/uuid v1.6.0
+	go.uber.org/fx v1.24.0
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/postgres v1.5.11
 )
 
 require (
-	github.com/bwmarrin/snowflake v0.3.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	go.uber.org/dig v1.19.0 // indirect
-	go.uber.org/fx v1.24.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 )
 
 require (
