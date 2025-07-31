@@ -1,0 +1,19 @@
+package params
+
+type LoginResponse struct {
+	AccessToken string `json:"accessToken"`
+}
+
+type RegisterResponse struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
+type ForgotPasswordResponse struct {
+	Otp string `json:"otp"`
+}
+
+type ChangePasswordResponse struct {
+	Message string `json:"message"`
+}

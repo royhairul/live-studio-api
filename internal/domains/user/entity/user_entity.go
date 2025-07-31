@@ -12,5 +12,5 @@ type User struct {
 	Email    string          `gorm:"type:varchar(100)"`
 	Password string          `gorm:"type:varchar(100);not null"`
 	RoleID   uint            `gorm:"not null"`
-	Role     roleentity.Role `gorm:"foreignKey:RoleID;references:ID`
+	Role     roleentity.Role `gorm:"foreignKey:RoleID;references:ID"`
 }
