@@ -10,6 +10,7 @@ type AccountResponse struct {
 	Email      string `json:"email"`
 	Platform   string `json:"platform"`
 	StudioName string `json:"studio_name"`
+	Cookie     string `json:"cookie"`
 }
 
 func NewAccountResponse(accounts []*entity.Account) []*AccountResponse {
@@ -23,6 +24,7 @@ func NewAccountResponse(accounts []*entity.Account) []*AccountResponse {
 			Email:      acc.Email,
 			Platform:   acc.Platform,
 			StudioName: acc.Studio.Name,
+			Cookie:     acc.Cookie,
 		})
 	}
 	return accountsResp
