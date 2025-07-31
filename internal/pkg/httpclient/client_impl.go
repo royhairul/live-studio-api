@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -48,9 +47,6 @@ func (c *ClientImpl) DoRequest(req *http.Request, out interface{}) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-
-	contentType := resp.Header.Get("Content-Type")
-	log.Println("Response Content-Type:", contentType)
 
 	defer resp.Body.Close()
 
