@@ -9,23 +9,27 @@ import (
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	shiftentity "github.com/royhairul/live-studio-api/internal/domains/shift/entity"
+	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 )
 
 type Attendance struct {
 	gorm.Model
-	ScheduleID *uint                   `json:"schedule_id,omitempty"`
-	Schedule   scheduleentity.Schedule `json:"schedule" gorm:"foreignKey:ScheduleID"`
+	Date         *time.Time
+	CheckedInAt  *time.Time
+	CheckedOutAt *time.Time
 
-	HostID *uuid.UUID      `json:"host_id"`
-	Host   hostentity.Host `json:"host" gorm:"foreignKey:HostID"`
+	Status string
+	Note   string
 
-	ShiftID uint              `json:"shift_id"`
-	Shift   shiftentity.Shift `json:"shift" gorm:"foreignKey:ShiftID"`
+	ScheduleID *uint
+	Schedule   scheduleentity.Schedule `gorm:"foreignKey:ScheduleID"`
 
-	Date         *time.Time `json:"date"`
-	CheckedInAt  *time.Time `json:"checked_in,omitempty"`
-	CheckedOutAt *time.Time `json:"checked_out,omitempty"`
+	HostID *uuid.UUID      `gorm:"type:uuid"`
+	Host   hostentity.Host `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 
-	Status string `json:"status"`
-	Note   string `json:"note"`
+	ShiftID uint
+	Shift   shiftentity.Shift `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+
+	StudioID uint
+	Studio   studioentity.Studio `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }

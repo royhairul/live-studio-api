@@ -10,7 +10,7 @@ import (
 type AttendanceService interface {
 	FindAll() ([]*params.AttendanceResponse, error)
 	FindUncheckedOut() ([]*params.AttendanceResponse, error)
-	CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceCheckInSummary, error)
+	CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error)
 	CheckOut(req params.AttendanceCheckOutRequest) error
 	GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string
 }

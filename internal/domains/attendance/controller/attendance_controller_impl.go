@@ -64,12 +64,7 @@ func (c *AttendanceControllerImpl) CheckIn(ctx *gin.Context) {
 
 	results, err := c.service.CheckIn(req)
 	if err != nil {
-		errorhandler.NewBadRequestError("error for checkin", err)
-		return
-	}
-
-	if results.SuccessCount == 0 {
-		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("Failed attendance for all host", results))
+		errorhandler.HandleError(ctx, err)
 		return
 	}
 

@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/royhairul/live-studio-api/helpers"
@@ -41,8 +40,10 @@ func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) 
 			CheckIn:  attendance.CheckedInAt,
 			CheckOut: attendance.CheckedOutAt,
 
-			ShiftStartTime: attendance.Shift.StartTime,
-			ShiftEndTime:   attendance.Shift.EndTime,
+			// ShiftStartTime: attendance.Shift.StartTime,
+			// ShiftEndTime:   attendance.Shift.EndTime,
+			ShiftID:   attendance.ShiftID,
+			ShiftName: attendance.Shift.Name,
 
 			Note: attendance.Note,
 		})
@@ -69,8 +70,8 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 			CheckIn:  attendance.CheckedInAt,
 			CheckOut: attendance.CheckedOutAt,
 
-			ShiftStartTime: attendance.Shift.StartTime,
-			ShiftEndTime:   attendance.Shift.EndTime,
+			ShiftID:   attendance.ShiftID,
+			ShiftName: attendance.Shift.Name,
 
 			Note: attendance.Note,
 		})
@@ -79,88 +80,40 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 	return results, nil
 }
 
-func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceCheckInSummary, error) {
-	var results []params.AttendanceCheckInResult
-	successCount := 0
-	failedCount := 0
-
-	tx := s.repository.BeginTransaction()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			panic(r)
-		}
-	}()
-
-	repoWithTx := s.repository.WithTx(tx)
-
-	parsedShiftID, err := strconv.ParseUint(req.ShiftID, 10, 0)
+func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
+	host, err := s.hostRepo.FindByID(req.HostID)
 	if err != nil {
-		// handle error parsing, misalnya return error ke caller
-		return nil, fmt.Errorf("invalid shift ID: %v", err)
-	}
-
-	for _, hostID := range req.HostIDs {
-
-		host, err := s.hostRepo.FindByID(hostID.String())
-		if err != nil {
-			return nil, err
-		}
-
-		// Cari attendance existing
-		existingAttendance, err := s.repository.FindByHostShiftAndDate(hostID, req.ShiftID, req.Date)
-		if err == nil && existingAttendance != nil {
-			if existingAttendance.CheckedOutAt == nil {
-				// Sudah check-in & belum checkout → tolak check-in
-				results = append(results, params.AttendanceCheckInResult{
-					HostName: host.Name,
-					Message:  fmt.Sprintf("Host %s sudah check-in dan belum checkout", host.Name),
-					Status:   "failed",
-				})
-				failedCount++
-				continue
-			}
-			// else: sudah check-in & sudah checkout → boleh check-in lagi
-		}
-
-		note := s.GenerateNote(nil, req.Date, uint(parsedShiftID))
-
-		attendance := entity.Attendance{
-			Date:    &req.Date,
-			ShiftID: uint(parsedShiftID),
-
-			HostID: &hostID,
-
-			CheckedInAt: helpers.TimeNow(),
-
-			Status: "present",
-			Note:   note,
-		}
-
-		_, err = repoWithTx.Create(&attendance)
-		if err != nil {
-			results = append(results, params.AttendanceCheckInResult{
-				HostName: host.Name,
-				Message:  "Gagal menyimpan attendance",
-				Status:   "failed",
-			})
-			failedCount++
-			continue
-		}
-
-		results = append(results, params.AttendanceCheckInResult{
-			HostName: host.Name,
-			Message:  "Berhasil check-in",
-			Status:   "success",
-		})
-		successCount++
-	}
-
-	if err := tx.Commit().Error; err != nil {
 		return nil, err
 	}
 
-	return s.GenerateSummary(successCount, failedCount, results), nil
+	// Cari attendance existing
+	existingAttendance, err := s.repository.FindByHostShiftAndDate(req.HostID, req.ShiftID, req.Date)
+	if err == nil && existingAttendance != nil {
+		if existingAttendance.CheckedOutAt == nil {
+			return nil, fmt.Errorf("host already checkout")
+		}
+		// else: sudah check-in & sudah checkout → boleh check-in lagi
+	}
+
+	note := s.GenerateNote(nil, req.Date, req.ShiftID)
+
+	attendance := entity.Attendance{
+		Date:        &req.Date,
+		ShiftID:     req.ShiftID,
+		HostID:      host.ID,
+		StudioID:    req.StudioID,
+		CheckedInAt: helpers.TimeNow(),
+		Status:      "present",
+		Note:        note,
+	}
+
+	created, err := s.repository.Create(&attendance)
+	if err != nil {
+		return nil, err
+	}
+
+	result := params.NewAttendanceResponse(created)
+	return result, nil
 }
 
 func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) error {
@@ -208,18 +161,18 @@ func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, 
 	return "tanggal dan shift tidak sesuai"
 }
 
-func (s *AttendanceServiceImpl) GenerateSummary(successCount, failedCount int, results []params.AttendanceCheckInResult) *params.AttendanceCheckInSummary {
-	finalMessage := "Berhasil check-in semua host"
-	if successCount == 0 {
-		finalMessage = "Gagal check-in semua host"
-	} else if failedCount > 0 {
-		finalMessage = "Sebagian berhasil check-in"
-	}
+// func (s *AttendanceServiceImpl) GenerateSummary(successCount, failedCount int, results []params.AttendanceCheckInResult) *params.AttendanceCheckInSummary {
+// 	finalMessage := "Berhasil check-in semua host"
+// 	if successCount == 0 {
+// 		finalMessage = "Gagal check-in semua host"
+// 	} else if failedCount > 0 {
+// 		finalMessage = "Sebagian berhasil check-in"
+// 	}
 
-	return &params.AttendanceCheckInSummary{
-		Message:      finalMessage,
-		SuccessCount: successCount,
-		FailedCount:  failedCount,
-		Results:      results,
-	}
-}
+// 	return &params.AttendanceCheckInSummary{
+// 		Message:      finalMessage,
+// 		SuccessCount: successCount,
+// 		FailedCount:  failedCount,
+// 		Results:      results,
+// 	}
+// }
