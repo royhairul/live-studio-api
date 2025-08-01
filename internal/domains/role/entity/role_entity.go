@@ -1,13 +1,12 @@
 package entity
 
 import (
-	"gorm.io/gorm"
-
 	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
+	"gorm.io/gorm"
 )
 
 type Role struct {
 	gorm.Model
-	Name        string                        `json:"name"`
-	Permissions []permissionentity.Permission `json:"permissions" gorm:"many2many:role_permissions"`
+	Name        string                        `gorm:"unique"`
+	Permissions []permissionentity.Permission `gorm:"many2many:role_permissions"`
 }

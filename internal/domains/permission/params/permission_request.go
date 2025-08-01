@@ -5,13 +5,12 @@ type PermissionRequest struct {
 }
 
 type CreatePermissionRequest struct {
-	Name        string `json:"name"`
+	// TODO: add request fields
+	Name        string `json:"name" gorm:"unique"`
 	Group       string `json:"group"`
 	Description string `json:"description"`
 }
 
 type UpdatePermissionRequest struct {
-	Name        *string `json:"name"`
-	Group       *string `json:"group"`
-	Description *string `json:"description"`
+	// TODO: add request fields
 }

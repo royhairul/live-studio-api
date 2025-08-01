@@ -5,11 +5,13 @@ type RoleRequest struct {
 }
 
 type CreateRoleRequest struct {
+	// TODO: add request fields
 	Name        string `json:"name" validate:"required"`
 	Permissions []uint `json:"permissions" validate:"required"`
 }
 
 type UpdateRoleRequest struct {
-	Name        *string `json:"name" validate:"omitempty"`
-	Permissions *[]uint `json:"permissions" validate:"omitempty"`
+	// TODO: add request fields
+	Name        string `json:"name"`
+	Permissions []uint `json:"permissions"`
 }
