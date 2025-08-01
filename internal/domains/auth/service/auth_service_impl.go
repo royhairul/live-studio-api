@@ -86,12 +86,13 @@ func (s *AuthServiceImpl) Register(user params.RegisterRequest) (params.Register
 	}, nil
 }
 
-func (s *AuthServiceImpl) ForgotPassword(email params.ForgotPasswordRequest) (params.ForgotPasswordResponse, error) {
-	_, err := s.UserRepository.FindByEmail(email.Email)
+func (s *AuthServiceImpl) ForgotPassword(input params.ForgotPasswordRequest) (email string, err error) {
+
+	_, err = s.UserRepository.FindByEmail(input.Email)
 	if err != nil {
-		return params.ForgotPasswordResponse{}, errors.New("email not registered")
+		return " ", errors.New("email not registered")
 	}
-	otp, err := s.AuthRepository.ForgotPassword(email)
+	otp, err := s.AuthRepository.ForgotPassword(input)
 
 	from := os.Getenv("EMAIL_FROM")
 	password := os.Getenv("EMAIL_PASSWORD")
@@ -104,21 +105,19 @@ func (s *AuthServiceImpl) ForgotPassword(email params.ForgotPasswordRequest) (pa
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", from)
-	m.SetHeader("To", email.Email)
+	m.SetHeader("To", input.Email)
 	m.SetHeader("Subject", "Reset Password OTP")
 	body := fmt.Sprintf("Hello, <br>Your OTP is: <b>%s</b>", otp.Otp)
 	m.SetBody("text/html", body)
 
 	if err := d.DialAndSend(m); err != nil {
-		return params.ForgotPasswordResponse{}, err
+		return "", err
 	}
 
 	if err != nil {
-		return params.ForgotPasswordResponse{}, err
+		return " ", err
 	}
-	return params.ForgotPasswordResponse{
-		Otp: otp.Otp,
-	}, nil
+	return input.Email, nil
 }
 
 func (s *AuthServiceImpl) ResetPassword(password params.ResetPasswordRequest) (params.ChangePasswordResponse, error) {

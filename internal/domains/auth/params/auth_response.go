@@ -11,7 +11,8 @@ type RegisterResponse struct {
 }
 
 type ForgotPasswordResponse struct {
-	Otp string `json:"otp"`
+	Email string `json:"email"`
+	Otp   string
 }
 
 type ChangePasswordResponse struct {

@@ -98,6 +98,7 @@ func (a *AuthRepositoryImpl) ForgotPassword(req params.ForgotPasswordRequest) (p
 	}
 
 	return params.ForgotPasswordResponse{
-		Otp: otp,
+		Email: req.Email,
+		Otp:   otp,
 	}, nil
 }

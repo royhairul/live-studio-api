@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -53,12 +54,13 @@ func (ctrl *AuthControllerImpl) ForgotPassword(c *gin.Context) {
 		errorhandler.HandleError(c, err)
 		return
 	}
-	otp, err := ctrl.service.ForgotPassword(req)
+	email, err := ctrl.service.ForgotPassword(req)
+	log.Println(email)
 	if err != nil {
 		errorhandler.HandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewBaseResponse("OTP has been sent to your email", otp))
+	c.JSON(http.StatusOK, response.NewBaseResponse("OTP has been sent to your email", email))
 }
 
 func (ctrl *AuthControllerImpl) VerifyOtp(c *gin.Context) {
