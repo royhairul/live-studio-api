@@ -8,4 +8,5 @@ type AuthController interface {
 	ForgotPassword(c *gin.Context)
 	VerifyOtp(c *gin.Context)
 	ResetPassword(c *gin.Context)
+	Me(c *gin.Context)
 }

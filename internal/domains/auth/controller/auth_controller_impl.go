@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -75,7 +76,6 @@ func (ctrl *AuthControllerImpl) VerifyOtp(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.NewBaseResponse("Verify OTP successfully", msg.Message))
-
 }
 
 func (ctrl *AuthControllerImpl) ResetPassword(c *gin.Context) {
@@ -90,4 +90,24 @@ func (ctrl *AuthControllerImpl) ResetPassword(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, response.NewBaseResponse("Reset Password Successfully", msg.Message))
+}
+
+// Me implements AuthController.
+func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
+	// Retrieve user ID from context
+	id, exists := c.Get("superadmin_id")
+	if !exists {
+		id, exists = c.Get("user_id")
+	}
+
+	// Get Role from context
+	role := c.GetString("role")
+
+	me, err := ctrl.service.Me(fmt.Sprintf("%v", id))
+	if err != nil {
+		errorhandler.HandleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.NewBaseResponse(fmt.Sprintf("Welcome, %s", role), me))
 }
