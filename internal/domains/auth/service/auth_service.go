@@ -8,4 +8,6 @@ type AuthService interface {
 	ForgotPassword(input params.ForgotPasswordRequest) (email string, err error)
 	ResetPassword(input params.ResetPasswordRequest) (params.ChangePasswordResponse, error)
 	VerifyOtp(input params.VerifyOTPRequest) (params.ChangePasswordResponse, error)
+
+	Me(userId string) (params.MeResponse, error)
 }

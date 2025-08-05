@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -14,20 +15,25 @@ import (
 	userrepo "github.com/royhairul/live-studio-api/internal/domains/user/repository"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
+
+	roleservice "github.com/royhairul/live-studio-api/internal/domains/role/service"
 )
 
 type AuthServiceImpl struct {
 	AuthRepository repository.AuthRepository
 	UserRepository userrepo.UserRepository
+	RoleService    roleservice.RoleService
 }
 
 func NewAuthService(
 	authRepo repository.AuthRepository,
 	userRepo userrepo.UserRepository,
+	roleSvc roleservice.RoleService,
 ) AuthService {
 	return &AuthServiceImpl{
 		AuthRepository: authRepo,
 		UserRepository: userRepo,
+		RoleService:    roleSvc,
 	}
 }
 
@@ -87,7 +93,6 @@ func (s *AuthServiceImpl) Register(user params.RegisterRequest) (params.Register
 }
 
 func (s *AuthServiceImpl) ForgotPassword(input params.ForgotPasswordRequest) (email string, err error) {
-
 	_, err = s.UserRepository.FindByEmail(input.Email)
 	if err != nil {
 		return " ", errors.New("email not registered")
@@ -121,7 +126,6 @@ func (s *AuthServiceImpl) ForgotPassword(input params.ForgotPasswordRequest) (em
 }
 
 func (s *AuthServiceImpl) ResetPassword(password params.ResetPasswordRequest) (params.ChangePasswordResponse, error) {
-
 	_, err := s.AuthRepository.ResetPassword(password)
 	if err != nil {
 		return params.ChangePasswordResponse{}, err
@@ -132,12 +136,38 @@ func (s *AuthServiceImpl) ResetPassword(password params.ResetPasswordRequest) (p
 }
 
 func (s *AuthServiceImpl) VerifyOtp(otp params.VerifyOTPRequest) (params.ChangePasswordResponse, error) {
-
 	_, err := s.AuthRepository.VerifyOtp(otp)
 	if err != nil {
 		return params.ChangePasswordResponse{}, err
 	}
 	return params.ChangePasswordResponse{
 		Message: "otp valid",
+	}, nil
+}
+
+// Me implements AuthService.
+func (s *AuthServiceImpl) Me(userId string) (params.MeResponse, error) {
+	user, err := s.UserRepository.FindByID(userId)
+	if err != nil {
+		return params.MeResponse{}, fmt.Errorf("failed to find user with ID %s: %w", userId, err)
+	}
+
+	log.Println("Role found:", user.RoleID)
+	log.Println("Role found:", fmt.Sprintf("%d", user.RoleID))
+
+	role, err := s.RoleService.FindByID(fmt.Sprintf("%d", user.RoleID))
+	if err != nil {
+		return params.MeResponse{}, fmt.Errorf("failed to find role with ID %d: %w", user.RoleID, err)
+	}
+
+	permissions := []string{}
+	for _, p := range role.Permissions {
+		permissions = append(permissions, p.Name)
+	}
+
+	return params.MeResponse{
+		Name:        user.Name,
+		Role:        role.Name,
+		Permissions: permissions,
 	}, nil
 }
