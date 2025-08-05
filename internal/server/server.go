@@ -17,8 +17,10 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/order"
 	"github.com/royhairul/live-studio-api/internal/domains/permission"
 	"github.com/royhairul/live-studio-api/internal/domains/product"
+	"github.com/royhairul/live-studio-api/internal/domains/role"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule"
 	"github.com/royhairul/live-studio-api/internal/domains/shift"
+	"github.com/royhairul/live-studio-api/internal/domains/studio"
 	"github.com/royhairul/live-studio-api/internal/domains/transaction"
 	"github.com/royhairul/live-studio-api/internal/domains/user"
 	"github.com/royhairul/live-studio-api/internal/pkg/httpclient"
@@ -52,11 +54,12 @@ func NewApp() *fx.App {
 			Start, // server.Start ini tetap untuk start HTTP server
 		),
 		// Module Domains
-		// role.Module,
 		permission.Module,
+		role.Module,
 		auth.Module,
 		user.Module,
 		host.Module,
+		studio.Module,
 		shift.Module,
 		schedule.Module,
 		attendance.Module,
