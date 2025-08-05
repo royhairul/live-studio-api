@@ -18,3 +18,9 @@ type ForgotPasswordResponse struct {
 type ChangePasswordResponse struct {
 	Message string `json:"message"`
 }
+
+type MeResponse struct {
+	Name        string   `json:"name"`
+	Role        string   `json:"role"`
+	Permissions []string `json:"permissions"`
+}
