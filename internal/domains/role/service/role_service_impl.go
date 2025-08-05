@@ -3,6 +3,7 @@ package service
 import (
 	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 	permissionservice "github.com/royhairul/live-studio-api/internal/domains/permission/service"
+
 	"github.com/royhairul/live-studio-api/internal/domains/role/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/role/params"
 	"github.com/royhairul/live-studio-api/internal/domains/role/repository"
@@ -14,7 +15,10 @@ type RoleServiceImpl struct {
 	permissionSvc permissionservice.PermissionService
 }
 
-func NewRoleService(repository repository.RoleRepository, permissionSvc permissionservice.PermissionService) RoleService {
+func NewRoleService(
+	repository repository.RoleRepository,
+	permissionSvc permissionservice.PermissionService,
+) RoleService {
 	return &RoleServiceImpl{repository, permissionSvc}
 }
 
@@ -63,7 +67,13 @@ func (s *RoleServiceImpl) FindAll() ([]*params.RoleResponse, error) {
 
 // FindByID implements RoleService.
 func (s *RoleServiceImpl) FindByID(id string) (*params.RoleResponse, error) {
-	panic("unimplemented")
+	role, err := s.repository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := params.NewRoleResponse(role)
+	return result, nil
 }
 
 // Delete implements RoleService.
