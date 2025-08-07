@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
+	accountsessionentity "github.com/royhairul/live-studio-api/internal/domains/accountsession/entity"
 	attendanceentity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"
@@ -43,6 +44,7 @@ var modelsList = []interface{}{
 	&studioentity.Studio{},
 	&scheduleentity.Schedule{},
 	&attendanceentity.Attendance{},
+	&accountsessionentity.Accountsession{},
 
 	&productentity.Product{},
 	&transactionentity.Transaction{},

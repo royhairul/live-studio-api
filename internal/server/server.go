@@ -9,6 +9,7 @@ import (
 	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account"
+	"github.com/royhairul/live-studio-api/internal/domains/accountsession"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance"
 	"github.com/royhairul/live-studio-api/internal/domains/auth"
 	"github.com/royhairul/live-studio-api/internal/domains/finance"
@@ -64,6 +65,7 @@ func NewApp() *fx.App {
 		schedule.Module,
 		attendance.Module,
 		account.Module,
+		accountsession.Module,
 		live.Module,
 		finance.Module,
 		product.Module,
