@@ -63,3 +63,13 @@ func (a *AccountRepositoryImpl) Delete(id string) error {
 
 	return nil
 }
+
+// FindByStudio implements AccountRepository.
+func (a *AccountRepositoryImpl) FindByStudio(studioId string) ([]*entity.Account, error) {
+	var accounts []*entity.Account
+	if err := a.DB.Preload("Studio").Find(&accounts, "studio_id = ?", studioId).Error; err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}

@@ -9,4 +9,6 @@ type AccountRepository interface {
 	Create(account *entity.Account) (*entity.Account, error)
 	Save(account *entity.Account) (*entity.Account, error)
 	Delete(id string) error
+
+	FindByStudio(studioId string) ([]*entity.Account, error)
 }
