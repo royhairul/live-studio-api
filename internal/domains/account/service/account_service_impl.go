@@ -25,51 +25,37 @@ func (a *AccountServiceImpl) FindAll() ([]*params.AccountResponse, error) {
 		return nil, err
 	}
 
-	accountsResp := params.NewAccountResponse(accounts)
-	return accountsResp, nil
+	var result []*params.AccountResponse
+	for _, account := range accounts {
+		result = append(result, params.NewAccountResponse(account))
+	}
+
+	return result, nil
 }
 
-func (a *AccountServiceImpl) FindById(id string) (*params.AccountDetailResponse, error) {
+func (a *AccountServiceImpl) FindById(id string) (*params.AccountResponse, error) {
 	account, err := a.repository.FindById(id)
 	if err != nil {
 		return nil, err
 	}
 
-	accountDetailResp := params.AccountDetailResponse{
-		ID:         account.ID,
-		Name:       account.Name,
-		Platform:   account.Platform,
-		UniqueID:   account.UniqueID,
-		Username:   account.Username,
-		Email:      account.Email,
-		StudioName: account.Studio.Name,
-		Cookie:     account.Cookie,
-	}
+	result := params.NewAccountResponse(account)
 
-	return &accountDetailResp, err
+	return result, err
 }
 
-func (a *AccountServiceImpl) FindByUniqueId(uid string) (*params.AccountDetailResponse, error) {
+func (a *AccountServiceImpl) FindByUniqueId(uid string) (*params.AccountResponse, error) {
 	account, err := a.repository.FindByUniqueId(uid)
 	if err != nil {
 		return nil, err
 	}
 
-	accountDetailResp := params.AccountDetailResponse{
-		ID:         account.ID,
-		Name:       account.Name,
-		Platform:   account.Platform,
-		UniqueID:   account.UniqueID,
-		Username:   account.Username,
-		Email:      account.Email,
-		StudioName: account.Studio.Name,
-		Cookie:     account.Cookie,
-	}
+	result := params.NewAccountResponse(account)
 
-	return &accountDetailResp, err
+	return result, err
 }
 
-func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest) (*entity.Account, error) {
+func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest) (*params.AccountResponse, error) {
 	// Get Shopee Account
 	accountShopee, err := a.shopeeSvc.GetShopeeAccount(request.Cookie)
 	if err != nil {
@@ -86,6 +72,8 @@ func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest)
 		StudioID: request.StudioID,
 	}
 
+	var result *params.AccountResponse
+
 	// Check in database
 	existing, err := a.repository.FindByUniqueId(account.UniqueID)
 	if err != nil {
@@ -94,7 +82,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest)
 			return nil, err
 		}
 
-		return account, nil
+		result = params.NewAccountResponse(account)
 	}
 
 	updatedAccount, err := a.repository.Save(existing)
@@ -102,7 +90,9 @@ func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest)
 		return nil, err
 	}
 
-	return updatedAccount, nil
+	result = params.NewAccountResponse(updatedAccount)
+
+	return result, nil
 }
 
 func (a *AccountServiceImpl) Delete(id string) error {
@@ -111,4 +101,19 @@ func (a *AccountServiceImpl) Delete(id string) error {
 	}
 
 	return nil
+}
+
+// FindByStudio implements AccountService.
+func (a *AccountServiceImpl) FindByStudio(studioId string) ([]*params.AccountResponse, error) {
+	accounts, err := a.repository.FindByStudio(studioId)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*params.AccountResponse
+	for _, account := range accounts {
+		result = append(result, params.NewAccountResponse(account))
+	}
+
+	return result, nil
 }
