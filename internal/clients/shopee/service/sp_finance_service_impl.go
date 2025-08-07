@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -74,10 +73,6 @@ func (s *ShopeeFinanceServiceImpl) GetShopeeLiveSalesReportRange(financeReq para
 		if err != nil {
 			return nil, err
 		}
-
-		log.Println(resp.List)
-		log.Println(req.TimeDim)
-		log.Println(resp.Total)
 
 		return filterReportsByDays(resp.List, endDate, daysLeft)
 	}

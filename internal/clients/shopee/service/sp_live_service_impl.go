@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
@@ -37,7 +36,6 @@ func (s ShopeeLiveServiceImpl) GetShopeeLiveRealTime(cookie string) ([]params.Sh
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request to %s: %w", endpoint, err)
 	}
-	log.Println("RESULT", req)
 
 	var result params.ShopeeApiResponse[params.ShopeeLiveRealTimeResponse]
 
