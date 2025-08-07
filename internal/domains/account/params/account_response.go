@@ -13,21 +13,17 @@ type AccountResponse struct {
 	Cookie     string `json:"cookie"`
 }
 
-func NewAccountResponse(accounts []*entity.Account) []*AccountResponse {
-	accountsResp := []*AccountResponse{}
-	for _, acc := range accounts {
-		accountsResp = append(accountsResp, &AccountResponse{
-			ID:         acc.ID,
-			UniqueID:   acc.UniqueID,
-			Name:       acc.Name,
-			Username:   acc.Username,
-			Email:      acc.Email,
-			Platform:   acc.Platform,
-			StudioName: acc.Studio.Name,
-			Cookie:     acc.Cookie,
-		})
+func NewAccountResponse(account *entity.Account) *AccountResponse {
+	return &AccountResponse{
+		ID:         account.ID,
+		UniqueID:   account.UniqueID,
+		Name:       account.Name,
+		Username:   account.Username,
+		Email:      account.Email,
+		Platform:   account.Platform,
+		StudioName: account.Studio.Name,
+		Cookie:     account.Cookie,
 	}
-	return accountsResp
 }
 
 type AccountDetailResponse struct {
