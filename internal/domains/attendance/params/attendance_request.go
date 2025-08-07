@@ -12,5 +12,5 @@ type AttendanceCheckInRequest struct {
 }
 
 type AttendanceCheckOutRequest struct {
-	AttendanceIDs []uint `json:"attendance_ids" validate:"required"`
+	ID uint `json:"id" validate:"required"`
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
@@ -11,11 +12,12 @@ import (
 )
 
 type AttendanceControllerImpl struct {
-	service service.AttendanceService
+	service  service.AttendanceService
+	validate *validator.Validate
 }
 
-func NewAttendanceController(service service.AttendanceService) AttendanceController {
-	return &AttendanceControllerImpl{service}
+func NewAttendanceController(service service.AttendanceService, validate *validator.Validate) AttendanceController {
+	return &AttendanceControllerImpl{service, validate}
 }
 
 // FindAll implements AttendanceController.
@@ -80,12 +82,17 @@ func (c *AttendanceControllerImpl) CheckOut(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.CheckOut(req)
+	if err := c.validate.Struct(req); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	result, err := c.service.CheckOut(req)
 	if err != nil {
 		errorhandler.NewBadRequestError("error for checkout", err)
 		return
 	}
 
-	resp := response.NewBaseResponse("attendance checkout successfully", nil)
+	resp := response.NewBaseResponse("attendance checkout successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }

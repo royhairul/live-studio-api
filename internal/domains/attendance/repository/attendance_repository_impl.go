@@ -5,6 +5,7 @@ import (
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AttendanceRepositoryImpl struct {
@@ -17,7 +18,7 @@ func NewAttendanceRepository(db *gorm.DB) AttendanceRepository {
 
 func (r *AttendanceRepositoryImpl) FindAll() ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	if err := r.DB.Preload("Host").Preload("Studio").Preload("Shift").Find(&attendances).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).Find(&attendances).Error; err != nil {
 		return nil, err
 	}
 	return attendances, nil
@@ -59,7 +60,13 @@ func (r *AttendanceRepositoryImpl) Delete(id string) error {
 
 func (r *AttendanceRepositoryImpl) FindByID(id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	if err := r.DB.Where("id = ?", id).First(&attendance).Error; err != nil {
+	err := r.DB.
+		Preload("Schedule").
+		Preload("Host").
+		Preload("Shift").
+		Preload("Studio").
+		First(&attendance).Error
+	if err != nil {
 		return nil, err
 	}
 	return &attendance, nil

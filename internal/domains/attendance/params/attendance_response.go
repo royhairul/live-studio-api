@@ -8,7 +8,7 @@ import (
 )
 
 type AttendanceResponse struct {
-	ID uint
+	ID uint `json:"id"`
 
 	HostID uuid.UUID `json:"host_id"`
 	Name   string    `json:"host_name"`
@@ -32,9 +32,12 @@ func NewAttendanceResponse(attendance *entity.Attendance) *AttendanceResponse {
 		Name:       attendance.Host.Name,
 		HostID:     *attendance.Host.ID,
 		Date:       attendance.Date,
+		CheckIn:    attendance.CheckedInAt,
+		CheckOut:   attendance.CheckedOutAt,
 		ShiftID:    attendance.Shift.ID,
 		ShiftName:  attendance.Shift.Name,
 		StudioID:   attendance.Studio.ID,
 		StudioName: attendance.Studio.Name,
+		Note:       attendance.Note,
 	}
 }
