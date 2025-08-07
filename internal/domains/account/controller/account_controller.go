@@ -7,4 +7,6 @@ type AccountController interface {
 	FindById(ctx *gin.Context)
 	CreateOrUpdate(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+
+	FindByStudio(ctx *gin.Context)
 }

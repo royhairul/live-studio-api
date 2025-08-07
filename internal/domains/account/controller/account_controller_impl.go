@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,19 @@ func NewAccountController(accountSvc service.AccountService) AccountController {
 }
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
+	studioId := ctx.Query("studio")
+	log.Printf("Studio ID: %s", studioId)
+	if studioId != "" {
+		accounts, err := a.AccountService.FindByStudio(studioId)
+		if err != nil {
+			errorhandler.HandleError(ctx, err)
+			return
+		}
+		resp := response.NewBaseResponse("retrieved accounts by studio successfully", accounts)
+		ctx.JSON(http.StatusOK, resp)
+		return
+	}
+
 	accounts, err := a.AccountService.FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
@@ -69,5 +83,19 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	}
 
 	resp := response.NewBaseResponse("account deleted successfully", nil)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// FindByStudio implements AccountController.
+func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
+	studioId := ctx.Param("studioId")
+
+	accounts, err := a.AccountService.FindByStudio(studioId)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved accounts by studio successfully", accounts)
 	ctx.JSON(http.StatusOK, resp)
 }
