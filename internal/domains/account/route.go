@@ -8,9 +8,9 @@ import (
 func RegisterRouter(router *gin.RouterGroup, controller controller.AccountController) {
 	routes := router.Group("/account")
 	{
-		routes.GET("/shopee", controller.FindAll)
-		routes.POST("/shopee", controller.CreateOrUpdate)
-		routes.GET("/shopee/:id", controller.FindById)
-		routes.DELETE("/shopee/:id", controller.Delete)
+		routes.GET("", controller.FindAll)
+		routes.POST("/", controller.CreateOrUpdate)
+		routes.GET("/:id", controller.FindById)
+		routes.DELETE("/:id", controller.Delete)
 	}
 }
