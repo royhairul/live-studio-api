@@ -10,5 +10,6 @@ type AccountsessionService interface {
 	Delete(id string) error
 
 	FindAllByAttendanceID(id string) ([]*params.AccountsessionResponse, error)
+	FindAllByAccountID(id string) ([]*params.AccountsessionResponse, error)
 	UpdateEndSession(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error)
 }

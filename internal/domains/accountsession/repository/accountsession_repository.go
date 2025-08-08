@@ -13,4 +13,5 @@ type AccountsessionRepository interface {
 	Delete(id string) error
 
 	FindAllByAttendanceID(id string) ([]*entity.Accountsession, error)
+	FindAllByAccountID(id string) ([]*entity.Accountsession, error)
 }
