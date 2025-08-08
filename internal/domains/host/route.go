@@ -10,10 +10,13 @@ func RegisterRouter(router *gin.RouterGroup, controller controller.HostControlle
 	{
 		routes.GET("", controller.FindAll)
 		routes.POST("", controller.Create)
+
+		routes.GET("/group-by-studio", controller.FindAllGroupedByStudio)
+		routes.GET("/perform", controller.FindAllPerform)
+		routes.GET("/perform/:id", controller.FindByIDPerform)
+
 		routes.GET("/:id", controller.FindByID)
 		routes.PUT("/:id", controller.Update)
 		routes.DELETE("/:id", controller.Delete)
-
-		routes.GET("/group-by-studio", controller.FindAllGroupedByStudio)
 	}
 }
