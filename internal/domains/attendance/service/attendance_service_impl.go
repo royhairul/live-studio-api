@@ -87,6 +87,21 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 	return results, nil
 }
 
+// FindByDateRange implements AttendanceService.
+func (s *AttendanceServiceImpl) FindByDateRange(startTime time.Time, endTime time.Time) ([]*params.AttendanceResponse, error) {
+	attendances, err := s.repository.FindAllByDateRange(startTime, endTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch attendances: %w", err)
+	}
+
+	var results []*params.AttendanceResponse
+	for _, attendance := range attendances {
+		results = append(results, params.NewAttendanceResponse(attendance))
+	}
+
+	return results, nil
+}
+
 func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
 	host, err := s.hostRepo.FindByID(req.HostID)
 	if err != nil {
@@ -203,6 +218,9 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 			return nil, fmt.Errorf("failed to update account session for attendance ID %d: %w", req.ID, err)
 		}
 	}
+
+	log.Println(req.ID)
+	log.Println(attendance.ID)
 
 	result := params.NewAttendanceResponse(attendance)
 	return result, nil

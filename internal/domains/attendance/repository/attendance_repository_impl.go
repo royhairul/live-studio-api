@@ -65,7 +65,7 @@ func (r *AttendanceRepositoryImpl) FindByID(id uint) (*entity.Attendance, error)
 		Preload("Host").
 		Preload("Shift").
 		Preload("Studio").
-		First(&attendance).Error
+		First(&attendance, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -103,4 +103,20 @@ func (r *AttendanceRepositoryImpl) FindByHostShiftAndDate(hostID string, shiftID
 		return nil, err
 	}
 	return &attendance, nil
+}
+
+// FindAllByDateRange implements AttendanceRepository.
+func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime time.Time, endTime time.Time) ([]*entity.Attendance, error) {
+	var attendances []*entity.Attendance
+	err := r.DB.
+		Preload("Schedule").
+		Preload("Shift").
+		Preload("Host").
+		Preload("Studio").
+		Where("date >= ? AND date <= ?", startTime, endTime).
+		Find(&attendances).Error
+	if err != nil {
+		return nil, err
+	}
+	return attendances, nil
 }
