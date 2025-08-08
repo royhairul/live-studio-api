@@ -7,17 +7,17 @@ import (
 	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
 
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
-	AccountRepo "github.com/royhairul/live-studio-api/internal/domains/account/repository"
+	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
+	accountrepo "github.com/royhairul/live-studio-api/internal/domains/account/repository"
 )
 
 type LiveServiceImpl struct {
-	accountRepo   AccountRepo.AccountRepository
-	shopeeLiveSvc ShopeeService.ShopeeLiveService
+	accountRepo   accountrepo.AccountRepository
+	shopeeLiveSvc shopeeservice.ShopeeLiveService
 }
 
-func NewLiveService(accountRepo AccountRepo.AccountRepository, shopeeLiveSvc ShopeeService.ShopeeLiveService) LiveService {
+func NewLiveService(accountRepo accountrepo.AccountRepository, shopeeLiveSvc shopeeservice.ShopeeLiveService) LiveService {
 	return &LiveServiceImpl{accountRepo, shopeeLiveSvc}
 }
 
@@ -38,7 +38,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 		}
 
 		// Filter berdasarkan tanggal hari ini
-		var todayData []*ShopeeParams.ShopeeLiveReportItemRT
+		var todayData []*shopeeparams.ShopeeLiveReportItemRT
 		for _, session := range realtimeData {
 			if helpers.IsToday(session.StartTime) {
 				//  duration
