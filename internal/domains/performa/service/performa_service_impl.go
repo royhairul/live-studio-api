@@ -239,46 +239,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime s
 
 // GetStudios implements PerformaService.
 func (p *PerformaServiceImpl) GetStudios(startTime string, endTime string) ([]*params.PerformaStudioResponse, error) {
-	if len(startTime) == 10 { // format: "YYYY-MM-DD"
-		startTime += " 00:00:00"
-	}
-	if len(endTime) == 10 {
-		endTime += " 23:59:59"
-	}
-
-	start, err := time.Parse("2006-01-02 15:04:05", startTime)
-	if err != nil {
-		return nil, fmt.Errorf("invalid startTime format: %v", err)
-	}
-	end, err := time.Parse("2006-01-02 15:04:05", endTime)
-	if err != nil {
-		return nil, fmt.Errorf("invalid endTime format: %v", err)
-	}
-
-	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get attendances: %v", err)
-	}
-
-	studios, err := p.studioSvc.FindAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*params.PerformaStudioResponse
-	for _, studio := range studios {
-		for _, att := range attendances {
-			accounts, _ := p.accountSvc.FindByStudio(fmt.Sprintf("%d", studio.ID))
-
-			for _, account := range accounts {
-			}
-
-			result = append(result, &params.PerformaStudioResponse{
-				ID:   fmt.Sprintf("%d", studio.ID),
-				Name: studio.Name,
-			})
-		}
-	}
+	panic("unimplemented")
 }
 
 // GetStudioByID implements PerformaService.
