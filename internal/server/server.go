@@ -16,6 +16,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/host"
 	"github.com/royhairul/live-studio-api/internal/domains/live"
 	"github.com/royhairul/live-studio-api/internal/domains/order"
+	"github.com/royhairul/live-studio-api/internal/domains/performa"
 	"github.com/royhairul/live-studio-api/internal/domains/permission"
 	"github.com/royhairul/live-studio-api/internal/domains/product"
 	"github.com/royhairul/live-studio-api/internal/domains/role"
@@ -66,6 +67,7 @@ func NewApp() *fx.App {
 		attendance.Module,
 		account.Module,
 		accountsession.Module,
+		performa.Module,
 		live.Module,
 		finance.Module,
 		product.Module,
