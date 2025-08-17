@@ -6,7 +6,7 @@ import (
 )
 
 func ParseDate(str string) (*time.Time, error) {
-	layout := "2024-08-17"
+	layout := "2006-01-02"
 
 	parsedDate, err := time.Parse(layout, str)
 	if err != nil {
