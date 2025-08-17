@@ -88,6 +88,19 @@ func (r *AttendanceRepositoryImpl) FindUncheckedOutByHost() ([]*entity.Attendanc
 	return attendances, nil
 }
 
+// FindUncheckedOutByStudio implements AttendanceRepository.
+func (r *AttendanceRepositoryImpl) FindUncheckedOutByStudio(studioID string, date *time.Time) (*entity.Attendance, error) {
+	var attendance entity.Attendance
+	err := r.DB.Where("studio_id = ?", studioID).
+		Where("date::date = ?", date).
+		Where("checked_out_at IS NULL").
+		First(&attendance).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attendance, nil
+}
+
 func (r *AttendanceRepositoryImpl) FindByScheduleID(id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
 	if err := r.DB.Where("schedule_id = ?", id).First(&attendance).Error; err != nil {
@@ -106,7 +119,7 @@ func (r *AttendanceRepositoryImpl) FindByHostShiftAndDate(hostID string, shiftID
 }
 
 // FindAllByDateRange implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime time.Time, endTime time.Time) ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime *time.Time, endTime *time.Time) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
 	err := r.DB.
 		Preload("Schedule").
@@ -115,6 +128,21 @@ func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime time.Time, endTi
 		Preload("Studio").
 		Where("date >= ? AND date <= ?", startTime, endTime).
 		Find(&attendances).Error
+	if err != nil {
+		return nil, err
+	}
+	return attendances, nil
+}
+
+// FindAllByHostID implements AttendanceRepository.
+func (r *AttendanceRepositoryImpl) FindAllByHostID(id string) ([]*entity.Attendance, error) {
+	var attendances []*entity.Attendance
+	err := r.DB.
+		Preload("Schedule").
+		Preload("Shift").
+		Preload("Host").
+		Preload("Studio").
+		Find(&attendances, "host_id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}

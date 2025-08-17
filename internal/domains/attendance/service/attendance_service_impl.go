@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers"
+	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
@@ -59,6 +59,11 @@ func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) 
 	return results, nil
 }
 
+// FindAllByHostID implements AttendanceService.
+func (s *AttendanceServiceImpl) FindAllByHostID(id string) ([]*params.AttendanceResponse, error) {
+	panic("unimplemented")
+}
+
 // FindUncheckedOut implements AttendanceService.
 func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse, error) {
 	var results []*params.AttendanceResponse
@@ -88,7 +93,7 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 }
 
 // FindByDateRange implements AttendanceService.
-func (s *AttendanceServiceImpl) FindByDateRange(startTime time.Time, endTime time.Time) ([]*params.AttendanceResponse, error) {
+func (s *AttendanceServiceImpl) FindByDateRange(startTime *time.Time, endTime *time.Time) ([]*params.AttendanceResponse, error) {
 	attendances, err := s.repository.FindAllByDateRange(startTime, endTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch attendances: %w", err)
@@ -103,28 +108,37 @@ func (s *AttendanceServiceImpl) FindByDateRange(startTime time.Time, endTime tim
 }
 
 func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
+	parsedDate, err := timehandler.ParseDate(req.Date)
+	if err != nil {
+		return nil, err
+	}
+
 	host, err := s.hostRepo.FindByID(req.HostID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Cari attendance existing
-	existingAttendance, err := s.repository.FindByHostShiftAndDate(req.HostID, req.ShiftID, req.Date)
-	if err == nil && existingAttendance != nil {
-		if existingAttendance.CheckedOutAt == nil {
+	existAttendance, err := s.repository.FindUncheckedOutByStudio(fmt.Sprintf("%d", req.StudioID), parsedDate)
+	if err == nil && existAttendance != nil {
+		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
 			return nil, fmt.Errorf("host %s already checkin", host.Name)
+		} else {
+			log.Print("studio founded, and there's a host")
+			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: existAttendance.ID})
+			if err != nil {
+				return nil, fmt.Errorf("failed to auto-checkout previous host: %w", err)
+			}
 		}
-		// else: sudah check-in & sudah checkout → boleh check-in lagi
 	}
 
-	note := s.GenerateNote(nil, req.Date, req.ShiftID)
+	note := s.GenerateNote(nil, *parsedDate, req.ShiftID)
 
 	attendance := entity.Attendance{
-		Date:        &req.Date,
+		Date:        parsedDate,
 		ShiftID:     req.ShiftID,
 		HostID:      host.ID,
 		StudioID:    req.StudioID,
-		CheckedInAt: helpers.TimeNow(),
+		CheckedInAt: timehandler.TimeNow(),
 		Status:      "present",
 		Note:        note,
 	}
@@ -179,7 +193,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		return nil, fmt.Errorf("Gagal menemukan attendance ID %d", req.ID)
 	}
 
-	attendance.CheckedOutAt = helpers.TimeNow()
+	attendance.CheckedOutAt = timehandler.TimeNow()
 	if err := s.repository.Save(attendance); err != nil {
 		return nil, fmt.Errorf("Gagal menyimpan attendance ID %d", req.ID)
 	}
@@ -219,9 +233,6 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		}
 	}
 
-	log.Println(req.ID)
-	log.Println(attendance.ID)
-
 	result := params.NewAttendanceResponse(attendance)
 	return result, nil
 }
@@ -248,19 +259,3 @@ func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, 
 	}
 	return "tanggal dan shift tidak sesuai"
 }
-
-// func (s *AttendanceServiceImpl) GenerateSummary(successCount, failedCount int, results []params.AttendanceCheckInResult) *params.AttendanceCheckInSummary {
-// 	finalMessage := "Berhasil check-in semua host"
-// 	if successCount == 0 {
-// 		finalMessage = "Gagal check-in semua host"
-// 	} else if failedCount > 0 {
-// 		finalMessage = "Sebagian berhasil check-in"
-// 	}
-
-// 	return &params.AttendanceCheckInSummary{
-// 		Message:      finalMessage,
-// 		SuccessCount: successCount,
-// 		FailedCount:  failedCount,
-// 		Results:      results,
-// 	}
-// }

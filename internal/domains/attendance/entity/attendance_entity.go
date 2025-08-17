@@ -33,3 +33,10 @@ type Attendance struct {
 	StudioID uint
 	Studio   studioentity.Studio `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
+
+func (a *Attendance) Duration() int64 {
+	if a.CheckedInAt != nil && a.CheckedOutAt != nil {
+		return int64(a.CheckedOutAt.Sub(*a.CheckedInAt).Seconds())
+	}
+	return 0
+}

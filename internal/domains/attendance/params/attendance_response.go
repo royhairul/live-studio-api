@@ -16,6 +16,7 @@ type AttendanceResponse struct {
 	Date     *time.Time `json:"date"`
 	CheckIn  *time.Time `json:"check_in"`
 	CheckOut *time.Time `json:"check_out"`
+	Duration int64      `json:"duration"`
 
 	ShiftID   uint   `json:"shift_id"`
 	ShiftName string `json:"shift_name"`
@@ -34,6 +35,7 @@ func NewAttendanceResponse(attendance *entity.Attendance) *AttendanceResponse {
 		Date:       attendance.Date,
 		CheckIn:    attendance.CheckedInAt,
 		CheckOut:   attendance.CheckedOutAt,
+		Duration:   attendance.Duration(),
 		ShiftID:    attendance.Shift.ID,
 		ShiftName:  attendance.Shift.Name,
 		StudioID:   attendance.Studio.ID,
