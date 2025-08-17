@@ -11,5 +11,7 @@ func RegisterRoutes(router *gin.RouterGroup, controller controller.PerformaContr
 	{
 		route.GET("/host", controller.GetHosts)
 		route.GET("/host/:id", controller.GetHostByID)
+		route.GET("/studio", controller.GetStudios)
+		route.GET("/studio/:id", controller.GetStudioByID)
 	}
 }

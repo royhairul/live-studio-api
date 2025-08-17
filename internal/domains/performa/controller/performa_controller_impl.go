@@ -26,13 +26,6 @@ func (p *PerformaControllerImpl) GetHosts(ctx *gin.Context) {
 	startTime := ctx.Query("startTime")
 	endTime := ctx.Query("endTime")
 
-	// Jika salah satu atau keduanya kosong, isi dengan hari ini
-	if startTime == "" || endTime == "" {
-		today := time.Now().Format("2006-01-02")
-		startTime = today
-		endTime = today
-	}
-
 	result, err := p.service.GetHosts(startTime, endTime)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
@@ -65,6 +58,26 @@ func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 
 	resp := response.NewBaseResponse("performa host found", result)
 	ctx.JSON(http.StatusOK, resp)
+}
+
+// GetStudios implements PerformaController.
+func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
+	startTime := ctx.Query("startTime")
+	endTime := ctx.Query("endTime")
+
+	result, err := p.service.GetStudios(startTime, endTime)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved all performa studio successfully", result)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// GetStudioByID implements PerformaController.
+func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
+	panic("unimplemented")
 }
 
 // func (c *PerformaControllerImpl) Create(ctx *gin.Context) {
