@@ -10,7 +10,4 @@ type HostService interface {
 	Delete(id string) error
 
 	FindAllGroupedByStudio() ([]*params.HostGroupedByStudioResponse, error)
-
-	FindAllPerform(startTime string, endTime string) ([]*params.HostPerformaResponse, error)
-	FindByIDPerform(id string, startTime string, endTime string) (*params.HostPerformaResponse, error)
 }

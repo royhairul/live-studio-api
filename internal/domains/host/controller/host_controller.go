@@ -10,6 +10,4 @@ type HostController interface {
 	Delete(ctx *gin.Context)
 
 	FindAllGroupedByStudio(ctx *gin.Context)
-	FindAllPerform(ctx *gin.Context)
-	FindByIDPerform(ctx *gin.Context)
 }

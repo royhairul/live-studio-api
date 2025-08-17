@@ -2,7 +2,6 @@ package controller
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -112,50 +111,5 @@ func (h *HostControllerImpl) FindAllGroupedByStudio(ctx *gin.Context) {
 	}
 
 	resp := response.NewBaseResponse("retrieved all hosts grouped by studio successfully", hosts)
-	ctx.JSON(http.StatusOK, resp)
-}
-
-// FindAllPerform implements HostController.
-func (h *HostControllerImpl) FindAllPerform(ctx *gin.Context) {
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
-
-	// Jika salah satu atau keduanya kosong, isi dengan hari ini
-	if startTime == "" || endTime == "" {
-		today := time.Now().Format("2006-01-02")
-		startTime = today
-		endTime = today
-	}
-
-	performs, err := h.service.FindAllPerform(startTime, endTime)
-	if err != nil {
-		errorhandler.HandleError(ctx, err)
-		return
-	}
-
-	resp := response.NewBaseResponse("retrieved all hosts perform successfully", performs)
-	ctx.JSON(http.StatusOK, resp)
-}
-
-// FindByIDPerform implements HostController.
-func (h *HostControllerImpl) FindByIDPerform(ctx *gin.Context) {
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
-	id := ctx.Param("id")
-
-	// Jika salah satu atau keduanya kosong, isi dengan hari ini
-	if startTime == "" || endTime == "" {
-		today := time.Now().Format("2006-01-02")
-		startTime = today
-		endTime = today
-	}
-
-	perform, err := h.service.FindByIDPerform(id, startTime, endTime)
-	if err != nil {
-		errorhandler.HandleError(ctx, err)
-		return
-	}
-
-	resp := response.NewBaseResponse("retrieved host perform successfully", perform)
 	ctx.JSON(http.StatusOK, resp)
 }
