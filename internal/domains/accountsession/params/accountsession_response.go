@@ -15,6 +15,7 @@ type AccountsessionResponse struct {
 	Date        *time.Time `json:"date"`
 	CheckIn     *time.Time `json:"check_in"`
 	CheckOut    *time.Time `json:"check_out"`
+	Duration    int64      `json:"duration"`
 	GMVSales    uint       `json:"gmv_sales"`
 	GMVPaid     uint       `json:"gmv_paid"`
 }
@@ -26,6 +27,7 @@ func NewAccountsessionResponse(accountsession *entity.Accountsession) *Accountse
 		AccountName: accountsession.Account.Name,
 		HostName:    accountsession.Attendance.Host.Name,
 		Date:        accountsession.Attendance.Date,
+		Duration:    accountsession.Attendance.Duration(),
 		CheckIn:     accountsession.Attendance.CheckedInAt,
 		CheckOut:    accountsession.Attendance.CheckedOutAt,
 		GMVSales:    accountsession.TotalSales(),
