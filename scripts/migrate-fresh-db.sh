@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Config
+DB_NAME="livestudio"
+DB_USER="postgres"
+DB_PASS="postgres"  
+DB_HOST="127.0.0.1"
+DB_PORT="5432"
+MIGRATION_PATH="../database/migrations.go"
+
+export PGPASSWORD=$DB_PASS
+
+echo "🔄 Dropping database $DB_NAME ..."
+psql -U $DB_USER -h $DB_HOST -p $DB_PORT -c "DROP DATABASE IF EXISTS $DB_NAME;"
+
+echo "🆕 Creating database $DB_NAME ..."
+psql -U $DB_USER -h $DB_HOST -p $DB_PORT -c "CREATE DATABASE $DB_NAME;"
+
+echo "⚡Exit $DB_NAME ..."
+exit
+
+echo "⚡ Running migrations ..."
+go run $MIGRATION_PATH
+
+echo "✅ Done!"
+air
