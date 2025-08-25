@@ -16,8 +16,7 @@ psql -U $DB_USER -h $DB_HOST -p $DB_PORT -c "DROP DATABASE IF EXISTS $DB_NAME;"
 echo "🆕 Creating database $DB_NAME ..."
 psql -U $DB_USER -h $DB_HOST -p $DB_PORT -c "CREATE DATABASE $DB_NAME;"
 
-echo "⚡Exit $DB_NAME ..."
-exit
+echo "🎉 Database $DB_NAME created successfully!"
 
 echo "⚡ Running migrations ..."
 go run $MIGRATION_PATH
