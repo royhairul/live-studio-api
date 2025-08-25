@@ -126,7 +126,7 @@ func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime *time.Time, endT
 		Preload("Shift").
 		Preload("Host").
 		Preload("Studio").
-		Where("date >= ? AND date <= ?", startTime, endTime).
+		Where("date::date BETWEEN ? AND ?", startTime, endTime).
 		Find(&attendances).Error
 	if err != nil {
 		return nil, err

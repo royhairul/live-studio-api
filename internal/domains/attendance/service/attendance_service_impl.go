@@ -108,7 +108,7 @@ func (s *AttendanceServiceImpl) FindByDateRange(startTime *time.Time, endTime *t
 }
 
 func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
-	parsedDate, err := time.Parse(time.RFC3339, "2025-08-17T23:37:32.613Z")
+	parsedDate, err := timehandler.ParseDate(req.Date)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		return nil, err
 	}
 
-	existAttendance, err := s.repository.FindUncheckedOutByStudio(fmt.Sprintf("%d", req.StudioID), &parsedDate)
+	existAttendance, err := s.repository.FindUncheckedOutByStudio(fmt.Sprintf("%d", req.StudioID), parsedDate)
 	if err == nil && existAttendance != nil {
 		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
 			return nil, fmt.Errorf("host %s already checkin", host.Name)
@@ -131,10 +131,10 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		}
 	}
 
-	note := s.GenerateNote(nil, parsedDate, req.ShiftID)
+	note := s.GenerateNote(nil, *parsedDate, req.ShiftID)
 
 	attendance := entity.Attendance{
-		Date:        &parsedDate,
+		Date:        parsedDate,
 		ShiftID:     req.ShiftID,
 		HostID:      host.ID,
 		StudioID:    req.StudioID,
