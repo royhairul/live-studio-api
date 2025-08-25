@@ -1,7 +1,5 @@
 package params
 
-import "time"
-
 // Performa Host
 type PerformaHostResponse struct {
 	ID            string `json:"id"`
@@ -23,8 +21,8 @@ type PerformaHostDetailResponse struct {
 }
 
 type PerformaHostItemResponse struct {
-	AccountName string    `json:"account_name"`
-	Duration    time.Time `json:"duration"`
-	Sales       uint      `json:"sales"`
-	Paid        uint      `json:"paid"`
+	AccountName string `json:"account_name"`
+	Duration    int64  `json:"duration"`
+	Sales       uint   `json:"sales"`
+	Paid        uint   `json:"paid"`
 }

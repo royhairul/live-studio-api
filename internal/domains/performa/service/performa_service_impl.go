@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
@@ -43,10 +42,10 @@ func NewPerformaService(
 func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*params.PerformaHostResponse, error) {
 	// Set default value
 	if startDate == "" {
-		startDate = time.Now().Format("2006-01-02")
+		startDate = *timehandler.DateNow()
 	}
 	if endDate == "" {
-		endDate = time.Now().Format("2006-01-02")
+		endDate = *timehandler.DateNow()
 	}
 
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
@@ -111,8 +110,8 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 }
 
 // GetHostByID implements PerformaService.
-func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime string) (*params.PerformaHostDetailResponse, error) {
-	start, end, err := timehandler.ParseDateRange(startTime, endTime)
+func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate string) (*params.PerformaHostDetailResponse, error) {
+	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +134,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime s
 		if att.HostID == host.ID {
 			hostAttendances = append(hostAttendances, *att)
 		}
-		log.Printf("attendance id: %d", att.ID)
-		log.Printf("attendance name: %s", att.Name)
 	}
-
-	log.Printf("length of attendances: %d", len(hostAttendances))
 
 	var totalDuration int64
 	var totalSales uint
@@ -147,13 +142,10 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime s
 	var detailList []params.PerformaHostItemResponse
 
 	for _, att := range hostAttendances {
-		log.Printf("host att %d", att.ID)
 		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
 		}
-
-		log.Printf("count session: %d", len(accountSessions))
 
 		for _, session := range accountSessions {
 			if session.CheckIn == nil || session.CheckOut == nil {
@@ -162,7 +154,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime s
 
 			detailList = append(detailList, params.PerformaHostItemResponse{
 				AccountName: session.AccountName,
-				Duration:    time.Time{},
+				Duration:    session.Duration,
 				Sales:       session.GMVSales,
 				Paid:        session.GMVPaid,
 			})
@@ -201,17 +193,27 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startTime string, endTime s
 	return result, nil
 }
 
+// GetAccountByID implements PerformaService.
+func (p *PerformaServiceImpl) GetAccountByID() {
+	panic("unimplemented")
+}
+
+// GetAccounts implements PerformaService.
+func (p *PerformaServiceImpl) GetAccounts() {
+	panic("unimplemented")
+}
+
 // GetStudios implements PerformaService.
-func (p *PerformaServiceImpl) GetStudios(startTime string, endTime string) ([]*params.PerformaStudioResponse, error) {
+func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) ([]*params.PerformaStudioResponse, error) {
 	// Set default value
-	if startTime == "" {
-		startTime = time.Now().Format("2006-01-02")
+	if startDate == "" {
+		startDate = *timehandler.DateNow()
 	}
-	if endTime == "" {
-		endTime = time.Now().Format("2006-01-02")
+	if endDate == "" {
+		endDate = *timehandler.DateNow()
 	}
 
-	start, end, err := timehandler.ParseDateRange(startTime, endTime)
+	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
@@ -269,6 +271,90 @@ func (p *PerformaServiceImpl) GetStudios(startTime string, endTime string) ([]*p
 }
 
 // GetStudioByID implements PerformaService.
-func (p *PerformaServiceImpl) GetStudioByID(id string, startTime string, endTime string) (*params.PerformaStudioResponse, error) {
-	panic("unimplemented")
+func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate string) (*params.PerformaStudioDetailResponse, error) {
+	// Set default value
+	if startDate == "" {
+		startDate = *timehandler.DateNow()
+	}
+	if endDate == "" {
+		endDate = *timehandler.DateNow()
+	}
+
+	start, end, err := timehandler.ParseDateRange(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get Attendances by date range
+	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attendances: %v", err)
+	}
+
+	studio, err := p.studioSvc.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get attendances by Studio ID
+	var studioAtt []attendanceparams.AttendanceResponse
+	for _, att := range attendances {
+		if att.StudioID == studio.ID {
+			studioAtt = append(studioAtt, *att)
+		}
+	}
+
+	var totalDuration int64
+	var totalSales uint
+	var totalPaid uint
+	var detailList []params.PerformaStudioItemResponse
+
+	for _, att := range studioAtt {
+		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
+		}
+
+		for _, session := range accountSessions {
+			if session.CheckIn == nil || session.CheckOut == nil {
+				continue
+			}
+
+			detailList = append(detailList, params.PerformaStudioItemResponse{
+				AccountName: session.AccountName,
+				Duration:    session.Duration,
+				Sales:       session.GMVSales,
+				Paid:        session.GMVPaid,
+			})
+
+			// Hitung durasi
+			duration := session.CheckOut.Sub(*session.CheckIn)
+			durationMillis := duration.Milliseconds()
+
+			totalDuration += durationMillis
+			totalSales += session.GMVSales
+			totalPaid += session.GMVPaid
+
+		}
+	}
+
+	var avgSales uint
+	var avgPaid uint
+	count := len(detailList)
+	if count > 0 {
+		avgSales = totalSales / uint(count)
+		avgPaid = totalPaid / uint(count)
+	}
+
+	result := &params.PerformaStudioDetailResponse{
+		StudioName: studio.Name,
+		Duration:   totalDuration,
+		Sales:      totalSales,
+		Paid:       totalPaid,
+		AvgSales:   avgSales,
+		AvgPaid:    avgPaid,
+		List:       detailList,
+	}
+
+	return result, nil
 }

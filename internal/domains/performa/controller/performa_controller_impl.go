@@ -77,7 +77,19 @@ func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
 
 // GetStudioByID implements PerformaController.
 func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
-	panic("unimplemented")
+	id := ctx.Param("id")
+
+	startTime := ctx.Query("startTime")
+	endTime := ctx.Query("endTime")
+
+	result, err := p.service.GetStudioByID(id, startTime, endTime)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("performa host found", result)
+	ctx.JSON(http.StatusOK, resp)
 }
 
 // func (c *PerformaControllerImpl) Create(ctx *gin.Context) {

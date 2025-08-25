@@ -1,7 +1,5 @@
 package params
 
-import "time"
-
 // Performa Studio
 type PerformaStudioResponse struct {
 	ID            string `json:"id"`
@@ -13,7 +11,7 @@ type PerformaStudioResponse struct {
 
 type PerformaStudioDetailResponse struct {
 	StudioName string                       `json:"studio_name"`
-	Duration   time.Time                    `json:"duration"`
+	Duration   int64                        `json:"duration"`
 	Sales      uint                         `json:"sales"`
 	Paid       uint                         `json:"paid"`
 	AvgSales   uint                         `json:"avg_sales"`
@@ -22,8 +20,8 @@ type PerformaStudioDetailResponse struct {
 }
 
 type PerformaStudioItemResponse struct {
-	AccountName string    `json:"account_name"`
-	Duration    time.Time `json:"duration"`
-	Sales       uint      `json:"sales"`
-	Paid        uint      `json:"paid"`
+	AccountName string `json:"account_name"`
+	Duration    int64  `json:"duration"`
+	Sales       uint   `json:"sales"`
+	Paid        uint   `json:"paid"`
 }
