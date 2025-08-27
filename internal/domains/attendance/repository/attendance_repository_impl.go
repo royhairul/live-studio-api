@@ -148,3 +148,15 @@ func (r *AttendanceRepositoryImpl) FindAllByHostID(id string) ([]*entity.Attenda
 	}
 	return attendances, nil
 }
+
+// FindByAccountID implements AttendanceRepository.
+func (r *AttendanceRepositoryImpl) FindByAccountID(id uint) (*entity.Attendance, error) {
+	var attendance entity.Attendance
+	err := r.DB.Where("account_id = ?", id).
+		Where("checked_out_at IS NULL").
+		First(&attendance).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attendance, nil
+}

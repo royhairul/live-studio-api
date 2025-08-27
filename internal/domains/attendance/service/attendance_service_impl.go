@@ -108,7 +108,7 @@ func (s *AttendanceServiceImpl) FindByDateRange(startTime *time.Time, endTime *t
 }
 
 func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
-	parsedDate, err := timehandler.ParseDate(req.Date)
+	parsedDate, err := timehandler.ParseDate(*timehandler.DateNow())
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,6 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
 			return nil, fmt.Errorf("host %s already checkin", host.Name)
 		} else {
-			log.Print("studio founded, and there's a host")
 			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: existAttendance.ID})
 			if err != nil {
 				return nil, fmt.Errorf("failed to auto-checkout previous host: %w", err)
@@ -139,7 +138,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		HostID:      host.ID,
 		StudioID:    req.StudioID,
 		CheckedInAt: timehandler.TimeNow(),
-		Status:      "present",
+		Status:      "active",
 		Note:        note,
 	}
 
@@ -165,10 +164,10 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		accountSessionReq := accountsessionparams.CreateAccountsessionRequest{
 			AccountID:    account.ID,
 			AttendanceID: created.ID,
+			StudioID:     created.StudioID,
 		}
 
 		if len(live) == 0 {
-			log.Printf("No live data for account %s", account.Name)
 			accountSessionReq.GMVSalesStart = 0
 			accountSessionReq.GMVPaidStart = 0
 
@@ -194,6 +193,8 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 	}
 
 	attendance.CheckedOutAt = timehandler.TimeNow()
+	attendance.Status = "inactive"
+
 	if err := s.repository.Save(attendance); err != nil {
 		return nil, fmt.Errorf("Gagal menyimpan attendance ID %d", req.ID)
 	}
@@ -218,7 +219,6 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		}
 
 		var updateReq accountsessionparams.UpdateEndSessionRequest
-
 		if len(live) > 0 {
 			updateReq.GMVSalesEnd = uint(live[0].ConfirmedSales)
 			updateReq.GMVPaidEnd = uint(live[0].PlacedSales)
@@ -231,6 +231,22 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		if err != nil {
 			return nil, fmt.Errorf("failed to update account session for attendance ID %d: %w", req.ID, err)
 		}
+	}
+
+	result := params.NewAttendanceResponse(attendance)
+	return result, nil
+}
+
+// FindByAccountID implements AttendanceService.
+func (s *AttendanceServiceImpl) FindByAccountID(id string) (*params.AttendanceResponse, error) {
+	parsedID, err := strconv.ParseInt(id, 10, 64) // basis 10
+	if err != nil {
+		return nil, fmt.Errorf("invalid account id: %w", err)
+	}
+
+	attendance, err := s.repository.FindByAccountID(uint(parsedID))
+	if err != nil {
+		return nil, err
 	}
 
 	result := params.NewAttendanceResponse(attendance)
