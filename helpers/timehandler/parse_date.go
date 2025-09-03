@@ -15,3 +15,12 @@ func ParseDate(str string) (*time.Time, error) {
 
 	return &parsedDate, nil
 }
+
+func ParseInt64Date(timestamp int64) *time.Time {
+	if timestamp <= 0 {
+		return nil
+	}
+
+	t := time.Unix(timestamp, 0).UTC()
+	return &t
+}

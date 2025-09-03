@@ -20,4 +20,5 @@ type AttendanceRepository interface {
 	FindByHostShiftAndDate(hostID string, shiftID uint, date time.Time) (*entity.Attendance, error)
 	FindAllByDateRange(startTime *time.Time, endTime *time.Time) ([]*entity.Attendance, error)
 	FindAllByHostID(id string) ([]*entity.Attendance, error)
+	FindByAccountID(id uint) (*entity.Attendance, error)
 }
