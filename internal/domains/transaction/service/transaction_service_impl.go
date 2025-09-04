@@ -1,12 +1,16 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/params"
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/repository"
+	"gorm.io/gorm"
 
 	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
@@ -30,7 +34,7 @@ func NewTransactionService(repository repository.TransactionRepository, shopeeSv
 
 // Create implements TransactionService.
 func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]*params.CreatedTransactionResponse, error) {
-	t, err := time.Parse("2006-01-02", req.Date)
+	t, err := timehandler.ParseDate(req.Date)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +66,13 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 			for _, tx := range transactions.List {
 				exists, err := s.repository.FindByUniqueID(tx.CheckoutID)
 				if err != nil {
-					fmt.Printf("error checking transaction %s: %v\n", tx.CheckoutID, err)
-					continue
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						log.Println("not found true")
+						exists = nil
+					} else {
+						fmt.Printf("error checking transaction %s: %v\n", tx.CheckoutID, err)
+						continue
+					}
 				}
 
 				if exists != nil && exists.UniqueID == tx.CheckoutID {
@@ -76,8 +85,8 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 					Status:                          tx.CheckoutStatus,
 					EstimatedTotalCommission:        tx.EstimatedTotalCommission,
 					EstimatedTotalCommissionWithMCN: tx.EstimatedTotalCommissionWithMCN,
-					PurchaseTime:                    tx.PurchaseTime,
-					CompleteTime:                    tx.CheckoutCompleteTime,
+					PurchaseTime:                    timehandler.ParseInt64Date(tx.PurchaseTime),
+					CompleteTime:                    timehandler.ParseInt64Date(tx.CheckoutCompleteTime),
 					AccountID:                       account.ID,
 				}
 
@@ -153,6 +162,220 @@ func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error
 	}
 
 	var results []*params.TransactionResponse
+	for _, res := range grouped {
+		results = append(results, res)
+	}
+
+	return results, nil
+}
+
+// FindAllByStatus implements TransactionService.
+func (s *TransactionServiceImpl) FindAllByStatus(status string) ([]*params.TransactionResponse, error) {
+	transactions, err := s.repository.FindAllByStatus(status)
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make(map[uint]*params.TransactionResponse)
+
+	for _, tx := range transactions {
+		if _, exists := grouped[tx.AccountID]; !exists {
+			grouped[tx.AccountID] = &params.TransactionResponse{
+				AccountID:   tx.Account.ID,
+				AccountName: tx.Account.Name,
+				Total:       0,
+				List:        []params.TransactionDetailResponse{},
+			}
+		}
+
+		grouped[tx.AccountID].Total++
+		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
+	}
+
+	var results []*params.TransactionResponse
+	for _, res := range grouped {
+		results = append(results, res)
+	}
+
+	return results, nil
+}
+
+// FindAllByAccount implements TransactionService.
+func (s *TransactionServiceImpl) FindByAccount(accountID string) (*params.TransactionResponse, error) {
+	account, err := s.accountSvc.FindById(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions, err := s.repository.FindAllByAccount(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	list := []params.TransactionDetailResponse{}
+
+	result := &params.TransactionResponse{
+		AccountID:   account.ID,
+		AccountName: account.Name,
+		Total:       len(transactions),
+		List:        list,
+	}
+
+	return result, nil
+}
+
+// FindAllByAccountAndStatus implements TransactionService.
+func (s *TransactionServiceImpl) FindAllByAccountAndStatus(accountID string, status string) (*params.TransactionResponse, error) {
+	account, err := s.accountSvc.FindById(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions, err := s.repository.FindAllByAccount(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	txPaid, err := s.repository.FindAllByAccountStatus(accountID, "Waiting for payment")
+	if err != nil {
+		return nil, err
+	}
+
+	txPending, err := s.repository.FindAllByAccountStatus(accountID, "Pending")
+	if err != nil {
+		return nil, err
+	}
+
+	list := []params.TransactionDetailResponse{}
+
+	totalAll := 0
+	for _, tx := range transactions {
+		list = append(list, *params.NewTransactionDetailResponse(tx))
+		totalAll += int(tx.EstimatedTotalCommission)
+	}
+
+	totalPaid := 0
+	for _, tx := range txPaid {
+		totalPaid += int(tx.EstimatedTotalCommission)
+	}
+
+	totalPending := 0
+	for _, tx := range txPending {
+		totalPending += int(tx.EstimatedTotalCommission)
+	}
+
+	commission := params.Commission{
+		Total:   uint(totalAll),
+		Pending: uint(totalPending),
+		Paid:    uint(totalPaid),
+	}
+
+	result := &params.TransactionResponse{
+		AccountID:   account.ID,
+		AccountName: account.Name,
+		Total:       len(transactions),
+		Commission:  commission,
+		List:        list,
+	}
+
+	return result, nil
+}
+
+// FindAllByAccountStatusDate implements TransactionService.
+func (s *TransactionServiceImpl) FindAllByAccountStatusDate(accountID string, status string, startDate *time.Time, endDate *time.Time) (*params.TransactionResponse, error) {
+	account, err := s.accountSvc.FindById(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions, err := s.repository.FindAllByAccount(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	txPaid, err := s.repository.FindAllByAccountStatusDate(accountID, "Waiting for payment", startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	txPending, err := s.repository.FindAllByAccountStatusDate(accountID, "Pending", startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	list := []params.TransactionDetailResponse{}
+
+	totalAll := 0
+	for _, tx := range transactions {
+		list = append(list, *params.NewTransactionDetailResponse(tx))
+		totalAll += int(tx.EstimatedTotalCommission)
+	}
+
+	totalPaid := 0
+	for _, tx := range txPaid {
+		totalPaid += int(tx.EstimatedTotalCommission)
+	}
+
+	totalPending := 0
+	for _, tx := range txPending {
+		totalPending += int(tx.EstimatedTotalCommission)
+	}
+
+	commission := params.Commission{
+		Total:   uint(totalAll),
+		Pending: uint(totalPending),
+		Paid:    uint(totalPaid),
+	}
+
+	result := &params.TransactionResponse{
+		AccountID:   account.ID,
+		AccountName: account.Name,
+		Total:       len(transactions),
+		Commission:  commission,
+		List:        list,
+	}
+
+	return result, nil
+}
+
+// FindAllByDate implements TransactionService.
+func (s *TransactionServiceImpl) FindAllByDate(accountID string, startDate *time.Time, endDate *time.Time) ([]*params.TransactionResponse, error) {
+	transactions, err := s.repository.FindAllByDate(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	grouped := make(map[uint]*params.TransactionResponse)
+
+	for _, tx := range transactions {
+		if _, exists := grouped[tx.AccountID]; !exists {
+			grouped[tx.AccountID] = &params.TransactionResponse{
+				AccountID:   tx.Account.ID,
+				AccountName: tx.Account.Name,
+				Commission: params.Commission{
+					Total:   0,
+					Pending: 0,
+					Paid:    0,
+				},
+				Total: 0,
+				List:  []params.TransactionDetailResponse{},
+			}
+		}
+
+		grouped[tx.AccountID].Total++
+		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
+
+		// Commission
+		if tx.Status == "Waiting for payment" {
+			grouped[tx.AccountID].Commission.Paid += uint(tx.EstimatedTotalCommissionWithMCN)
+		}
+		if tx.Status == "Pending" {
+			grouped[tx.AccountID].Commission.Pending += uint(tx.EstimatedTotalCommissionWithMCN)
+		}
+		grouped[tx.AccountID].Commission.Total += uint(tx.EstimatedTotalCommissionWithMCN)
+	}
+
+	results := []*params.TransactionResponse{}
 	for _, res := range grouped {
 		results = append(results, res)
 	}

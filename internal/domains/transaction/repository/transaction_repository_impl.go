@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 
@@ -45,16 +46,76 @@ func (r *TransactionRepositoryImpl) FindByID(id string) (*entity.Transaction, er
 	return &item, nil
 }
 
+// FindByStatus implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindAllByStatus(status string) ([]*entity.Transaction, error) {
+	var items []*entity.Transaction
+	if err := r.DB.Preload("Account").Find(&items, "status = ?", status).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// FindAllByAccount implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindAllByAccount(accountID string) ([]*entity.Transaction, error) {
+	var items []*entity.Transaction
+	if err := r.DB.Preload("Account").Find(&items, "account_id = ?", accountID).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// FindAllByAccountStatus implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindAllByAccountStatus(accountID string, status string) ([]*entity.Transaction, error) {
+	var items []*entity.Transaction
+	if err := r.DB.Preload("Account").Find(&items, "account_id = ? AND status = ? ", accountID, status).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// FindAllByAccountStatusDate implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindAllByAccountStatusDate(accountID string, status string, startDate *time.Time, endDate *time.Time) ([]*entity.Transaction, error) {
+	// if date == nil {
+	// 	now := timehandler.TimeNow()
+	// 	startDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	// }
+
+	// startDate = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
+	// endDate := startDate.Add(24 * time.Hour)
+
+	var items []*entity.Transaction
+	err := r.DB.Preload("Account").
+		Where("account_id = ?", accountID).
+		Where("status = ?", status).
+		Where("date::date BETWEEN ? AND ?", startDate, endDate).
+		Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+// FindAllByDate implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindAllByDate(startDate *time.Time, endDate *time.Time) ([]*entity.Transaction, error) {
+	var items []*entity.Transaction
+	err := r.DB.Preload("Account").
+		Where("purchase_time::date BETWEEN ? AND ?", startDate, endDate).
+		Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
 // FindByUniqueID implements TransactionRepository.
 func (r *TransactionRepositoryImpl) FindByUniqueID(uid string) (*entity.Transaction, error) {
 	var item entity.Transaction
-	err := r.DB.Where("unique_id = ?", uid).First(&item).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-
-	if err != nil {
+	if err := r.DB.Where("unique_id = ?", uid).Take(&item).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
