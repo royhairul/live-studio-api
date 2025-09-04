@@ -62,10 +62,10 @@ func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 
 // GetStudios implements PerformaController.
 func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetStudios(startTime, endTime)
+	result, err := p.service.GetStudios(startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -79,10 +79,10 @@ func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
 func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetStudioByID(id, startTime, endTime)
+	result, err := p.service.GetStudioByID(id, startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
