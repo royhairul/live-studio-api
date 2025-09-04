@@ -1,27 +1,56 @@
 package params
 
-// Performa Studio
-type PerformaStudioResponse struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	TotalDuration int64  `json:"total_duration"`
-	TotalSales    uint   `json:"total_sales"`
-	TotalPaid     uint   `json:"total_paid"`
+type PeriodInfo struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+	Days  int    `json:"days"`
 }
 
-type PerformaStudioDetailResponse struct {
-	StudioName string                       `json:"studio_name"`
-	Duration   int64                        `json:"duration"`
-	Sales      uint                         `json:"sales"`
-	Paid       uint                         `json:"paid"`
-	AvgSales   uint                         `json:"avg_sales"`
-	AvgPaid    uint                         `json:"avg_paid"`
-	List       []PerformaStudioItemResponse `json:"list"`
+type Metric struct {
+	Total int64 `json:"total"`
+	Diff  int64 `json:"diff"`
+	Ratio int64 `json:"ratio"`
+}
+
+type Metrics struct {
+	CommissionPaid    Metric `json:"commission_paid"`
+	CommissionPending Metric `json:"commission_pending"`
+	Income            Metric `json:"income"`
+	GMV               Metric `json:"gmv"`
+	Ads               Metric `json:"ads"`
+}
+
+type PerformaStudioResponse struct {
+	CurrentPeriod  PeriodInfo                   `json:"current_period"`
+	PreviousPeriod PeriodInfo                   `json:"previous_period"`
+	Metrics        Metrics                      `json:"metrics"`
+	List           []PerformaStudioItemResponse `json:"list"`
 }
 
 type PerformaStudioItemResponse struct {
-	AccountName string `json:"account_name"`
-	Duration    int64  `json:"duration"`
-	Sales       uint   `json:"sales"`
-	Paid        uint   `json:"paid"`
+	StudioID   string `json:"studio_id"`
+	StudioName string `json:"studio_name"`
+	Income     int64  `json:"income"`
+	Commission int64  `json:"commission"`
+	GMV        int64  `json:"gmv"`
+	Ads        int64  `json:"ads"`
+}
+
+type PerformaStudioDetailResponse struct {
+	StudioID   uint                               `json:"studio_id"`
+	StudioName string                             `json:"studio_name"`
+	Metrics    Metrics                            `json:"metrics"`
+	List       []PerformaStudioDetailItemResponse `json:"list"`
+}
+
+type PerformaStudioDetailItemResponse struct {
+	AccountID         uint    `json:"account_id"`
+	AccountName       string  `json:"account_name"`
+	GMV               int64   `json:"gmv"`
+	CommissionPaid    int64   `json:"commission_paid"`
+	CommissionPending int64   `json:"commission_pending"`
+	Ads               int64   `json:"ads"`
+	Acos              float64 `json:"acos"`
+	Roas              float64 `json:"roas"`
+	Income            int64   `json:"income"`
 }
