@@ -43,6 +43,15 @@ func (r *AccountsessionRepositoryImpl) FindByID(id string) (*entity.Accountsessi
 	return &item, nil
 }
 
+// FindAllByStudioID implements AccountsessionRepository.
+func (r *AccountsessionRepositoryImpl) FindAllByStudioID(id string) ([]*entity.Accountsession, error) {
+	var items []*entity.Accountsession
+	if err := r.DB.Where("studio_id = ?", id).Find(&items).Error; err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 // Update implements AccountsessionRepository.
 func (r *AccountsessionRepositoryImpl) Update(data *entity.Accountsession) (*entity.Accountsession, error) {
 	if err := r.DB.Model(&entity.Accountsession{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {

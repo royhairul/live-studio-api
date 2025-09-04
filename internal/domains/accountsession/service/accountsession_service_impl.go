@@ -80,6 +80,22 @@ func (s *AccountsessionServiceImpl) Delete(id string) error {
 	panic("unimplemented")
 }
 
+// FindAllByStudio implements AccountsessionService.
+func (s *AccountsessionServiceImpl) FindAllByStudioID(id string) ([]*params.AccountsessionResponse, error) {
+	accountSession, err := s.repository.FindAllByStudioID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*params.AccountsessionResponse
+	for _, session := range accountSession {
+		accountSessionResp := params.NewAccountsessionResponse(session)
+		result = append(result, accountSessionResp)
+	}
+
+	return result, nil
+}
+
 // FindByAttendanceID implements AccountsessionService.
 func (s *AccountsessionServiceImpl) FindAllByAttendanceID(id string) ([]*params.AccountsessionResponse, error) {
 	accountsession, err := s.repository.FindAllByAttendanceID(id)

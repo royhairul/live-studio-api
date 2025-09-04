@@ -14,4 +14,5 @@ type AccountsessionRepository interface {
 
 	FindAllByAttendanceID(id string) ([]*entity.Accountsession, error)
 	FindAllByAccountID(id string) ([]*entity.Accountsession, error)
+	FindAllByStudioID(id string) ([]*entity.Accountsession, error)
 }

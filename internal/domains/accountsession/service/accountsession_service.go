@@ -11,5 +11,6 @@ type AccountsessionService interface {
 
 	FindAllByAttendanceID(id string) ([]*params.AccountsessionResponse, error)
 	FindAllByAccountID(id string) ([]*params.AccountsessionResponse, error)
+	FindAllByStudioID(id string) ([]*params.AccountsessionResponse, error)
 	UpdateEndSession(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error)
 }
