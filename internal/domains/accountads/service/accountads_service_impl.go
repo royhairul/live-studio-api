@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
@@ -44,7 +47,38 @@ func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsReq
 
 // FindAll implements AccountadsService.
 func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) {
-	panic("unimplemented")
+	items, err := s.repository.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*params.AccountadsResponse
+	for _, item := range items {
+		result = append(result, params.NewAccountadsResponse(item))
+	}
+	return result, nil
+}
+
+// FindByDateAndAccounts implements AccountadsService.
+func (s *AccountadsServiceImpl) FindByDateAndAccounts(startDate, endDate *time.Time, accountID string) ([]*params.AccountadsResponse, error) {
+	// item, err := s.repository.FindByDateAndAccount(date, accountID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	var results []*params.AccountadsResponse
+	for d := *startDate; !d.After(*endDate); d = d.AddDate(0, 0, 1) {
+		item, err := s.repository.FindByDateAndAccount(&d, accountID)
+		if err != nil {
+			// kalau error query, bisa langsung return atau skip
+			return nil, fmt.Errorf("failed on date %s: %w", d.Format("2006-01-02"), err)
+		}
+		if item != nil {
+			results = append(results, params.NewAccountadsResponse(item))
+		}
+	}
+
+	return results, nil
 }
 
 // FindByID implements AccountadsService.

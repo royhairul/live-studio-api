@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -65,12 +66,18 @@ func (r *AccountadsRepositoryImpl) Delete(id string) error {
 }
 
 // FindByDateAndAccount implements AccountadsRepository.
-func (r *AccountadsRepositoryImpl) FindByDateAndAccount(date time.Time, AccountID uint) (*entity.Accountads, error) {
-	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	endOfDay := startOfDay.Add(24 * time.Hour)
-
+func (r *AccountadsRepositoryImpl) FindByDateAndAccount(date *time.Time, AccountID string) (*entity.Accountads, error) {
 	var item entity.Accountads
-	if err := r.DB.First(&item, "date >= ? AND date < ? AND account_id = ?", startOfDay, endOfDay, AccountID).Error; err != nil {
+	err := r.DB.
+		Where("date::date = ?", date.Format("2006-01-02")).
+		Where("account_id = ?", AccountID).
+		First(&item).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
 		return nil, err
 	}
 

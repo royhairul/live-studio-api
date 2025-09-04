@@ -14,5 +14,5 @@ type AccountadsRepository interface {
 	Update(data *entity.Accountads) (*entity.Accountads, error)
 	Delete(id string) error
 
-	FindByDateAndAccount(date time.Time, AccountID uint) (*entity.Accountads, error)
+	FindByDateAndAccount(date *time.Time, AccountID string) (*entity.Accountads, error)
 }
