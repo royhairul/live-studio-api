@@ -9,6 +9,6 @@ type PerformaService interface {
 	GetAccounts()
 	GetAccountByID()
 
-	GetStudios(startDate string, endDate string) ([]*params.PerformaStudioResponse, error)
+	GetStudios(startDate string, endDate string) (*params.PerformaStudioResponse, error)
 	GetStudioByID(id string, startDate string, endDate string) (*params.PerformaStudioDetailResponse, error)
 }
