@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,22 @@ func (c *TransactionControllerImpl) Update(ctx *gin.Context) {
 }
 
 func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
-	result, err := c.service.FindAll()
+	status := ctx.Query("status")
+
+	var (
+		result []*params.TransactionResponse
+		err    error
+	)
+	log.Printf("status: %s", status)
+
+	if status != "" {
+		log.Println("status")
+		result, err = c.service.FindAllByStatus(status)
+	} else {
+		log.Println("all")
+		result, err = c.service.FindAll()
+	}
+
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
