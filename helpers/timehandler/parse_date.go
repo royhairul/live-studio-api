@@ -24,3 +24,9 @@ func ParseInt64Date(timestamp int64) *time.Time {
 	t := time.Unix(timestamp, 0).UTC()
 	return &t
 }
+
+func FormatDate(date *time.Time) string {
+	layout := "2006-01-02"
+
+	return date.Format(layout)
+}
