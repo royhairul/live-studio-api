@@ -5,9 +5,9 @@ type AccountadsRequest struct {
 }
 
 type CreateAccountadsRequest struct {
-	AccountID uint   `json:"account_id"`
-	Date      string `json:"date"`
-	Ads       uint   `json:"ads"`
+	AccountID uint   `json:"account_id" validate:"required"`
+	Date      string `json:"date" validate:"required"`
+	Ads       uint   `json:"ads" vaildate:"required"`
 }
 
 type UpdateAccountadsRequest struct {
