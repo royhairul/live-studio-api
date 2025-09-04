@@ -11,9 +11,9 @@ type Accountads struct {
 	gorm.Model
 
 	Spend uint       `gorm:"not null"`
-	Date  *time.Time `gorm:"index;not null"`
+	Date  *time.Time `gorm:"uniqueIndex:uidx_account_date,not null"`
 
 	// Relasi ke akun
-	AccountID uint
+	AccountID uint                  `gorm:"uniqueIndex:uidx_account_date"`
 	Account   accountentity.Account `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
