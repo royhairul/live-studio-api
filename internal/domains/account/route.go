@@ -9,7 +9,7 @@ func RegisterRouter(router *gin.RouterGroup, controller controller.AccountContro
 	routes := router.Group("/account")
 	{
 		routes.GET("", controller.FindAll)
-		routes.POST("/", controller.CreateOrUpdate)
+		routes.POST("", controller.CreateOrUpdate)
 		routes.GET("/:id", controller.FindById)
 		routes.DELETE("/:id", controller.Delete)
 	}
