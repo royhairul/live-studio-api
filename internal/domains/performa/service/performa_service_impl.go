@@ -463,10 +463,8 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 
 // Helper untuk build detail list & agregasi
 func (p *PerformaServiceImpl) buildPerformaDetailList(attendances []attendanceparams.AttendanceResponse, start, end *time.Time) ([]params.PerformaStudioDetailItemResponse, int64, int64, int64, int64, int64, error) {
-	var (
-		totalGMV, totalAds, totalCommissionPaid, totalCommissionPending, totalIncome int64
-		list                                                                         []params.PerformaStudioDetailItemResponse
-	)
+	var totalGMV, totalAds, totalCommissionPaid, totalCommissionPending, totalIncome int64
+	list := []params.PerformaStudioDetailItemResponse{}
 
 	for _, att := range attendances {
 		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
