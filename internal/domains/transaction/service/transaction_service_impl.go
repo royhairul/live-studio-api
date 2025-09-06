@@ -298,6 +298,11 @@ func (s *TransactionServiceImpl) FindAllByAccountStatusDate(accountID string, st
 		return nil, err
 	}
 
+	txPaidCompleted, err := s.repository.FindAllByAccountStatusDate(accountID, "Complete", startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
 	txPending, err := s.repository.FindAllByAccountStatusDate(accountID, "Pending", startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -313,6 +318,9 @@ func (s *TransactionServiceImpl) FindAllByAccountStatusDate(accountID string, st
 
 	totalPaid := 0
 	for _, tx := range txPaid {
+		totalPaid += int(tx.EstimatedTotalCommission)
+	}
+	for _, tx := range txPaidCompleted {
 		totalPaid += int(tx.EstimatedTotalCommission)
 	}
 
