@@ -2,6 +2,8 @@ package seeders
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/royhairul/live-studio-api/database"
 	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
@@ -12,6 +14,9 @@ import (
 func AccountSessionSeeder() {
 	var accounts []accountentity.Account
 	var attendances []attendanceentity.Attendance
+
+	// Seed random biar hasilnya beda tiap jalan
+	rand.Seed(time.Now().UnixNano())
 
 	// Ambil data accounts
 	if err := database.DB.Find(&accounts).Error; err != nil {
@@ -34,13 +39,20 @@ func AccountSessionSeeder() {
 
 	for _, att := range attendances {
 		for idx, acc := range accounts {
+			startSales := uint(400000 + idx*1000)
+			startPaid := uint(580000 + idx*1100)
+
+			// selisih random antara 200.000 – 800.000
+			diffSales := uint(rand.Intn(600001) + 200000)
+			diffPaid := uint(rand.Intn(600001) + 200000)
+
 			sessions = append(sessions, accountsessionentity.Accountsession{
 				AccountID:     acc.ID,
 				AttendanceID:  att.ID,
-				GMVSalesStart: uint(400000 + idx*1000),
-				GMVSalesEnd:   uint(400000 + idx*2500),
-				GMVPaidStart:  uint(580000 + idx*1100),
-				GMVPaidEnd:    uint(580000 + idx*2080),
+				GMVSalesStart: startSales,
+				GMVSalesEnd:   startSales + diffSales,
+				GMVPaidStart:  startPaid,
+				GMVPaidEnd:    startPaid + diffPaid,
 				StudioID:      att.StudioID,
 			})
 		}
