@@ -106,9 +106,9 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 
 				// Calculate duration
 				duration := session.CheckOut.Sub(*session.CheckIn)
-				durationMillis := duration.Milliseconds()
+				durationSeconds := duration.Seconds()
 
-				totalDuration += durationMillis
+				totalDuration += int64(durationSeconds)
 				totalSales += session.GMVSales
 				totalPaid += session.GMVPaid
 			}
@@ -179,9 +179,9 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 
 			// Hitung durasi
 			duration := session.CheckOut.Sub(*session.CheckIn)
-			durationMillis := duration.Milliseconds()
+			durationSeconds := duration.Seconds()
 
-			totalDuration += durationMillis
+			totalDuration += int64(durationSeconds)
 			totalSales += session.GMVSales
 			totalPaid += session.GMVPaid
 
