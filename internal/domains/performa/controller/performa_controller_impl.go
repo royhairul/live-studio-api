@@ -60,6 +60,21 @@ func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+// GetAccounts implements PerformaController.
+func (p *PerformaControllerImpl) GetAccounts(ctx *gin.Context) {
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
+
+	result, err := p.service.GetAccounts(startDate, endDate)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved all performa studio successfully", result)
+	ctx.JSON(http.StatusOK, resp)
+}
+
 // GetStudios implements PerformaController.
 func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
 	startDate := ctx.Query("startDate")

@@ -209,13 +209,48 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 	return result, nil
 }
 
-// GetAccountByID implements PerformaService.
-func (p *PerformaServiceImpl) GetAccountByID() {
-	panic("unimplemented")
+// GetAccounts implements PerformaService.
+func (p *PerformaServiceImpl) GetAccounts(startDate string, endDate string) ([]*params.PerformaStudioDetailItemResponse, error) {
+	// Set default value
+	if startDate == "" {
+		startDate = *timehandler.DateNow()
+	}
+	if endDate == "" {
+		endDate = *timehandler.DateNow()
+	}
+
+	start, end, err := timehandler.ParseDateRange(startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get Attendances (current + previous)
+	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get attendances: %v", err)
+	}
+
+	var currAttendances []attendanceparams.AttendanceResponse
+	for _, att := range attendances {
+		currAttendances = append(currAttendances, *att)
+	}
+
+	// ===== Current Period =====
+	currList, _, _, _, _, _, err := p.buildPerformaDetailList(currAttendances, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	var list []*params.PerformaStudioDetailItemResponse
+	for _, item := range currList {
+		list = append(list, &item)
+	}
+
+	return list, nil
 }
 
-// GetAccounts implements PerformaService.
-func (p *PerformaServiceImpl) GetAccounts() {
+// GetAccountByID implements PerformaService.
+func (p *PerformaServiceImpl) GetAccountByID() {
 	panic("unimplemented")
 }
 
