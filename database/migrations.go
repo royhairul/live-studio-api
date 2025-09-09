@@ -16,6 +16,7 @@ import (
 	roleentity "github.com/royhairul/live-studio-api/internal/domains/role/entity"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	targetentity "github.com/royhairul/live-studio-api/internal/domains/target/entity"
 	transactionentity "github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
 
 	"github.com/royhairul/live-studio-api/models"
@@ -48,6 +49,7 @@ var modelsList = []interface{}{
 	&accountsessionentity.Accountsession{},
 	&accountadsentity.Accountads{},
 
+	&targetentity.Target{},
 	&productentity.Product{},
 	&transactionentity.Transaction{},
 	&orderentity.Order{},
