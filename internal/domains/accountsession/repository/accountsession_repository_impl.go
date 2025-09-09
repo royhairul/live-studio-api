@@ -74,7 +74,7 @@ func (r *AccountsessionRepositoryImpl) Delete(id string) error {
 // FindByAttendanceID implements AccountsessionRepository.
 func (r *AccountsessionRepositoryImpl) FindAllByAttendanceID(id string) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.DB.Preload("Account").Preload("Attendance").Find(&items, "attendance_id = ?", id).Error; err != nil {
+	if err := r.DB.Preload("Studio").Preload("Account").Preload("Attendance").Find(&items, "attendance_id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return items, nil

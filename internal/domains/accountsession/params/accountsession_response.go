@@ -11,6 +11,8 @@ type AccountsessionResponse struct {
 	ID          uint       `json:"id"`
 	AccountID   uint       `json:"account_id"`
 	AccountName string     `json:"account_name"`
+	StudioID    uint       `json:"studio_id"`
+	StudioName  string     `json:"studio_name"`
 	HostName    string     `json:"host_name"`
 	Date        *time.Time `json:"date"`
 	CheckIn     *time.Time `json:"check_in"`
@@ -32,5 +34,7 @@ func NewAccountsessionResponse(accountsession *entity.Accountsession) *Accountse
 		CheckOut:    accountsession.Attendance.CheckedOutAt,
 		GMVSales:    accountsession.TotalSales(),
 		GMVPaid:     accountsession.TotalPaid(),
+		StudioID:    accountsession.Studio.ID,
+		StudioName:  accountsession.Studio.Name,
 	}
 }
