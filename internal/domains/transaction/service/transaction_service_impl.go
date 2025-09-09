@@ -152,12 +152,27 @@ func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error
 			grouped[tx.AccountID] = &params.TransactionResponse{
 				AccountID:   tx.Account.ID,
 				AccountName: tx.Account.Name,
-				Total:       0,
-				List:        []params.TransactionDetailResponse{},
+				Commission: params.Commission{
+					Total:   0,
+					Pending: 0,
+					Paid:    0,
+				},
+				Total: 0,
+				List:  []params.TransactionDetailResponse{},
 			}
 		}
 
 		grouped[tx.AccountID].Total++
+		grouped[tx.AccountID].Commission.Total += tx.EstimatedTotalCommission
+
+		if tx.Status == "Waiting for payment" || tx.Status == "Completed" {
+			grouped[tx.AccountID].Commission.Paid += tx.EstimatedTotalCommission
+		}
+
+		if tx.Status == "Pending" {
+			grouped[tx.AccountID].Commission.Pending += tx.EstimatedTotalCommission
+		}
+
 		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
 	}
 
@@ -189,6 +204,16 @@ func (s *TransactionServiceImpl) FindAllByStatus(status string) ([]*params.Trans
 		}
 
 		grouped[tx.AccountID].Total++
+		grouped[tx.AccountID].Commission.Total += tx.EstimatedTotalCommission
+
+		if tx.Status == "Waiting for payment" || tx.Status == "Completed" {
+			grouped[tx.AccountID].Commission.Paid += tx.EstimatedTotalCommission
+		}
+
+		if tx.Status == "Pending" {
+			grouped[tx.AccountID].Commission.Pending += tx.EstimatedTotalCommission
+		}
+
 		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
 	}
 
@@ -265,9 +290,9 @@ func (s *TransactionServiceImpl) FindAllByAccountAndStatus(accountID string, sta
 	}
 
 	commission := params.Commission{
-		Total:   uint(totalAll),
-		Pending: uint(totalPending),
-		Paid:    uint(totalPaid),
+		Total:   int64(totalAll),
+		Pending: int64(totalPending),
+		Paid:    int64(totalPaid),
 	}
 
 	result := &params.TransactionResponse{
@@ -330,9 +355,9 @@ func (s *TransactionServiceImpl) FindAllByAccountStatusDate(accountID string, st
 	}
 
 	commission := params.Commission{
-		Total:   uint(totalAll),
-		Pending: uint(totalPending),
-		Paid:    uint(totalPaid),
+		Total:   int64(totalAll),
+		Pending: int64(totalPending),
+		Paid:    int64(totalPaid),
 	}
 
 	result := &params.TransactionResponse{
@@ -375,12 +400,12 @@ func (s *TransactionServiceImpl) FindAllByDate(accountID string, startDate *time
 
 		// Commission
 		if tx.Status == "Waiting for payment" {
-			grouped[tx.AccountID].Commission.Paid += uint(tx.EstimatedTotalCommissionWithMCN)
+			grouped[tx.AccountID].Commission.Paid += int64(tx.EstimatedTotalCommissionWithMCN)
 		}
 		if tx.Status == "Pending" {
-			grouped[tx.AccountID].Commission.Pending += uint(tx.EstimatedTotalCommissionWithMCN)
+			grouped[tx.AccountID].Commission.Pending += int64(tx.EstimatedTotalCommissionWithMCN)
 		}
-		grouped[tx.AccountID].Commission.Total += uint(tx.EstimatedTotalCommissionWithMCN)
+		grouped[tx.AccountID].Commission.Total += int64(tx.EstimatedTotalCommissionWithMCN)
 	}
 
 	results := []*params.TransactionResponse{}

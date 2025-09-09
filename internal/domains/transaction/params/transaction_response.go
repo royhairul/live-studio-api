@@ -9,9 +9,9 @@ import (
 )
 
 type Commission struct {
-	Total   uint `json:"total"`
-	Pending uint `json:"pending"`
-	Paid    uint `json:"paid"`
+	Total   int64 `json:"total"`
+	Pending int64 `json:"pending"`
+	Paid    int64 `json:"paid"`
 }
 
 type TransactionResponse struct {
