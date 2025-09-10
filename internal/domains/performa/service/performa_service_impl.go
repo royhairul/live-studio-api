@@ -242,8 +242,32 @@ func (p *PerformaServiceImpl) GetAccounts(startDate string, endDate string) ([]*
 	}
 
 	var list []*params.PerformaStudioDetailItemResponse
+
 	for _, item := range currList {
-		list = append(list, &item)
+		found := false
+		for _, existing := range list {
+			if existing.AccountID == item.AccountID {
+				// Update semua field kecuali AccountID & AccountName
+				existing.GMV += item.GMV
+				existing.CommissionPaid += item.CommissionPaid
+				existing.CommissionPending += item.CommissionPending
+				existing.Ads += item.Ads
+				existing.Income += item.Income
+
+				// untuk field float (ACOS, ROAS) biasanya dihitung ulang rata-rata atau ratio
+				// ini contoh: ambil nilai terbaru saja (overwrite)
+				existing.Acos = item.Acos
+				existing.Roas = item.Roas
+
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			newItem := item
+			list = append(list, &newItem)
+		}
 	}
 
 	return list, nil
