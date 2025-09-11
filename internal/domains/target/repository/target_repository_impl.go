@@ -56,6 +56,17 @@ func (r *TargetRepositoryImpl) FindByDate(date time.Time) (*entity.Target, error
 	return item, nil
 }
 
+// FindByStudioAndDate implements TargetRepository.
+func (r *TargetRepositoryImpl) FindByStudioAndDate(studioID string, date time.Time) (*entity.Target, error) {
+	var item *entity.Target
+	err := r.DB.Where("studio_id AND date::date = ?", studioID, date).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
 // Update implements TargetRepository.
 func (r *TargetRepositoryImpl) Update(data *entity.Target) (*entity.Target, error) {
 	if err := r.DB.Model(&entity.Target{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {

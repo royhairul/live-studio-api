@@ -11,6 +11,7 @@ type TargetRepository interface {
 	FindAll() ([]*entity.Target, error)
 	FindByID(id string) (*entity.Target, error)
 	FindByDate(date time.Time) (*entity.Target, error)
+	FindByStudioAndDate(studioID string, date time.Time) (*entity.Target, error)
 	Create(data *entity.Target) (*entity.Target, error)
 	Update(data *entity.Target) (*entity.Target, error)
 	Delete(id string) error
