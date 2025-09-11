@@ -249,8 +249,9 @@ func (p *PerformaServiceImpl) GetAccounts(startDate string, endDate string) ([]*
 			if existing.AccountID == item.AccountID {
 				// Update semua field kecuali AccountID & AccountName
 				existing.GMV += item.GMV
-				existing.CommissionPaid += item.CommissionPaid
-				existing.CommissionPending += item.CommissionPending
+				// existing.CommissionPaid += item.CommissionPaid
+				// existing.CommissionPending += item.CommissionPending
+				existing.Commission += item.Commission
 				existing.Ads += item.Ads
 				existing.Income += item.Income
 
@@ -427,11 +428,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 			Days:  days,
 		},
 		Metrics: params.Metrics{
-			CommissionPaid:    NewMetric(currCommissionPaid, prevCommissionPaid),
-			CommissionPending: NewMetric(currCommissionPending, prevCommissionPending),
-			GMV:               NewMetric(currGMV, prevGMV),
-			Ads:               NewMetric(int64(currAds), int64(prevAds)),
-			Income:            NewMetric(currIncome, prevIncome),
+			// CommissionPaid:    NewMetric(currCommissionPaid, prevCommissionPaid),
+			// CommissionPending: NewMetric(currCommissionPending, prevCommissionPending),
+			Commission: NewMetric((currCommissionPaid + currCommissionPending), (prevCommissionPaid + prevCommissionPending)),
+			GMV:        NewMetric(currGMV, prevGMV),
+			Ads:        NewMetric(int64(currAds), int64(prevAds)),
+			Income:     NewMetric(currIncome, prevIncome),
 		},
 		List: list,
 	}
@@ -509,11 +511,12 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 
 		// Aggregate metrics
 		Metrics: params.Metrics{
-			GMV:               NewMetric(currGMV, prevGMV),
-			Ads:               NewMetric(currAds, prevAds),
-			CommissionPaid:    NewMetric(currCommissionPaid, prevCommissionPaid),
-			CommissionPending: NewMetric(currCommissionPending, prevCommissionPending),
-			Income:            NewMetric(currIncome, prevIncome),
+			GMV: NewMetric(currGMV, prevGMV),
+			Ads: NewMetric(currAds, prevAds),
+			// CommissionPaid:    NewMetric(currCommissionPaid, prevCommissionPaid),
+			// CommissionPending: NewMetric(currCommissionPending, prevCommissionPending),
+			Commission: NewMetric((currCommissionPaid + currCommissionPending), (prevCommissionPaid + prevCommissionPending)),
+			Income:     NewMetric(currIncome, prevIncome),
 		},
 	}
 
@@ -566,19 +569,21 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(attendances []attendancepa
 			accountIncome := (commissionPaid + commissionPending) - accountAds
 			totalCommissionPaid += commissionPaid
 			totalCommissionPending += commissionPending
+
 			totalIncome += accountIncome
 
 			// Detail per account
 			list = append(list, params.PerformaStudioDetailItemResponse{
-				AccountID:         session.AccountID,
-				AccountName:       session.AccountName,
-				GMV:               accountGMV,
-				CommissionPaid:    commissionPaid,
-				CommissionPending: commissionPending,
-				Ads:               accountAds,
-				Acos:              calcACOS(accountAds, accountGMV),
-				Roas:              calcROAS(accountAds, accountGMV),
-				Income:            accountIncome,
+				AccountID:   session.AccountID,
+				AccountName: session.AccountName,
+				GMV:         accountGMV,
+				// CommissionPaid:    commissionPaid,
+				// CommissionPending: commissionPending,
+				Commission: commissionPaid + commissionPending,
+				Ads:        accountAds,
+				Acos:       calcACOS(accountAds, accountGMV),
+				Roas:       calcROAS(accountAds, accountGMV),
+				Income:     accountIncome,
 			})
 		}
 	}

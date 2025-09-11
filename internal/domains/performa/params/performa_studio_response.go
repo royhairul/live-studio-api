@@ -13,11 +13,12 @@ type Metric struct {
 }
 
 type Metrics struct {
-	CommissionPaid    Metric `json:"commission_paid"`
-	CommissionPending Metric `json:"commission_pending"`
-	Income            Metric `json:"income"`
-	GMV               Metric `json:"gmv"`
-	Ads               Metric `json:"ads"`
+	// CommissionPaid    Metric `json:"commission_paid"`
+	// CommissionPending Metric `json:"commission_pending"`
+	Commission Metric `json:"commission"`
+	Income     Metric `json:"income"`
+	GMV        Metric `json:"gmv"`
+	Ads        Metric `json:"ads"`
 }
 
 type PerformaStudioResponse struct {
@@ -44,13 +45,14 @@ type PerformaStudioDetailResponse struct {
 }
 
 type PerformaStudioDetailItemResponse struct {
-	AccountID         uint    `json:"account_id"`
-	AccountName       string  `json:"account_name"`
-	GMV               int64   `json:"gmv"`
-	CommissionPaid    int64   `json:"commission_paid"`
-	CommissionPending int64   `json:"commission_pending"`
-	Ads               int64   `json:"ads"`
-	Acos              float64 `json:"acos"`
-	Roas              float64 `json:"roas"`
-	Income            int64   `json:"income"`
+	AccountID   uint   `json:"account_id"`
+	AccountName string `json:"account_name"`
+	GMV         int64  `json:"gmv"`
+	// CommissionPaid    int64   `json:"commission_paid"`
+	// CommissionPending int64   `json:"commission_pending"`
+	Commission int64   `json:"commission"`
+	Ads        int64   `json:"ads"`
+	Acos       float64 `json:"acos"`
+	Roas       float64 `json:"roas"`
+	Income     int64   `json:"income"`
 }
