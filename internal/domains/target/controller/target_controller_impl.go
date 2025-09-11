@@ -33,7 +33,7 @@ func (c *TargetControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Create(req)
+	result, err := c.service.CreateOrUpdate(req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -69,7 +69,21 @@ func (c *TargetControllerImpl) Update(ctx *gin.Context) {
 }
 
 func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
-	result, err := c.service.FindAll()
+	// Query
+	month := ctx.Query("month")
+	year := ctx.Query("year")
+
+	var (
+		result []*params.TargetResponse
+		err    error
+	)
+
+	if year == "" || month == "" {
+		result, err = c.service.FindAll()
+	} else {
+		result, err = c.service.FindAllByDate(month, year)
+	}
+
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

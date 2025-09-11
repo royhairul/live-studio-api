@@ -14,6 +14,14 @@ type CreatedTargetResponse struct {
 	TargetIncome int64  `json:"target_income"`
 }
 
+type UpdatedTargetResponse struct {
+	StudioID     string `json:"studio_id"`
+	StudioName   string `json:"studio_name"`
+	Date         string `json:"date"`
+	TargetGMV    int64  `json:"target_gmv"`
+	TargetIncome int64  `json:"target_income"`
+}
+
 type TargetResponse struct {
 	// TODO: add response fields
 	StudioID   string `json:"studio_id"`
