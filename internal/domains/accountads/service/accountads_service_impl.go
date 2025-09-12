@@ -42,7 +42,35 @@ func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*par
 
 // Update implements AccountadsService.
 func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error) {
-	panic("unimplemented")
+	item, err := s.repository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// update field sesuai request
+	if req.AccountID != nil {
+		item.AccountID = *req.AccountID
+	}
+	if req.Date != nil && *req.Date != "" {
+		parsedDate, err := timehandler.ParseDate(*req.Date)
+		if err != nil {
+			return nil, err
+		}
+		item.Date = parsedDate
+	}
+	if req.Ads != nil {
+		item.Spend = *req.Ads
+	}
+
+	// simpan ke repository
+	updated, err := s.repository.Update(item)
+	if err != nil {
+		return nil, err
+	}
+
+	// mapping ke response
+	result := params.NewAccountadsResponse(updated)
+	return result, nil
 }
 
 // FindAll implements AccountadsService.
@@ -83,10 +111,20 @@ func (s *AccountadsServiceImpl) FindByDateAndAccounts(startDate, endDate *time.T
 
 // FindByID implements AccountadsService.
 func (s *AccountadsServiceImpl) FindByID(id string) (*params.AccountadsResponse, error) {
-	panic("unimplemented")
+	item, err := s.repository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	result := params.NewAccountadsResponse(item)
+	return result, nil
 }
 
 // Delete implements AccountadsService.
 func (s *AccountadsServiceImpl) Delete(id string) error {
-	panic("unimplemented")
+	if err := s.repository.Delete(id); err != nil {
+		return err
+	}
+
+	return nil
 }
