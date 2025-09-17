@@ -33,7 +33,7 @@ func (c *AccountadsControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Create(req)
+	result, err := c.service.CreateOrUpdate(req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/repository"
+	"gorm.io/gorm"
 )
 
 type AccountadsServiceImpl struct {
@@ -38,6 +40,46 @@ func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*par
 
 	result := params.NewAccountadsResponse(created)
 	return result, nil
+}
+
+// CreateOrUpdate implements AccountadsService.
+func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
+	// Parse date dari request
+	parsedDate, err := timehandler.ParseDate(req.Date)
+	if err != nil {
+		return nil, err
+	}
+
+	exist, err := s.repository.FindByDateAndAccount(parsedDate, fmt.Sprintf("%d", req.AccountID))
+	if err != nil {
+		// if error record not found, create a new
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			accountAds := entity.Accountads{
+				AccountID: req.AccountID,
+				Date:      parsedDate,
+				Spend:     req.Ads,
+			}
+			created, err := s.repository.Create(&accountAds)
+			if err != nil {
+				return nil, err
+			}
+			return params.NewAccountadsResponse(created), nil
+		}
+		// other error
+		return nil, err
+	}
+
+	// if already exist, update record
+	exist.AccountID = req.AccountID
+	exist.Date = parsedDate
+	exist.Spend = req.Ads
+
+	updated, err := s.repository.Update(exist)
+	if err != nil {
+		return nil, err
+	}
+
+	return params.NewAccountadsResponse(updated), nil
 }
 
 // Update implements AccountadsService.
