@@ -55,9 +55,9 @@ func (a *AccountServiceImpl) FindByUniqueId(uid string) (*params.AccountResponse
 	return result, err
 }
 
-func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest) (*params.AccountResponse, error) {
+func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*params.AccountResponse, error) {
 	// Get Shopee Account
-	accountShopee, err := a.shopeeSvc.GetShopeeAccount(request.Cookie)
+	accountShopee, err := a.shopeeSvc.GetShopeeAccount(req.Cookie)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest)
 		Email:    accountShopee.Email,
 		UniqueID: strconv.FormatInt(int64(accountShopee.ShopId), 10),
 		Platform: "Shopee",
-		Cookie:   request.Cookie,
-		StudioID: request.StudioID,
+		Cookie:   req.Cookie,
+		StudioID: req.StudioID,
 	}
 
 	var result *params.AccountResponse
@@ -92,6 +92,23 @@ func (a *AccountServiceImpl) CreateOrUpdate(request params.CreateAccountRequest)
 
 	result = params.NewAccountResponse(updatedAccount)
 
+	return result, nil
+}
+
+// Update implements AccountService.
+func (a *AccountServiceImpl) Update(id string, req params.UpdateAccountRequest) (*params.AccountResponse, error) {
+	// Check in database
+	existing, err := a.repository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAccount, err := a.repository.Save(existing)
+	if err != nil {
+		return nil, err
+	}
+
+	result := params.NewAccountResponse(updatedAccount)
 	return result, nil
 }
 

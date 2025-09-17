@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
@@ -13,6 +14,7 @@ import (
 
 type AccountControllerImpl struct {
 	AccountService service.AccountService
+	validate       *validator.Validate
 }
 
 func NewAccountController(accountSvc service.AccountService) AccountController {
@@ -21,7 +23,7 @@ func NewAccountController(accountSvc service.AccountService) AccountController {
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 	studioId := ctx.Query("studio")
-	log.Printf("Studio ID: %s", studioId)
+
 	if studioId != "" {
 		accounts, err := a.AccountService.FindByStudio(studioId)
 		if err != nil {
@@ -70,6 +72,31 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 	}
 
 	resp := response.NewBaseResponse("account created or updated successfully", account)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// Update implements AccountController.
+func (a *AccountControllerImpl) Update(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var req params.UpdateAccountRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid request data", err))
+		return
+	}
+
+	if err := a.validate.Struct(req); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	result, err := a.AccountService.Update(id, req)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("updated accountads successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 

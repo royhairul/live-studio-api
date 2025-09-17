@@ -48,6 +48,17 @@ func (a *AccountRepositoryImpl) Create(account *entity.Account) (*entity.Account
 	return account, nil
 }
 
+// Update implements AccountRepository.
+func (a *AccountRepositoryImpl) Update(account *entity.Account) (*entity.Account, error) {
+	if err := a.DB.Model(&entity.Account{}).Where("id = ?", account.ID).Updates(account).Error; err != nil {
+		return nil, err
+	}
+	if err := a.DB.Preload("Studio").First(account).Error; err != nil {
+		return nil, err
+	}
+	return account, nil
+}
+
 func (a *AccountRepositoryImpl) Save(account *entity.Account) (*entity.Account, error) {
 	if err := a.DB.Preload("Studio").Save(account).Error; err != nil {
 		return nil, err
