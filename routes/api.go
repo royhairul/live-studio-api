@@ -59,6 +59,6 @@ func SetupRouter() *gin.Engine {
 	})
 
 	// User Management Routes
-	RegisterSuperAdminRoutes(route)
+	// RegisterSuperAdminRoutes(route)
 	return route
 }
