@@ -18,19 +18,17 @@ import (
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 	targetentity "github.com/royhairul/live-studio-api/internal/domains/target/entity"
 	transactionentity "github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
-
-	"github.com/royhairul/live-studio-api/models"
 )
 
 // List All Model
 var modelsList = []interface{}{
 	// &models.Product{},
-	&models.User{},
+	// &models.User{},
 	// &models.Studio{},
-	&models.ResetPassword{},
+	// &models.ResetPassword{},
 
 	// // User Relation model
-	&models.UserRelation{},
+	// &models.UserRelation{},
 
 	// // Schedule model
 	// &models.ScheduleShift{},
