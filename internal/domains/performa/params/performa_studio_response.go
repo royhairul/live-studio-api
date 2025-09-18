@@ -36,10 +36,12 @@ type PerformaStudioItemResponse struct {
 }
 
 type PerformaStudioDetailResponse struct {
-	StudioID   uint                               `json:"studio_id"`
-	StudioName string                             `json:"studio_name"`
-	Metrics    Metrics                            `json:"metrics"`
-	List       []PerformaStudioDetailItemResponse `json:"list"`
+	StudioID       uint                               `json:"studio_id"`
+	StudioName     string                             `json:"studio_name"`
+	CurrentPeriod  PeriodInfo                         `json:"current_period"`
+	PreviousPeriod PeriodInfo                         `json:"previous_period"`
+	Metrics        Metrics                            `json:"metrics"`
+	List           []PerformaStudioDetailItemResponse `json:"list"`
 }
 
 type PerformaStudioDetailItemResponse struct {
