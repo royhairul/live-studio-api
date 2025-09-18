@@ -1,13 +1,19 @@
 package params
 
 type PerformaAccountResponse struct {
-	AccountID         uint    `json:"account_id"`
-	AccountName       string  `json:"account_name"`
-	GMV               int64   `json:"gmv"`
-	CommissionPaid    int64   `json:"commission_paid"`
-	CommissionPending int64   `json:"commission_pending"`
-	Ads               int64   `json:"ads"`
-	Acos              float64 `json:"acos"`
-	Roas              float64 `json:"roas"`
-	Income            int64   `json:"income"`
+	CurrentPeriod  PeriodInfo                          `json:"current_period"`
+	PreviousPeriod PeriodInfo                          `json:"previous_period"`
+	Metrics        Metrics                             `json:"metrics"`
+	List           []PerformaAccountDetailItemResponse `json:"list"`
+}
+
+type PerformaAccountDetailItemResponse struct {
+	AccountID   uint    `json:"account_id"`
+	AccountName string  `json:"account_name"`
+	GMV         int64   `json:"gmv"`
+	Commission  int64   `json:"commission"`
+	Ads         int64   `json:"ads"`
+	Acos        float64 `json:"acos"`
+	Roas        float64 `json:"roas"`
+	Income      int64   `json:"income"`
 }

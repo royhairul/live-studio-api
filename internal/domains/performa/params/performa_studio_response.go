@@ -13,8 +13,6 @@ type Metric struct {
 }
 
 type Metrics struct {
-	// CommissionPaid    Metric `json:"commission_paid"`
-	// CommissionPending Metric `json:"commission_pending"`
 	Commission Metric `json:"commission"`
 	Income     Metric `json:"income"`
 	GMV        Metric `json:"gmv"`
