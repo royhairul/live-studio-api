@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/royhairul/live-studio-api/database"
-	"github.com/royhairul/live-studio-api/models"
+	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 )
 
 func PermissionSeeder() {
-	permissions := []models.Permission{
+	permissions := []permissionentity.Permission{
 		// Host
 		{Name: "host_view", Group: "Host", Description: "Melihat data host"},
 		{Name: "host_create", Group: "Host", Description: "Membuat host baru"},

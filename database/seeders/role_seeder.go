@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/royhairul/live-studio-api/database"
-	"github.com/royhairul/live-studio-api/models"
+	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
+	roleentity "github.com/royhairul/live-studio-api/internal/domains/role/entity"
 )
 
 func RoleSeeder() {
@@ -49,13 +50,13 @@ func RoleSeeder() {
 	}
 
 	for _, r := range roles {
-		var role models.Role
-		if err := database.DB.Where("name = ?", r.Name).FirstOrCreate(&role, models.Role{Name: r.Name}).Error; err != nil {
+		var role roleentity.Role
+		if err := database.DB.Where("name = ?", r.Name).FirstOrCreate(&role, roleentity.Role{Name: r.Name}).Error; err != nil {
 			fmt.Printf("❌ Failed to seed role '%s': %v\n", r.Name, err)
 			continue
 		}
 
-		var permissions []models.Permission
+		var permissions []permissionentity.Permission
 		if err := database.DB.Where("name IN ?", r.Permissions).Find(&permissions).Error; err != nil {
 			fmt.Printf("❌ Failed to find permissions for role '%s': %v\n", r.Name, err)
 			continue
