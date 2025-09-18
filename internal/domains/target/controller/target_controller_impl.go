@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -73,17 +74,10 @@ func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
 	month := ctx.Query("month")
 	year := ctx.Query("year")
 
-	var (
-		result []*params.TargetResponse
-		err    error
-	)
+	log.Printf("month: %s", month)
+	log.Printf("year: %s", year)
 
-	if year == "" || month == "" {
-		result, err = c.service.FindAll()
-	} else {
-		result, err = c.service.FindAllByDate(month, year)
-	}
-
+	result, err := c.service.FindAllByDate(month, year)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

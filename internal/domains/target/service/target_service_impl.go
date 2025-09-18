@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/target/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/target/params"
 	"github.com/royhairul/live-studio-api/internal/domains/target/repository"
+	"gorm.io/gorm"
 
 	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
 	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
@@ -30,7 +32,13 @@ func NewTargetService(
 	attendanceSvc attendanceservice.AttendanceService,
 	accountsessionSvc accountsessionservice.AccountsessionService,
 ) TargetService {
-	return &TargetServiceImpl{repository, studioSvc, transactionSvc, attendanceSvc, accountsessionSvc}
+	return &TargetServiceImpl{
+		repository,
+		studioSvc,
+		transactionSvc,
+		attendanceSvc,
+		accountsessionSvc,
+	}
 }
 
 // Create implements TargetService.
@@ -52,15 +60,7 @@ func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.Crea
 		return nil, err
 	}
 
-	result := params.CreatedTargetResponse{
-		StudioID:     fmt.Sprintf("%d", created.StudioID),
-		StudioName:   created.Studio.Name,
-		Date:         fmt.Sprintf("%v", created.Date),
-		TargetGMV:    created.TargetGMV,
-		TargetIncome: created.TargetGMV,
-	}
-
-	return &result, nil
+	return params.NewCreatedTargetResponse(created), nil
 }
 
 // CreateOrUpdate implements TargetService.
@@ -70,46 +70,36 @@ func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*par
 		return nil, fmt.Errorf("failed to parse date: %v", err)
 	}
 
-	// Check apakah sudah ada target dengan date + studio
+	// Check target is created or not found
 	exist, err := s.repository.FindByStudioAndDate(fmt.Sprintf("%d", req.StudioID), parsedTime)
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 
 	var target *entity.Target
-	if exist != nil {
-		// update data existing
-		exist.TargetGMV = req.TargetGMV
-		exist.TargetIncome = req.TargetIncome
-		updated, err := s.repository.Update(exist)
-		if err != nil {
-			return nil, err
-		}
-		target = updated
-	} else {
-		// create baru
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// if not found, create new target
 		newTarget := entity.Target{
 			Date:         parsedTime,
 			TargetGMV:    req.TargetGMV,
 			TargetIncome: req.TargetIncome,
 			StudioID:     req.StudioID,
 		}
-		created, err := s.repository.Create(&newTarget)
+		target, err = s.repository.Create(&newTarget)
 		if err != nil {
 			return nil, err
 		}
-		target = created
+	} else {
+		// if already exits, update target
+		exist.TargetGMV = req.TargetGMV
+		exist.TargetIncome = req.TargetIncome
+		target, err = s.repository.Update(exist)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	result := params.CreatedTargetResponse{
-		StudioID:     fmt.Sprintf("%d", target.StudioID),
-		StudioName:   target.Studio.Name,
-		Date:         target.Date.Format("2006-01-02"), // lebih konsisten
-		TargetGMV:    target.TargetGMV,
-		TargetIncome: target.TargetIncome,
-	}
-
-	return &result, nil
+	return params.NewCreatedTargetResponse(target), nil
 }
 
 // Update implements TargetService.

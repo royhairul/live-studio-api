@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/royhairul/live-studio-api/internal/domains/target/entity"
 )
@@ -21,7 +22,7 @@ func (r *TargetRepositoryImpl) Create(data *entity.Target) (*entity.Target, erro
 	if err := r.DB.Create(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
@@ -30,7 +31,7 @@ func (r *TargetRepositoryImpl) Create(data *entity.Target) (*entity.Target, erro
 // FindAll implements TargetRepository.
 func (r *TargetRepositoryImpl) FindAll() ([]*entity.Target, error) {
 	var items []*entity.Target
-	if err := r.DB.Find(&items).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
@@ -39,7 +40,7 @@ func (r *TargetRepositoryImpl) FindAll() ([]*entity.Target, error) {
 // FindByID implements TargetRepository.
 func (r *TargetRepositoryImpl) FindByID(id string) (*entity.Target, error) {
 	var item entity.Target
-	if err := r.DB.Where("id = ?", id).First(&item).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).Where("id = ?", id).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return &item, nil
@@ -48,7 +49,7 @@ func (r *TargetRepositoryImpl) FindByID(id string) (*entity.Target, error) {
 // FindByDate implements TargetRepository.
 func (r *TargetRepositoryImpl) FindByDate(date time.Time) (*entity.Target, error) {
 	var item *entity.Target
-	err := r.DB.Where("date::date = ?", date).First(&item).Error
+	err := r.DB.Preload(clause.Associations).Where("date::date = ?", date).First(&item).Error
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,11 @@ func (r *TargetRepositoryImpl) FindByDate(date time.Time) (*entity.Target, error
 // FindByStudioAndDate implements TargetRepository.
 func (r *TargetRepositoryImpl) FindByStudioAndDate(studioID string, date time.Time) (*entity.Target, error) {
 	var item *entity.Target
-	err := r.DB.Where("studio_id AND date::date = ?", studioID, date).First(&item).Error
+	err := r.DB.
+		Preload(clause.Associations).
+		Where("studio_id = ?", studioID).
+		Where("date::date = ?", date).
+		First(&item).Error
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +77,7 @@ func (r *TargetRepositoryImpl) Update(data *entity.Target) (*entity.Target, erro
 	if err := r.DB.Model(&entity.Target{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
