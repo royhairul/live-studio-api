@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/services/auth"
+	"github.com/royhairul/live-studio-api/helpers"
 )
 
 func RequireRoles(roles ...string) gin.HandlerFunc {
@@ -21,7 +21,7 @@ func RequireRoles(roles ...string) gin.HandlerFunc {
 		tokenStr := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 
 		// Verifikasi JWT
-		claims, err := auth.VerifyTokenJWT(tokenStr, os.Getenv("JWT_SECRET"))
+		claims, err := helpers.VerifyTokenJWT(tokenStr, os.Getenv("JWT_SECRET"))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			return
