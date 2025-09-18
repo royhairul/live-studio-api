@@ -224,7 +224,7 @@ func (p *PerformaServiceImpl) fetchAttendances(start, end *time.Time) ([]attenda
 
 // GetAccounts implements PerformaService.
 func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.PerformaAccountResponse, error) {
-	// Set default value
+	// Default ke hari ini
 	today := *timehandler.DateNow()
 	if startDate == "" {
 		startDate = today
@@ -233,17 +233,18 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 		endDate = today
 	}
 
+	// Parse range tanggal
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid date range: %w", err)
 	}
 
-	// Hitung previous range (durasi sama, mundur ke belakang)
+	// Hitung durasi (days) dan periode sebelumnya
 	days := int(end.Sub(*start).Hours()/24) + 1
 	prevEnd := start.AddDate(0, 0, -1)
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
-	// Get Attendances (current + previous)
+	// === Ambil attendances ===
 	currAttendances, err := p.fetchAttendances(start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get attendances: %w", err)
@@ -251,38 +252,45 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 
 	prevAttendances, err := p.fetchAttendances(&prevStart, &prevEnd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get prev attendances: %w", err)
+		return nil, fmt.Errorf("failed to get previous attendances: %w", err)
 	}
 
-	// ===== Current Period =====
-	currList, currCommissionPaid, currCommissionPending, currGMV, currAds, currIncome, err := p.buildPerformaAccountDetailList(currAttendances, start, end)
+	// === Current Period ===
+	currList, currGMV, currAds, currCommissionPaid, currCommissionPending, currIncome, err := p.buildPerformaAccountDetailList(currAttendances, start, end)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to build current performa list: %w", err)
 	}
 
-	// ===== Previous Period =====
-	_, prevCommissionPaid, prevCommissionPending, prevGMV, prevAds, prevIncome, err := p.buildPerformaAccountDetailList(prevAttendances, &prevStart, &prevEnd)
+	// === Previous Period ===
+	_, prevGMV, prevAds, prevCommissionPaid, prevCommissionPending, prevIncome, err := p.buildPerformaAccountDetailList(prevAttendances, &prevStart, &prevEnd)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to build previous performa list: %w", err)
 	}
 
-	// Gabungkan current list berdasarkan AccountID
+	// === Gabungkan current & previous list ===
 	accountMap := make(map[uint]*params.PerformaAccountDetailItemResponse)
+
+	// Masukkan data current
 	for _, item := range currList {
-		// Copy by value lalu pointer
 		newItem := item
 		accountMap[item.AccountID] = &newItem
 	}
 
-	// (Opsional) kalau ingin juga merge prevList ke list utama
-	// tinggal lakukan iterasi di sini
-
-	// Ubah kembali ke slice
+	// Convert map -> slice
 	list := make([]params.PerformaAccountDetailItemResponse, 0, len(accountMap))
 	for _, v := range accountMap {
-		list = append(list, *v) // dereference pointer
+		list = append(list, *v)
 	}
 
+	var totalCommission, totalGMV, totalAds, totalIncome int64
+	for _, item := range list {
+		totalCommission += item.Commission
+		totalGMV += item.GMV
+		totalAds += item.Ads
+		totalIncome += item.Income
+	}
+
+	// === Build response ===
 	results := &params.PerformaAccountResponse{
 		CurrentPeriod: params.PeriodInfo{
 			Start: timehandler.FormatDate(start),
@@ -357,6 +365,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 	var currIncome, prevIncome int64
 
 	for _, studio := range studios {
+		// Reset per studio
+		var studioGMV, studioPrevGMV int64
+		var studioCommissionPaid, studioPrevCommissionPaid int64
+		var studioCommissionPending, studioPrevCommissionPending int64
+		var studioAds, studioPrevAds uint
+		var studioIncome, studioPrevIncome int64
 
 		// Get Account in this studio
 		accounts, err := p.accountSvc.FindByStudio(fmt.Sprintf("%d", studio.ID))
@@ -364,38 +378,34 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 			return nil, err
 		}
 
-		// Get Transactions per account
 		for _, account := range accounts {
-			// current period
+			// current transactions
 			transactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", account.ID), start, end)
 			if err != nil {
 				return nil, err
 			}
+			for _, tx := range transactions {
+				studioCommissionPaid += int64(tx.Commission.Paid)
+				studioCommissionPending += int64(tx.Commission.Pending)
+			}
 
-			// previous period
+			// previous transactions
 			prevTransactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", account.ID), &prevStart, &prevEnd)
 			if err != nil {
 				return nil, err
 			}
-
-			// accumulate current
-			for _, tx := range transactions {
-				currCommissionPaid += int64(tx.Commission.Paid)
-				currCommissionPending += int64(tx.Commission.Pending)
-			}
-
-			// // accumulate previous
 			for _, tx := range prevTransactions {
-				prevCommissionPaid += int64(tx.Commission.Paid)
-				prevCommissionPending += int64(tx.Commission.Pending)
+				studioPrevCommissionPaid += int64(tx.Commission.Paid)
+				studioPrevCommissionPending += int64(tx.Commission.Pending)
 			}
 
+			// ads
 			allAds, err := p.accountAdsSvc.FindByDateAndAccounts(start, end, fmt.Sprintf("%d", account.ID))
 			if err != nil {
 				return nil, err
 			}
 			for _, a := range allAds {
-				currAds += a.Ads
+				studioAds += a.Ads
 			}
 
 			prevAllAds, err := p.accountAdsSvc.FindByDateAndAccounts(&prevStart, &prevEnd, fmt.Sprintf("%d", account.ID))
@@ -403,46 +413,56 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 				return nil, err
 			}
 			for _, a := range prevAllAds {
-				prevAds += a.Ads
+				studioPrevAds += a.Ads
 			}
-
 		}
 
-		// GMV
+		// GMV current
 		for _, att := range attendances {
 			accountsessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
 			if err != nil {
 				return nil, err
 			}
-
 			for _, session := range accountsessions {
-				currGMV += int64(session.GMVPaid)
+				studioGMV += int64(session.GMVPaid)
 			}
 		}
 
-		// GMV
+		// GMV previous
 		for _, att := range prevAttendances {
 			accountsessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
 			if err != nil {
 				return nil, err
 			}
-
 			for _, session := range accountsessions {
-				prevGMV += int64(session.GMVPaid)
+				studioPrevGMV += int64(session.GMVPaid)
 			}
 		}
 
-		currIncome += (currCommissionPaid + currCommissionPending) - int64(currAds)
-		prevIncome += (prevCommissionPaid + prevCommissionPending) - int64(prevAds)
+		studioIncome = (studioCommissionPaid + studioCommissionPending) - int64(studioAds)
+		studioPrevIncome = (studioPrevCommissionPaid + studioPrevCommissionPending) - int64(studioPrevAds)
 
+		// Tambahkan ke list
 		list = append(list, params.PerformaStudioItemResponse{
 			StudioID:   fmt.Sprintf("%d", studio.ID),
 			StudioName: studio.Name,
-			Commission: currCommissionPaid + currCommissionPending,
-			GMV:        currGMV,
-			Ads:        int64(currAds),
-			Income:     currIncome,
+			Commission: studioCommissionPaid + studioCommissionPending,
+			GMV:        studioGMV,
+			Ads:        int64(studioAds),
+			Income:     studioIncome,
 		})
+
+		// Akumulasi ke total metrics
+		currGMV += studioGMV
+		prevGMV += studioPrevGMV
+		currCommissionPaid += studioCommissionPaid
+		prevCommissionPaid += studioPrevCommissionPaid
+		currCommissionPending += studioCommissionPending
+		prevCommissionPending += studioPrevCommissionPending
+		currAds += studioAds
+		prevAds += studioPrevAds
+		currIncome += studioIncome
+		prevIncome += studioPrevIncome
 	}
 
 	results := &params.PerformaStudioResponse{
@@ -535,6 +555,17 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 		StudioID:   studio.ID,
 		StudioName: studio.Name,
 		List:       currList, // untuk per account tampilkan yang current
+
+		CurrentPeriod: params.PeriodInfo{
+			Start: timehandler.FormatDate(start),
+			End:   timehandler.FormatDate(end),
+			Days:  days,
+		},
+		PreviousPeriod: params.PeriodInfo{
+			Start: timehandler.FormatDate(&prevStart),
+			End:   timehandler.FormatDate(&prevEnd),
+			Days:  days,
+		},
 
 		// Aggregate metrics
 		Metrics: params.Metrics{
