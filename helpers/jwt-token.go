@@ -7,11 +7,18 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/royhairul/live-studio-api/dto"
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 )
 
-func SignToken(payload *dto.JWTPayloadDTO, SECRET_KEY string) (string, error) {
+type JWTPayloadDTO struct {
+	ID       uint   `json:"id"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+	jwt.RegisteredClaims
+}
+
+func SignToken(payload *JWTPayloadDTO, SECRET_KEY string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
 	tokenString, err := token.SignedString([]byte(SECRET_KEY))
@@ -35,7 +42,7 @@ func GenerateTokenJWT(user *entity.User) (string, error) {
 
 	accessToken, _ := time.ParseDuration(accessExpiryStr)
 
-	payload := dto.JWTPayloadDTO{
+	payload := JWTPayloadDTO{
 		ID:   user.ID,
 		Name: user.Name,
 		Role: user.Role.Name,
@@ -53,8 +60,8 @@ func GenerateTokenJWT(user *entity.User) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyTokenJWT(tokenStr string, secret string) (*dto.JWTPayloadDTO, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &dto.JWTPayloadDTO{}, func(token *jwt.Token) (interface{}, error) {
+func VerifyTokenJWT(tokenStr string, secret string) (*JWTPayloadDTO, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &JWTPayloadDTO{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("Unexpected signing method")
 		}
@@ -65,7 +72,7 @@ func VerifyTokenJWT(tokenStr string, secret string) (*dto.JWTPayloadDTO, error) 
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*dto.JWTPayloadDTO)
+	claims, ok := token.Claims.(*JWTPayloadDTO)
 	if !ok || !token.Valid {
 		return nil, errors.New("Invalid token claims")
 	}
