@@ -9,5 +9,5 @@ type PermissionService interface {
 	Update(id string, req params.UpdatePermissionRequest) (*params.PermissionResponse, error)
 	Delete(id string) error
 
-	FindByGroup(group string) ([]*params.PermissionResponse, error)
+	FindAllGrouped() ([]*params.PermissionGroupedResponse, error)
 }

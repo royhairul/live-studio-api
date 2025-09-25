@@ -79,6 +79,18 @@ func (c *PermissionControllerImpl) FindAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+// FindAllGrouped implements PermissionController.
+func (c *PermissionControllerImpl) FindAllGrouped(ctx *gin.Context) {
+	result, err := c.service.FindAllGrouped()
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved all grouped permission successfully", result)
+	ctx.JSON(http.StatusOK, resp)
+}
+
 func (c *PermissionControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 

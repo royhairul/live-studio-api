@@ -11,6 +11,4 @@ type PermissionRepository interface {
 	Create(data *entity.Permission) (*entity.Permission, error)
 	Update(data *entity.Permission) (*entity.Permission, error)
 	Delete(id string) error
-
-	FindByGroup(group string) ([]*entity.Permission, error)
 }

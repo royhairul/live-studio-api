@@ -66,16 +66,29 @@ func (s *PermissionServiceImpl) Delete(id string) error {
 	panic("unimplemented")
 }
 
-// FindByGroup implements PermissionService.
-func (s *PermissionServiceImpl) FindByGroup(group string) ([]*params.PermissionResponse, error) {
-	permissions, err := s.repository.FindByGroup(group)
+// FindAllGrouped implements PermissionService.
+func (s *PermissionServiceImpl) FindAllGrouped() ([]*params.PermissionGroupedResponse, error) {
+	// Get All Permission
+	permissions, err := s.repository.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var results []*params.PermissionResponse
-	for _, permission := range permissions {
-		results = append(results, params.NewPermissionResponse(permission))
+	// Map for Grouping
+	grouped := make(map[string][]*params.PermissionResponse)
+
+	for _, p := range permissions {
+		resp := params.NewPermissionResponse(p)
+		grouped[p.Group] = append(grouped[p.Group], resp)
 	}
+
+	var results []*params.PermissionGroupedResponse
+	for group, perms := range grouped {
+		results = append(results, &params.PermissionGroupedResponse{
+			Group:       group,
+			Permissions: perms,
+		})
+	}
+
 	return results, nil
 }

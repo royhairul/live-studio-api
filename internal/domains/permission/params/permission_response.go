@@ -10,8 +10,8 @@ type PermissionResponse struct {
 }
 
 type PermissionGroupedResponse struct {
-	Group       string               `json:"group"`
-	Permissions []PermissionResponse `json:"permissions"`
+	Group       string                `json:"group"`
+	Permissions []*PermissionResponse `json:"permissions"`
 }
 
 func NewPermissionResponse(permission *entity.Permission) *PermissionResponse {

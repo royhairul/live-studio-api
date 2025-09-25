@@ -7,12 +7,13 @@ import (
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.PermissionController) {
 	// TODO: define routes
-	permissionRouter := router.Group("/permission")
+	route := router.Group("/permission")
 	{
-		permissionRouter.GET("", controller.FindAll)
-		permissionRouter.POST("", controller.Create)
-		permissionRouter.GET("/:id", controller.FindByID)
-		permissionRouter.PUT("/:id", controller.Update)
-		permissionRouter.DELETE("/:id", controller.Delete)
+		route.GET("", controller.FindAll)
+		route.GET("/grouped", controller.FindAllGrouped)
+		route.POST("", controller.Create)
+		route.GET("/:id", controller.FindByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 	}
 }
