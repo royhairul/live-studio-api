@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -16,12 +17,46 @@ func NewAttendanceRepository(db *gorm.DB) AttendanceRepository {
 	return &AttendanceRepositoryImpl{DB: db}
 }
 
-func (r *AttendanceRepositoryImpl) FindAll() ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *gorm.DB {
+	query := r.DB.Model(entity.Attendance{}).Preload(clause.Associations)
+
+	if filter.AccountID != nil {
+		query = query.Where("account_id", filter.AccountID)
+	}
+
+	if filter.HostID != nil {
+		query = query.Where("host_id", filter.HostID)
+	}
+
+	if filter.ShiftID != nil {
+		query = query.Where("shift_id", filter.ShiftID)
+	}
+
+	if filter.StudioID != nil {
+		query = query.Where("studio_id", filter.StudioID)
+	}
+
+	if filter.StartTime != nil && filter.EndTime != nil {
+		query = query.Where("date::date BETWEEN ? AND ?", filter.StartTime, filter.EndTime)
+	}
+
+	return query
+}
+
+func (r *AttendanceRepositoryImpl) FindAll(filter params.AttendanceFilter) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	if err := r.DB.Preload(clause.Associations).Find(&attendances).Error; err != nil {
+	if err := r.BuildQuery(filter).Find(&attendances).Error; err != nil {
 		return nil, err
 	}
 	return attendances, nil
+}
+
+func (r *AttendanceRepositoryImpl) FindOne(filter params.AttendanceFilter) (*entity.Attendance, error) {
+	var attendance *entity.Attendance
+	if err := r.BuildQuery(filter).First(&attendance).Error; err != nil {
+		return nil, err
+	}
+	return attendance, nil
 }
 
 func (r *AttendanceRepositoryImpl) Create(attendance *entity.Attendance) (*entity.Attendance, error) {

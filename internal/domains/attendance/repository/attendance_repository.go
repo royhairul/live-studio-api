@@ -4,10 +4,12 @@ import (
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 )
 
 type AttendanceRepository interface {
-	FindAll() ([]*entity.Attendance, error)
+	FindAll(filter params.AttendanceFilter) ([]*entity.Attendance, error)
+	FindOne(filter params.AttendanceFilter) (*entity.Attendance, error)
 	Create(attendance *entity.Attendance) (*entity.Attendance, error)
 	Save(attendance *entity.Attendance) error
 	Delete(id string) error

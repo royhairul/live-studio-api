@@ -10,6 +10,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
 	accountsessionparams "github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
@@ -30,6 +31,7 @@ type AttendanceServiceImpl struct {
 	accountSessionSvc accountsessionservice.AccountsessionService
 	liveSvc           liveservice.LiveService
 	shopeeSvc         shopeeservice.ShopeeLiveService
+	options           params.AttendanceFilter
 }
 
 func NewAttendanceService(
@@ -41,17 +43,45 @@ func NewAttendanceService(
 	liveSvc liveservice.LiveService,
 	shopeeSvc shopeeservice.ShopeeLiveService,
 ) AttendanceService {
-	return &AttendanceServiceImpl{repository, hostRepo, scheduleRepo, accountSvc, accountSessionSvc, liveSvc, shopeeSvc}
+	return &AttendanceServiceImpl{
+		repository:        repository,
+		hostRepo:          hostRepo,
+		scheduleRepo:      scheduleRepo,
+		accountSvc:        accountSvc,
+		accountSessionSvc: accountSessionSvc,
+		liveSvc:           liveSvc,
+		shopeeSvc:         shopeeSvc,
+		options:           params.AttendanceFilter{},
+	}
+}
+
+// WithAccountID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithAccountID(accountID string) AttendanceService {
+	s.options.AccountID = &accountID
+	return s
+}
+
+// WithDateRange implements AttendanceService.
+func (s *AttendanceServiceImpl) WithDateRange(startTime time.Time, endTime time.Time) AttendanceService {
+	s.options.StartTime = &startTime
+	s.options.EndTime = &endTime
+	return s
+}
+
+// WithHostID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithHostID(hostID string) AttendanceService {
+	s.options.HostID = &hostID
+	return s
 }
 
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
-	var results []*params.AttendanceResponse
-
-	attendances, err := s.repository.FindAll()
+	filter := &params.AttendanceFilter{}
+	attendances, err := s.repository.FindAll(*filter)
 	if err != nil {
 		return nil, err
 	}
 
+	var results []*params.AttendanceResponse
 	for _, attendance := range attendances {
 		results = append(results, params.NewAttendanceResponse(attendance))
 	}
@@ -200,7 +230,9 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 	}
 
 	// Update account session with checkout time
-	accountSessions, err := s.accountSessionSvc.FindAllByAttendanceID(strconv.FormatUint(uint64(req.ID), 10))
+	accountSessions, err := s.accountSessionSvc.
+		WithAttendanceID(fmt.Sprintf("%d", attendance.ID)).
+		FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -258,8 +290,8 @@ func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, 
 		return "Tidak ada jadwal"
 	}
 
-	expectedDate := schedule.Date.Format("2006-01-02")
-	actualDate := attendanceDate.Format("2006-01-02")
+	expectedDate := schedule.Date.Format(constants.LayoutYYMMDD)
+	actualDate := attendanceDate.Format(constants.LayoutYYMMDD)
 
 	dateMatch := expectedDate == actualDate
 	shiftMatch := schedule.ShiftID == shiftID
