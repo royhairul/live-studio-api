@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -53,7 +52,6 @@ func (c *TargetControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	// Validasi hanya field yang tidak nil (optional)
 	if err := c.validate.Struct(req); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -73,9 +71,6 @@ func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
 	// Query
 	month := ctx.Query("month")
 	year := ctx.Query("year")
-
-	log.Printf("month: %s", month)
-	log.Printf("year: %s", year)
 
 	result, err := c.service.FindAllByDate(month, year)
 	if err != nil {

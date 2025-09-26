@@ -70,7 +70,7 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 	}
 
 	// Get Attendances by date range
-	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get attendances: %v", err)
 	}
@@ -94,7 +94,7 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 				continue
 			}
 
-			accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+			accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 			if err != nil {
 				return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
 			}
@@ -133,7 +133,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 	}
 
 	// Get attendance by startTime and endTime
-	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get attendances: %v", err)
 	}
@@ -158,7 +158,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 	detailList := []params.PerformaHostItemResponse{}
 
 	for _, att := range hostAttendances {
-		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+		accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
 		}
@@ -210,7 +210,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 }
 
 func (p *PerformaServiceImpl) fetchAttendances(start, end *time.Time) ([]attendanceparams.AttendanceResponse, error) {
-	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -340,12 +340,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get Attendances (current + previous)
-	attendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get attendances: %v", err)
 	}
 
-	prevAttendances, err := p.attendanceSvc.FindByDateRange(&prevStart, &prevEnd)
+	prevAttendances, err := p.attendanceSvc.WithDateRange(prevStart, prevEnd).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get prev attendances: %v", err)
 	}
@@ -380,7 +380,10 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 		for _, account := range accounts {
 			// current transactions
-			transactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", account.ID), start, end)
+			transactions, err := p.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", account.ID)).
+				WithDate(*start, *end).
+				FindAll()
 			if err != nil {
 				return nil, err
 			}
@@ -390,7 +393,10 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 			}
 
 			// previous transactions
-			prevTransactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", account.ID), &prevStart, &prevEnd)
+			prevTransactions, err := p.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", account.ID)).
+				WithDate(prevStart, prevEnd).
+				FindAll()
 			if err != nil {
 				return nil, err
 			}
@@ -419,7 +425,7 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 		// GMV current
 		for _, att := range attendances {
-			accountsessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+			accountsessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 			if err != nil {
 				return nil, err
 			}
@@ -430,7 +436,7 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 		// GMV previous
 		for _, att := range prevAttendances {
-			accountsessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+			accountsessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 			if err != nil {
 				return nil, err
 			}
@@ -510,11 +516,11 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Ambil attendances current & prev
-	currAttendances, err := p.attendanceSvc.FindByDateRange(start, end)
+	currAttendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get attendances: %v", err)
 	}
-	prevAttendances, err := p.attendanceSvc.FindByDateRange(&prevStart, &prevEnd)
+	prevAttendances, err := p.attendanceSvc.WithDateRange(prevStart, prevEnd).FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get previous attendances: %v", err)
 	}
@@ -554,7 +560,7 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 	result := &params.PerformaStudioDetailResponse{
 		StudioID:   studio.ID,
 		StudioName: studio.Name,
-		List:       currList, // untuk per account tampilkan yang current
+		List:       currList,
 
 		CurrentPeriod: params.PeriodInfo{
 			Start: timehandler.FormatDate(start),
@@ -569,10 +575,8 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 
 		// Aggregate metrics
 		Metrics: params.Metrics{
-			GMV: NewMetric(currGMV, prevGMV),
-			Ads: NewMetric(currAds, prevAds),
-			// CommissionPaid:    NewMetric(currCommissionPaid, prevCommissionPaid),
-			// CommissionPending: NewMetric(currCommissionPending, prevCommissionPending),
+			GMV:        NewMetric(currGMV, prevGMV),
+			Ads:        NewMetric(currAds, prevAds),
 			Commission: NewMetric((currCommissionPaid + currCommissionPending), (prevCommissionPaid + prevCommissionPending)),
 			Income:     NewMetric(currIncome, prevIncome),
 		},

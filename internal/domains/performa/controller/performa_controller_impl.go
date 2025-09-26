@@ -10,6 +10,7 @@ import (
 	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 )
 
 type PerformaControllerImpl struct {
@@ -45,7 +46,7 @@ func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 
 	// Jika salah satu atau keduanya kosong, isi dengan hari ini
 	if startTime == "" || endTime == "" {
-		today := time.Now().Format("2006-01-02")
+		today := time.Now().Format(constants.LayoutYYMMDD)
 		startTime = today
 		endTime = today
 	}
@@ -71,7 +72,7 @@ func (p *PerformaControllerImpl) GetAccounts(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved all performa studio successfully", result)
+	resp := response.NewBaseResponse("retrieved all performa account successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -103,7 +104,7 @@ func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("performa host found", result)
+	resp := response.NewBaseResponse("performa studio found", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 

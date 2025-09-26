@@ -26,7 +26,7 @@ func (p *PerformaServiceImpl) buildPerformaAccountDetailList(
 
 	// === Step 1: kumpulin GMV per account ===
 	for _, att := range attendances {
-		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+		accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 		if err != nil {
 			return nil, 0, 0, 0, 0, 0,
 				fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
@@ -58,7 +58,10 @@ func (p *PerformaServiceImpl) buildPerformaAccountDetailList(
 	for accID, item := range accountMap {
 		// --- Commission ---
 		var commissionPaid, commissionPending int64
-		transactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", accID), start, end)
+		transactions, err := p.transactionSvc.
+			WithAccountID(fmt.Sprintf("%d", accID)).
+			WithDate(*start, *end).
+			FindAll()
 		if err != nil {
 			return nil, 0, 0, 0, 0, 0,
 				fmt.Errorf("failed to get transactions for account %d: %w", accID, err)
@@ -85,8 +88,8 @@ func (p *PerformaServiceImpl) buildPerformaAccountDetailList(
 		// Update item
 		item.Commission = commissionPaid + commissionPending
 		item.Ads = accountAds
-		item.Acos = calcACOS(accountAds, item.GMV)
-		item.Roas = calcROAS(accountAds, item.GMV)
+		item.Acos = CalcACOS(accountAds, item.GMV)
+		item.Roas = CalcROAS(accountAds, item.GMV)
 		item.Income = accountIncome
 
 		// Update total
@@ -130,11 +133,12 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(
 		totalCommissionPaid    int64
 		totalCommissionPending int64
 		totalIncome            int64
-		list                   []params.PerformaStudioDetailItemResponse
 	)
 
+	list := []params.PerformaStudioDetailItemResponse{}
+
 	for _, att := range attendances {
-		accountSessions, err := p.accountSessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+		accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 		if err != nil {
 			return nil, 0, 0, 0, 0, 0, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
 		}
@@ -150,7 +154,10 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(
 
 			// --- Commission ---
 			var commissionPaid, commissionPending int64
-			transactions, err := p.transactionSvc.FindAllByDate(fmt.Sprintf("%d", session.AccountID), start, end)
+			transactions, err := p.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", session.AccountID)).
+				WithDate(*start, *end).
+				FindAll()
 			if err != nil {
 				return nil, 0, 0, 0, 0, 0, fmt.Errorf("failed to get transactions for account %d: %w", session.AccountID, err)
 			}
@@ -183,8 +190,8 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(
 				GMV:         accountGMV,
 				Commission:  commissionPaid + commissionPending,
 				Ads:         accountAds,
-				Acos:        calcACOS(accountAds, accountGMV),
-				Roas:        calcROAS(accountAds, accountGMV),
+				Acos:        CalcACOS(accountAds, accountGMV),
+				Roas:        CalcROAS(accountAds, accountGMV),
 				Income:      accountIncome,
 			})
 		}
@@ -212,7 +219,7 @@ func calcRatio(curr, prev int64) int64 {
 }
 
 // Hitung ACOS (%)
-func calcACOS(ads, revenue int64) float64 {
+func CalcACOS(ads, revenue int64) float64 {
 	if revenue == 0 {
 		return 0
 	}
@@ -220,7 +227,7 @@ func calcACOS(ads, revenue int64) float64 {
 }
 
 // Hitung ROAS (rasio)
-func calcROAS(ads, revenue int64) float64 {
+func CalcROAS(ads, revenue int64) float64 {
 	if ads == 0 {
 		return 0 // Tidak ada biaya iklan → anggap ROAS = 0
 	}

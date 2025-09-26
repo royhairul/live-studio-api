@@ -6,10 +6,12 @@ import (
 	"log"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/royhairul/live-studio-api/internal/domains/target/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/target/params"
 	"github.com/royhairul/live-studio-api/internal/domains/target/repository"
-	"gorm.io/gorm"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 
 	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
 	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
@@ -43,7 +45,7 @@ func NewTargetService(
 
 // Create implements TargetService.
 func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
-	parsedTime, err := time.Parse("January 2006", req.Date)
+	parsedTime, err := time.Parse(constants.LayoutMMYY, req.Date)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse date: %v", err)
 	}
@@ -65,7 +67,7 @@ func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.Crea
 
 // CreateOrUpdate implements TargetService.
 func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
-	parsedTime, err := time.Parse("January 2006", req.Date)
+	parsedTime, err := time.Parse(constants.LayoutMMYY, req.Date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse date: %v", err)
 	}
@@ -79,24 +81,21 @@ func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*par
 	var target *entity.Target
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// if not found, create new target
-		newTarget := entity.Target{
+		target, err = s.repository.Create(&entity.Target{
 			Date:         parsedTime,
 			TargetGMV:    req.TargetGMV,
 			TargetIncome: req.TargetIncome,
 			StudioID:     req.StudioID,
-		}
-		target, err = s.repository.Create(&newTarget)
-		if err != nil {
-			return nil, err
-		}
+		})
 	} else {
 		// if already exits, update target
 		exist.TargetGMV = req.TargetGMV
 		exist.TargetIncome = req.TargetIncome
 		target, err = s.repository.Update(exist)
-		if err != nil {
-			return nil, err
-		}
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	return params.NewCreatedTargetResponse(target), nil
@@ -120,7 +119,7 @@ func (s *TargetServiceImpl) Update(id string, req params.UpdateTargetRequest) (*
 	}
 	if req.Date != nil && *req.Date != "" {
 		// contoh format: "2025-09-01"
-		parsedDate, err := time.Parse("2006-01-02", *req.Date)
+		parsedDate, err := time.Parse(constants.LayoutYYMMDD, *req.Date)
 		if err != nil {
 			return nil, fmt.Errorf("invalid date format, use YYYY-MM-DD: %v", err)
 		}
@@ -133,15 +132,7 @@ func (s *TargetServiceImpl) Update(id string, req params.UpdateTargetRequest) (*
 		return nil, err
 	}
 
-	result := params.UpdatedTargetResponse{
-		StudioID:     fmt.Sprintf("%d", updated.StudioID),
-		StudioName:   updated.Studio.Name,
-		Date:         fmt.Sprintf("%v", updated.Date),
-		TargetGMV:    updated.TargetGMV,
-		TargetIncome: updated.TargetGMV,
-	}
-
-	return &result, nil
+	return params.NewUpdatedTargetResponse(updated), nil
 }
 
 // FindAll implements TargetService.
@@ -165,7 +156,7 @@ func (s *TargetServiceImpl) FindAll() ([]*params.TargetResponse, error) {
 	end := start.AddDate(0, 1, 0).Add(-time.Nanosecond) // akhir bulan
 
 	// ambil semua absensi bulan ini
-	attendances, err := s.atttendanceSvc.FindByDateRange(&start, &end)
+	attendances, err := s.atttendanceSvc.WithDateRange(start, end).FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -175,18 +166,20 @@ func (s *TargetServiceImpl) FindAll() ([]*params.TargetResponse, error) {
 	studioIncome := make(map[uint]int64) // Income dari transaksi
 
 	for _, att := range attendances {
-		sessions, err := s.accountsessionSvc.FindAllByAttendanceID(fmt.Sprintf("%d", att.ID))
+		sessions, err := s.accountsessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
 		if err != nil {
 			continue
 		}
 
 		for _, session := range sessions {
 			// akumulasi GMV
-			log.Println("studio id: ", session.StudioID)
 			studioGMV[session.StudioID] += int64(session.GMVPaid)
 
 			// ambil transaksi by account
-			trxs, err := s.transactionSvc.FindAllByDate(fmt.Sprintf("%d", session.AccountID), &start, &end)
+			trxs, err := s.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", session.AccountID)).
+				WithDate(start, end).
+				FindAll()
 			if err != nil {
 				continue
 			}
@@ -196,11 +189,6 @@ func (s *TargetServiceImpl) FindAll() ([]*params.TargetResponse, error) {
 				studioIncome[session.StudioID] += trx.Commission.Total // pastikan field trx.Amount ada
 			}
 		}
-	}
-
-	// debug log
-	for studioID, gmv := range studioGMV {
-		log.Printf("StudioID: %d | GMV: %d | Income: %d\n", studioID, gmv, studioIncome[studioID])
 	}
 
 	// mapping hasil ke response
@@ -249,7 +237,7 @@ func (s *TargetServiceImpl) FindAllByDate(month, year string) ([]*params.TargetR
 	// Format jadi "September 2025"
 	dateStr := fmt.Sprintf("%s %s", month, year)
 
-	parsedTime, err := time.Parse("January 2006", dateStr)
+	parsedTime, err := time.Parse(constants.LayoutMMYY, dateStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse date: %v", err)
 	}
@@ -282,7 +270,7 @@ func (s *TargetServiceImpl) FindAllByDate(month, year string) ([]*params.TargetR
 	}
 
 	// Ambil semua absensi bulan tsb
-	attendances, err := s.atttendanceSvc.FindByDateRange(&start, &end)
+	attendances, err := s.atttendanceSvc.WithDateRange(start, end).FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +280,7 @@ func (s *TargetServiceImpl) FindAllByDate(month, year string) ([]*params.TargetR
 	studioIncome := make(map[uint]int64)
 
 	for _, att := range attendances {
-		sessions, err := s.accountsessionSvc.FindAllByAttendanceID(fmt.Sprint(att.ID))
+		sessions, err := s.accountsessionSvc.WithAttendanceID(fmt.Sprint(att.ID)).FindAll()
 		if err != nil {
 			log.Printf("warn: gagal ambil sessions untuk attendanceID=%d: %v", att.ID, err)
 			continue
@@ -301,7 +289,10 @@ func (s *TargetServiceImpl) FindAllByDate(month, year string) ([]*params.TargetR
 		for _, session := range sessions {
 			studioGMV[session.StudioID] += int64(session.GMVPaid)
 
-			trxs, err := s.transactionSvc.FindAllByDate(fmt.Sprint(session.AccountID), &start, &end)
+			trxs, err := s.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", session.AccountID)).
+				WithDate(start, end).
+				FindAll()
 			if err != nil {
 				log.Printf("warn: gagal ambil transaksi untuk accountID=%d: %v", session.AccountID, err)
 				continue
@@ -367,7 +358,7 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 	end := start.AddDate(0, 1, 0).Add(-time.Nanosecond)
 
 	// ambil absensi bulan target
-	attendances, err := s.atttendanceSvc.FindByDateRange(&start, &end)
+	attendances, err := s.atttendanceSvc.WithDateRange(start, end).FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +366,7 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 	// kumpulkan data realisasi
 	var realGMV, realIncome int64
 	for _, att := range attendances {
-		sessions, err := s.accountsessionSvc.FindAllByAttendanceID(fmt.Sprint(att.ID))
+		sessions, err := s.accountsessionSvc.WithAttendanceID(fmt.Sprint(att.ID)).FindAll()
 		if err != nil {
 			continue
 		}
@@ -389,7 +380,10 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 			realGMV += int64(session.GMVPaid)
 
 			// transaksi by account
-			trxs, err := s.transactionSvc.FindAllByDate(fmt.Sprint(session.AccountID), &start, &end)
+			trxs, err := s.transactionSvc.
+				WithAccountID(fmt.Sprintf("%d", session.AccountID)).
+				WithDate(start, end).
+				FindAll()
 			if err != nil {
 				continue
 			}
