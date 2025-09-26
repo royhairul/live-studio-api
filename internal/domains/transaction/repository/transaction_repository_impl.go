@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/transaction/params"
 )
 
 type TransactionRepositoryImpl struct {
@@ -15,6 +16,23 @@ type TransactionRepositoryImpl struct {
 
 func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 	return &TransactionRepositoryImpl{DB: db}
+}
+
+// Query implements TransactionRepository.
+func (r *TransactionRepositoryImpl) BuildQuery(filter params.TransactionFilter) *gorm.DB {
+	query := r.DB.Model(&entity.Transaction{}).Preload("Account")
+
+	if filter.StartTime != nil && filter.EndTime != nil {
+		query = query.Where("date::date BETWEEN ? AND ?", filter.StartTime, filter.EndTime)
+	}
+	if filter.AccountID != nil {
+		query = query.Where("account_id = ?", *filter.AccountID)
+	}
+	if filter.Status != nil {
+		query = query.Where("status = ?", *filter.Status)
+	}
+
+	return query
 }
 
 // Create implements TransactionRepository.
@@ -29,12 +47,26 @@ func (r *TransactionRepositoryImpl) Create(data *entity.Transaction) (*entity.Tr
 }
 
 // FindAll implements TransactionRepository.
-func (r *TransactionRepositoryImpl) FindAll() ([]*entity.Transaction, error) {
+func (r *TransactionRepositoryImpl) FindAll(filter params.TransactionFilter) ([]*entity.Transaction, error) {
 	var items []*entity.Transaction
-	if err := r.DB.Preload("Account").Find(&items).Error; err != nil {
+	if err := r.BuildQuery(filter).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
+}
+
+// FindOne implements TransactionRepository.
+func (r *TransactionRepositoryImpl) FindOne(filter params.TransactionFilter) (*entity.Transaction, error) {
+	var item *entity.Transaction
+	if err := r.BuildQuery(filter).First(&item).Error; err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+// WithStatus implements TransactionRepository.
+func (r *TransactionRepositoryImpl) WithStatus(status string) {
+	panic("unimplemented")
 }
 
 // FindByID implements TransactionRepository.
@@ -75,14 +107,6 @@ func (r *TransactionRepositoryImpl) FindAllByAccountStatus(accountID string, sta
 
 // FindAllByAccountStatusDate implements TransactionRepository.
 func (r *TransactionRepositoryImpl) FindAllByAccountStatusDate(accountID string, status string, startDate *time.Time, endDate *time.Time) ([]*entity.Transaction, error) {
-	// if date == nil {
-	// 	now := timehandler.TimeNow()
-	// 	startDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	// }
-
-	// startDate = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
-	// endDate := startDate.Add(24 * time.Hour)
-
 	var items []*entity.Transaction
 	err := r.DB.Preload("Account").
 		Where("account_id = ?", accountID).

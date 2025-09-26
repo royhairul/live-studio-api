@@ -2,12 +2,13 @@ package repository
 
 import (
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
 )
 
 type AccountsessionRepository interface {
 	// TODO: define repository methods
-	FindAll() ([]*entity.Accountsession, error)
-	FindByID(id string) (*entity.Accountsession, error)
+	FindAll(filter params.AccountsessionFilter) ([]*entity.Accountsession, error)
+	FindOne(filter params.AccountsessionFilter) (*entity.Accountsession, error)
 	Create(data *entity.Accountsession) (*entity.Accountsession, error)
 	Update(data *entity.Accountsession) (*entity.Accountsession, error)
 	Delete(id string) error

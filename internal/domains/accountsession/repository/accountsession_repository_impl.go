@@ -2,8 +2,10 @@ package repository
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
 )
 
 type AccountsessionRepositoryImpl struct {
@@ -12,6 +14,22 @@ type AccountsessionRepositoryImpl struct {
 
 func NewAccountsessionRepository(db *gorm.DB) AccountsessionRepository {
 	return &AccountsessionRepositoryImpl{DB: db}
+}
+
+func (r *AccountsessionRepositoryImpl) BuildQuery(filter params.AccountsessionFilter) *gorm.DB {
+	query := r.DB.Model(entity.Accountsession{}).Preload(clause.Associations)
+
+	if filter.AccountID != nil {
+		query = query.Where("account_id = ?", filter.AccountID)
+	}
+	if filter.AttendanceID != nil {
+		query = query.Where("attendance_id = ?", filter.AttendanceID)
+	}
+	if filter.StudioID != nil {
+		query = query.Where("studio_id = ?", filter.StudioID)
+	}
+
+	return query
 }
 
 // Create implements AccountsessionRepository.
@@ -26,18 +44,18 @@ func (r *AccountsessionRepositoryImpl) Create(data *entity.Accountsession) (*ent
 }
 
 // FindAll implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindAll() ([]*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindAll(filter params.AccountsessionFilter) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.DB.Find(&items).Error; err != nil {
+	if err := r.BuildQuery(filter).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindByID implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindByID(id string) (*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindOne(filter params.AccountsessionFilter) (*entity.Accountsession, error) {
 	var item entity.Accountsession
-	if err := r.DB.Where("id = ?", id).First(&item).Error; err != nil {
+	if err := r.BuildQuery(filter).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return &item, nil

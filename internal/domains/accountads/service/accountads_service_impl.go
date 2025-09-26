@@ -9,15 +9,20 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 	"gorm.io/gorm"
 )
 
 type AccountadsServiceImpl struct {
 	repository repository.AccountadsRepository
+	options    params.AccountadsFilter
 }
 
 func NewAccountadsService(repository repository.AccountadsRepository) AccountadsService {
-	return &AccountadsServiceImpl{repository}
+	return &AccountadsServiceImpl{
+		repository: repository,
+		options:    params.AccountadsFilter{},
+	}
 }
 
 // Create implements AccountadsService.
@@ -84,7 +89,7 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 
 // Update implements AccountadsService.
 func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error) {
-	item, err := s.repository.FindByID(id)
+	item, err := s.repository.FindOne(params.AccountadsFilter{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +122,8 @@ func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsReq
 
 // FindAll implements AccountadsService.
 func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) {
-	items, err := s.repository.FindAll()
+	filter := params.AccountadsFilter{}
+	items, err := s.repository.FindAll(filter)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +147,7 @@ func (s *AccountadsServiceImpl) FindByDateAndAccounts(startDate, endDate *time.T
 		item, err := s.repository.FindByDateAndAccount(&d, accountID)
 		if err != nil {
 			// kalau error query, bisa langsung return atau skip
-			return nil, fmt.Errorf("failed on date %s: %w", d.Format("2006-01-02"), err)
+			return nil, fmt.Errorf("failed on date %s: %w", d.Format(constants.LayoutYYMMDD), err)
 		}
 		if item != nil {
 			results = append(results, params.NewAccountadsResponse(item))
@@ -152,8 +158,8 @@ func (s *AccountadsServiceImpl) FindByDateAndAccounts(startDate, endDate *time.T
 }
 
 // FindByID implements AccountadsService.
-func (s *AccountadsServiceImpl) FindByID(id string) (*params.AccountadsResponse, error) {
-	item, err := s.repository.FindByID(id)
+func (s *AccountadsServiceImpl) FindOne(id string) (*params.AccountadsResponse, error) {
+	item, err := s.repository.FindOne(params.AccountadsFilter{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -169,4 +175,17 @@ func (s *AccountadsServiceImpl) Delete(id string) error {
 	}
 
 	return nil
+}
+
+// WithAccountID implements AccountadsService.
+func (s *AccountadsServiceImpl) WithAccountID(accountID string) AccountadsService {
+	s.options.AccountID = &accountID
+	return s
+}
+
+// WithDateRange implements AccountadsService.
+func (s *AccountadsServiceImpl) WithDateRange(startDate time.Time, endDate time.Time) AccountadsService {
+	s.options.StartDate = &startDate
+	s.options.EndDate = &endDate
+	return s
 }

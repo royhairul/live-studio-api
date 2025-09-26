@@ -8,11 +8,14 @@ import (
 
 type AccountadsService interface {
 	FindAll() ([]*params.AccountadsResponse, error)
-	FindByID(id string) (*params.AccountadsResponse, error)
+	FindOne(id string) (*params.AccountadsResponse, error)
 	Create(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error)
 	CreateOrUpdate(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error)
 	Update(id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error)
 	Delete(id string) error
+
+	WithAccountID(accountID string) AccountadsService
+	WithDateRange(startDate, endDate time.Time) AccountadsService
 
 	FindByDateAndAccounts(startDate, endDate *time.Time, accountID string) ([]*params.AccountadsResponse, error)
 }

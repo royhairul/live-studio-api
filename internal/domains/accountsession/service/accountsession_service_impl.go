@@ -1,17 +1,49 @@
 package service
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/repository"
+	"gorm.io/gorm"
 )
 
 type AccountsessionServiceImpl struct {
 	repository repository.AccountsessionRepository
+	options    params.AccountsessionFilter
+}
+
+// WithAccountID implements AccountsessionService.
+func (s *AccountsessionServiceImpl) WithID(id string) AccountsessionService {
+	s.options.ID = &id
+	return s
+}
+
+// WithAccountID implements AccountsessionService.
+func (s *AccountsessionServiceImpl) WithAccountID(accountID string) AccountsessionService {
+	s.options.AccountID = &accountID
+	return s
+}
+
+// WithAttendanceID implements AccountsessionService.
+func (s *AccountsessionServiceImpl) WithAttendanceID(attendanceID string) AccountsessionService {
+	s.options.AttendanceID = &attendanceID
+	return s
+}
+
+// WithStudioID implements AccountsessionService.
+func (s *AccountsessionServiceImpl) WithStudioID(studioID string) AccountsessionService {
+	s.options.StudioID = &studioID
+	return s
 }
 
 func NewAccountsessionService(repository repository.AccountsessionRepository) AccountsessionService {
-	return &AccountsessionServiceImpl{repository}
+	return &AccountsessionServiceImpl{
+		repository: repository,
+		options:    params.AccountsessionFilter{},
+	}
 }
 
 // Create implements AccountsessionService.
@@ -32,14 +64,31 @@ func (s *AccountsessionServiceImpl) Create(req params.CreateAccountsessionReques
 	return result, nil
 }
 
-// Update implements AccountsessionService.
 func (s *AccountsessionServiceImpl) Update(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
-	panic("unimplemented")
+	accountsession, err := s.repository.FindOne(params.AccountsessionFilter{ID: &id})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("accountsession with ID %s not found", id)
+		}
+		return nil, err
+	}
+
+	accountsession.GMVSalesEnd = req.GMVSalesEnd
+	accountsession.GMVPaidEnd = req.GMVPaidEnd
+
+	updated, err := s.repository.Update(accountsession)
+	if err != nil {
+		return nil, err
+	}
+
+	return params.NewAccountsessionResponse(updated), nil
 }
 
 // UpdateEndSession implements AccountsessionService.
 func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
-	accountsession, err := s.repository.FindByID(id)
+	accountsession, err := s.repository.FindOne(params.AccountsessionFilter{
+		ID: &id,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +106,8 @@ func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.Updat
 
 // FindAll implements AccountsessionService.
 func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse, error) {
-	accountSessions, err := s.repository.FindAll()
+	filter := &params.AccountsessionFilter{}
+	accountSessions, err := s.repository.FindAll(*filter)
 	if err != nil {
 		return nil, err
 	}
@@ -71,59 +121,17 @@ func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse,
 }
 
 // FindByID implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindByID(id string) (*params.AccountsessionResponse, error) {
-	panic("unimplemented")
+func (s *AccountsessionServiceImpl) FindOne() (*params.AccountsessionResponse, error) {
+	filter := &params.AccountsessionFilter{}
+	accountSession, err := s.repository.FindOne(*filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return params.NewAccountsessionResponse(accountSession), nil
 }
 
 // Delete implements AccountsessionService.
 func (s *AccountsessionServiceImpl) Delete(id string) error {
 	panic("unimplemented")
-}
-
-// FindAllByStudio implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindAllByStudioID(id string) ([]*params.AccountsessionResponse, error) {
-	accountSession, err := s.repository.FindAllByStudioID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*params.AccountsessionResponse
-	for _, session := range accountSession {
-		accountSessionResp := params.NewAccountsessionResponse(session)
-		result = append(result, accountSessionResp)
-	}
-
-	return result, nil
-}
-
-// FindByAttendanceID implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindAllByAttendanceID(id string) ([]*params.AccountsessionResponse, error) {
-	accountsession, err := s.repository.FindAllByAttendanceID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*params.AccountsessionResponse
-	for _, session := range accountsession {
-		accountsessionResponse := params.NewAccountsessionResponse(session)
-		result = append(result, accountsessionResponse)
-	}
-
-	return result, nil
-}
-
-// FindAllByAccountID implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindAllByAccountID(id string) ([]*params.AccountsessionResponse, error) {
-	accountsession, err := s.repository.FindAllByAccountID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*params.AccountsessionResponse
-	for _, session := range accountsession {
-		accountsessionResponse := params.NewAccountsessionResponse(session)
-		result = append(result, accountsessionResponse)
-	}
-
-	return result, nil
 }

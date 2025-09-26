@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +39,7 @@ func (c *TransactionControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("created Transaction successfully", result)
+	resp := response.NewBaseResponse("created transaction successfully", result)
 	ctx.JSON(http.StatusCreated, resp)
 }
 
@@ -76,13 +75,10 @@ func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 		result []*params.TransactionResponse
 		err    error
 	)
-	log.Printf("status: %s", status)
 
 	if status != "" {
-		log.Println("status")
-		result, err = c.service.FindAllByStatus(status)
+		result, err = c.service.WithStatus(status).FindAll()
 	} else {
-		log.Println("all")
 		result, err = c.service.FindAll()
 	}
 
@@ -91,20 +87,20 @@ func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved all Transaction successfully", result)
+	resp := response.NewBaseResponse("retrieved all transaction successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
 func (c *TransactionControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.service.FindByID(id)
+	result, err := c.service.WithID(id).FindOne()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
 
-	resp := response.NewBaseResponse("Transaction found", result)
+	resp := response.NewBaseResponse("transaction found", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -116,6 +112,6 @@ func (c *TransactionControllerImpl) Delete(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("deleted Transaction successfully", nil)
+	resp := response.NewBaseResponse("deleted transaction successfully", nil)
 	ctx.JSON(http.StatusOK, resp)
 }

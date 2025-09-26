@@ -5,8 +5,11 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 )
 
 type AccountadsRepositoryImpl struct {
@@ -15,6 +18,24 @@ type AccountadsRepositoryImpl struct {
 
 func NewAccountadsRepository(db *gorm.DB) AccountadsRepository {
 	return &AccountadsRepositoryImpl{DB: db}
+}
+
+func (r *AccountadsRepositoryImpl) BuildQuery(filter params.AccountadsFilter) *gorm.DB {
+	query := r.DB.Model(entity.Accountads{}).Preload(clause.Associations)
+
+	if filter.ID != nil {
+		query = query.Where("id = ?", filter.ID)
+	}
+
+	if filter.AccountID != nil {
+		query = query.Where("account_id = ?", filter.AccountID)
+	}
+
+	if filter.StartDate != nil && filter.EndDate != nil {
+		query = query.Where("account_id = ?", filter.AccountID)
+	}
+
+	return query
 }
 
 // Create implements AccountadsRepository.
@@ -29,18 +50,18 @@ func (r *AccountadsRepositoryImpl) Create(data *entity.Accountads) (*entity.Acco
 }
 
 // FindAll implements AccountadsRepository.
-func (r *AccountadsRepositoryImpl) FindAll() ([]*entity.Accountads, error) {
+func (r *AccountadsRepositoryImpl) FindAll(filter params.AccountadsFilter) ([]*entity.Accountads, error) {
 	var items []*entity.Accountads
-	if err := r.DB.Find(&items).Error; err != nil {
+	if err := r.BuildQuery(filter).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindByID implements AccountadsRepository.
-func (r *AccountadsRepositoryImpl) FindByID(id string) (*entity.Accountads, error) {
+func (r *AccountadsRepositoryImpl) FindOne(filter params.AccountadsFilter) (*entity.Accountads, error) {
 	var item entity.Accountads
-	if err := r.DB.Where("id = ?", id).First(&item).Error; err != nil {
+	if err := r.BuildQuery(filter).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return &item, nil
@@ -69,7 +90,7 @@ func (r *AccountadsRepositoryImpl) Delete(id string) error {
 func (r *AccountadsRepositoryImpl) FindByDateAndAccount(date *time.Time, AccountID string) (*entity.Accountads, error) {
 	var item entity.Accountads
 	err := r.DB.
-		Where("date::date = ?", date.Format("2006-01-02")).
+		Where("date::date = ?", date.Format(constants.LayoutYYMMDD)).
 		Where("account_id = ?", AccountID).
 		First(&item).Error
 

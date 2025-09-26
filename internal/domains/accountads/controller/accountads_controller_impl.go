@@ -82,7 +82,7 @@ func (c *AccountadsControllerImpl) FindAll(ctx *gin.Context) {
 func (c *AccountadsControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.service.FindByID(id)
+	result, err := c.service.FindOne(id)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

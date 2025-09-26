@@ -11,7 +11,7 @@ func RegisterRoutes(router *gin.RouterGroup, controller controller.TransactionCo
 	{
 		transactionRouter.GET("", controller.FindAll)
 		transactionRouter.POST("", controller.Create)
-		transactionRouter.GET("/:id", controller.FindByID)
+		// transactionRouter.GET("/:id", controller.FindByID)
 		transactionRouter.PUT("/:id", controller.Update)
 		transactionRouter.DELETE("/:id", controller.Delete)
 	}

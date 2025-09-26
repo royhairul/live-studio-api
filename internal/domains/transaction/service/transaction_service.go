@@ -8,15 +8,13 @@ import (
 
 type TransactionService interface {
 	FindAll() ([]*params.TransactionResponse, error)
-	FindAllByStatus(status string) ([]*params.TransactionResponse, error)
-	FindAllByAccountAndStatus(accountID string, status string) (*params.TransactionResponse, error)
-	FindAllByAccountStatusDate(accountID string, status string, startTime *time.Time, endDate *time.Time) (*params.TransactionResponse, error)
-	FindAllByDate(accountID string, startDate *time.Time, endDate *time.Time) ([]*params.TransactionResponse, error)
-
-	FindByAccount(accountID string) (*params.TransactionResponse, error)
-	FindByID(id string) (*params.TransactionResponse, error)
-
+	FindOne() (*params.TransactionDetailResponse, error)
 	Create(req params.CreateTransactionRequest) ([]*params.CreatedTransactionResponse, error)
 	Update(id string, req params.UpdateTransactionRequest) (*params.TransactionResponse, error)
 	Delete(id string) error
+
+	WithID(id string) TransactionService
+	WithAccountID(accountID string) TransactionService
+	WithStatus(status string) TransactionService
+	WithDate(startTime time.Time, endTime time.Time) TransactionService
 }
