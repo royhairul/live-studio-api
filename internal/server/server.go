@@ -13,6 +13,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance"
 	"github.com/royhairul/live-studio-api/internal/domains/auth"
+	"github.com/royhairul/live-studio-api/internal/domains/dashboard"
 	"github.com/royhairul/live-studio-api/internal/domains/finance"
 	"github.com/royhairul/live-studio-api/internal/domains/host"
 	"github.com/royhairul/live-studio-api/internal/domains/live"
@@ -77,5 +78,6 @@ func NewApp() *fx.App {
 		order.Module,
 		transaction.Module,
 		target.Module,
+		dashboard.Module,
 	)
 }
