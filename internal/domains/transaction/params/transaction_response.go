@@ -14,6 +14,12 @@ type Commission struct {
 	Paid    int64 `json:"paid"`
 }
 
+type TransactionCommission struct {
+	CommissionTotal   int64
+	CommissionPaid    int64
+	CommissionPending int64
+}
+
 type TransactionResponse struct {
 	// TODO: add response fields
 	AccountID   uint                        `json:"account_id"`

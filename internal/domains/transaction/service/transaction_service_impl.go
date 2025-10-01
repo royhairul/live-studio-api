@@ -179,9 +179,7 @@ func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionR
 
 // FindAll implements TransactionService.
 func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error) {
-	filter := &params.TransactionFilter{}
-
-	transactions, err := s.repository.FindAll(*filter)
+	transactions, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -227,9 +225,7 @@ func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error
 
 // FindOne implements TransactionService.
 func (s *TransactionServiceImpl) FindOne() (*params.TransactionDetailResponse, error) {
-	filter := &params.TransactionFilter{}
-
-	transaction, err := s.repository.FindOne(*filter)
+	transaction, err := s.repository.FindOne(s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -238,244 +234,24 @@ func (s *TransactionServiceImpl) FindOne() (*params.TransactionDetailResponse, e
 	return result, nil
 }
 
-// FindAllByStatus implements TransactionService.
-// func (s *TransactionServiceImpl) FindAllByStatus(status string) ([]*params.TransactionResponse, error) {
-// 	transactions, err := s.repository.FindAllByStatus(status)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	grouped := make(map[uint]*params.TransactionResponse)
-
-// 	for _, tx := range transactions {
-// 		if _, exists := grouped[tx.AccountID]; !exists {
-// 			grouped[tx.AccountID] = &params.TransactionResponse{
-// 				AccountID:   tx.Account.ID,
-// 				AccountName: tx.Account.Name,
-// 				Total:       0,
-// 				List:        []params.TransactionDetailResponse{},
-// 			}
-// 		}
-
-// 		grouped[tx.AccountID].Total++
-// 		grouped[tx.AccountID].Commission.Total += tx.EstimatedTotalCommission
-
-// 		if tx.Status == "Waiting for payment" || tx.Status == "Completed" {
-// 			grouped[tx.AccountID].Commission.Paid += tx.EstimatedTotalCommission
-// 		}
-
-// 		if tx.Status == "Pending" {
-// 			grouped[tx.AccountID].Commission.Pending += tx.EstimatedTotalCommission
-// 		}
-
-// 		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
-// 	}
-
-// 	var results []*params.TransactionResponse
-// 	for _, res := range grouped {
-// 		results = append(results, res)
-// 	}
-
-// 	return results, nil
-// }
-
-// FindAllByAccount implements TransactionService.
-// func (s *TransactionServiceImpl) FindByAccount(accountID string) (*params.TransactionResponse, error) {
-// 	account, err := s.accountSvc.FindById(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	transactions, err := s.repository.FindAllByAccount(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	list := []params.TransactionDetailResponse{}
-
-// 	result := &params.TransactionResponse{
-// 		AccountID:   account.ID,
-// 		AccountName: account.Name,
-// 		Total:       len(transactions),
-// 		List:        list,
-// 	}
-
-// 	return result, nil
-// }
-
-// FindAllByAccountAndStatus implements TransactionService.
-// func (s *TransactionServiceImpl) FindAllByAccountAndStatus(accountID string, status string) (*params.TransactionResponse, error) {
-// 	account, err := s.accountSvc.FindById(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	transactions, err := s.repository.FindAllByAccount(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	txPaid, err := s.repository.FindAllByAccountStatus(accountID, "Waiting for payment")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	txPending, err := s.repository.FindAllByAccountStatus(accountID, "Pending")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	list := []params.TransactionDetailResponse{}
-
-// 	totalAll := 0
-// 	for _, tx := range transactions {
-// 		list = append(list, *params.NewTransactionDetailResponse(tx))
-// 		totalAll += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	totalPaid := 0
-// 	for _, tx := range txPaid {
-// 		totalPaid += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	totalPending := 0
-// 	for _, tx := range txPending {
-// 		totalPending += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	commission := params.Commission{
-// 		Total:   int64(totalAll),
-// 		Pending: int64(totalPending),
-// 		Paid:    int64(totalPaid),
-// 	}
-
-// 	result := &params.TransactionResponse{
-// 		AccountID:   account.ID,
-// 		AccountName: account.Name,
-// 		Total:       len(transactions),
-// 		Commission:  commission,
-// 		List:        list,
-// 	}
-
-// 	return result, nil
-// }
-
-// FindAllByAccountStatusDate implements TransactionService.
-// func (s *TransactionServiceImpl) FindAllByAccountStatusDate(accountID string, status string, startDate *time.Time, endDate *time.Time) (*params.TransactionResponse, error) {
-// 	account, err := s.accountSvc.FindById(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	transactions, err := s.repository.FindAllByAccount(accountID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	txPaid, err := s.repository.FindAllByAccountStatusDate(accountID, "Waiting for payment", startDate, endDate)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	txPaidCompleted, err := s.repository.FindAllByAccountStatusDate(accountID, "Complete", startDate, endDate)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	txPending, err := s.repository.FindAllByAccountStatusDate(accountID, "Pending", startDate, endDate)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	list := []params.TransactionDetailResponse{}
-
-// 	totalAll := 0
-// 	for _, tx := range transactions {
-// 		list = append(list, *params.NewTransactionDetailResponse(tx))
-// 		totalAll += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	totalPaid := 0
-// 	for _, tx := range txPaid {
-// 		totalPaid += int(tx.EstimatedTotalCommission)
-// 	}
-// 	for _, tx := range txPaidCompleted {
-// 		totalPaid += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	totalPending := 0
-// 	for _, tx := range txPending {
-// 		totalPending += int(tx.EstimatedTotalCommission)
-// 	}
-
-// 	commission := params.Commission{
-// 		Total:   int64(totalAll),
-// 		Pending: int64(totalPending),
-// 		Paid:    int64(totalPaid),
-// 	}
-
-// 	result := &params.TransactionResponse{
-// 		AccountID:   account.ID,
-// 		AccountName: account.Name,
-// 		Total:       len(transactions),
-// 		Commission:  commission,
-// 		List:        list,
-// 	}
-
-// 	return result, nil
-// }
-
-// FindAllByDate implements TransactionService.
-// func (s *TransactionServiceImpl) FindAllByDate(accountID string, startDate *time.Time, endDate *time.Time) ([]*params.TransactionResponse, error) {
-// 	transactions, err := s.repository.FindAllByDate(startDate, endDate)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	grouped := make(map[uint]*params.TransactionResponse)
-
-// 	for _, tx := range transactions {
-// 		if _, exists := grouped[tx.AccountID]; !exists {
-// 			grouped[tx.AccountID] = &params.TransactionResponse{
-// 				AccountID:   tx.Account.ID,
-// 				AccountName: tx.Account.Name,
-// 				Commission: params.Commission{
-// 					Total:   0,
-// 					Pending: 0,
-// 					Paid:    0,
-// 				},
-// 				Total: 0,
-// 				List:  []params.TransactionDetailResponse{},
-// 			}
-// 		}
-
-// 		grouped[tx.AccountID].Total++
-// 		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
-
-// 		// Commission
-// 		if tx.Status == "Waiting for payment" {
-// 			grouped[tx.AccountID].Commission.Paid += int64(tx.EstimatedTotalCommissionWithMCN)
-// 		}
-// 		if tx.Status == "Pending" {
-// 			grouped[tx.AccountID].Commission.Pending += int64(tx.EstimatedTotalCommissionWithMCN)
-// 		}
-// 		grouped[tx.AccountID].Commission.Total += int64(tx.EstimatedTotalCommissionWithMCN)
-// 	}
-
-// 	results := []*params.TransactionResponse{}
-// 	for _, res := range grouped {
-// 		results = append(results, res)
-// 	}
-
-// 	return results, nil
-// }
-
-// FindByID implements TransactionService.
-func (s *TransactionServiceImpl) FindByID(id string) (*params.TransactionResponse, error) {
-	panic("unimplemented")
-}
-
 // Delete implements TransactionService.
 func (s *TransactionServiceImpl) Delete(id string) error {
 	panic("unimplemented")
+}
+
+// GetTotalCommission implements TransactionService.
+func (s *TransactionServiceImpl) GetTotalCommission() (*params.TransactionCommission, error) {
+	transactions, err := s.FindAll()
+	if err != nil {
+		return &params.TransactionCommission{}, err
+	}
+
+	var result params.TransactionCommission
+	for _, tx := range transactions {
+		result.CommissionTotal += tx.Commission.Total
+		result.CommissionPaid += tx.Commission.Paid
+		result.CommissionPending += tx.Commission.Pending
+	}
+
+	return &result, nil
 }

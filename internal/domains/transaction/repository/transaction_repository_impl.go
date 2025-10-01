@@ -23,11 +23,12 @@ func (r *TransactionRepositoryImpl) BuildQuery(filter params.TransactionFilter) 
 	query := r.DB.Model(&entity.Transaction{}).Preload("Account")
 
 	if filter.StartTime != nil && filter.EndTime != nil {
-		query = query.Where("date::date BETWEEN ? AND ?", filter.StartTime, filter.EndTime)
+		query = query.Where("purchase_time::date BETWEEN ? AND ?", filter.StartTime, filter.EndTime)
 	}
 	if filter.AccountID != nil {
 		query = query.Where("account_id = ?", *filter.AccountID)
 	}
+
 	if filter.Status != nil {
 		query = query.Where("status = ?", *filter.Status)
 	}

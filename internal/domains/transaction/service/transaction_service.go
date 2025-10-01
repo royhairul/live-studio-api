@@ -13,6 +13,8 @@ type TransactionService interface {
 	Update(id string, req params.UpdateTransactionRequest) (*params.TransactionResponse, error)
 	Delete(id string) error
 
+	GetTotalCommission() (*params.TransactionCommission, error)
+
 	WithID(id string) TransactionService
 	WithAccountID(accountID string) TransactionService
 	WithStatus(status string) TransactionService
