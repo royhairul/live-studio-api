@@ -106,8 +106,7 @@ func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.Updat
 
 // FindAll implements AccountsessionService.
 func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse, error) {
-	filter := &params.AccountsessionFilter{}
-	accountSessions, err := s.repository.FindAll(*filter)
+	accountSessions, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +121,7 @@ func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse,
 
 // FindByID implements AccountsessionService.
 func (s *AccountsessionServiceImpl) FindOne() (*params.AccountsessionResponse, error) {
-	filter := &params.AccountsessionFilter{}
-	accountSession, err := s.repository.FindOne(*filter)
+	accountSession, err := s.repository.FindOne(s.options)
 	if err != nil {
 		return nil, err
 	}
