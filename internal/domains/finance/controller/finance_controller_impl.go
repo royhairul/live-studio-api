@@ -41,3 +41,7 @@ var upgrader = websocket.Upgrader{
 		return true // Sesuaikan policy production
 	},
 }
+
+// FindAllCommission implements FinanceController.
+func (f *FinanceControllerImpl) FindAllCommission(ctx *gin.Context) {
+}

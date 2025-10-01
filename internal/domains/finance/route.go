@@ -9,5 +9,7 @@ func RegisterRouter(router *gin.RouterGroup, controller controller.FinanceContro
 	routes := router.Group("/finance")
 	{
 		routes.POST("/shopee", controller.GetLiveFinance)
+
+		routes.GET("/commission", controller.GetLiveFinance)
 	}
 }

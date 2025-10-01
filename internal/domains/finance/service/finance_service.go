@@ -8,4 +8,7 @@ import (
 
 type FinanceService interface {
 	FindAll(financeReq ShopeeParams.ShopeeLiveFinanceRequest) ([]*params.FinanceResponse, error)
+
+	FindAllCommission() (*params.CommissionTotalResponse, error)
+	FindByStudioCommission() (*params.CommissionStudioDetailResponse, error)
 }
