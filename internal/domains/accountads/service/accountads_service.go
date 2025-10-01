@@ -14,7 +14,10 @@ type AccountadsService interface {
 	Update(id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error)
 	Delete(id string) error
 
+	GetTotalAds() (*params.AccountadsTotalResponse, error)
+
 	WithAccountID(accountID string) AccountadsService
+	WithAccounts(accountIDs []string) AccountadsService
 	WithDateRange(startDate, endDate time.Time) AccountadsService
 
 	FindByDateAndAccounts(startDate, endDate *time.Time, accountID string) ([]*params.AccountadsResponse, error)

@@ -5,12 +5,15 @@ import (
 	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 )
 
+type AccountadsTotalResponse struct {
+	TotalAds uint `json:"total_ads"`
+}
+
 type AccountadsResponse struct {
 	// TODO: add response fields
 	ID   uint   `json:"id"`
 	Date string `json:"date"`
 	Ads  uint   `json:"ads"`
-	Helo string `json:"helo"`
 }
 
 func NewAccountadsResponse(accountAds *entity.Accountads) *AccountadsResponse {
@@ -18,6 +21,5 @@ func NewAccountadsResponse(accountAds *entity.Accountads) *AccountadsResponse {
 		ID:   accountAds.ID,
 		Date: accountAds.Date.Format(constants.LayoutMMYY),
 		Ads:  accountAds.Spend,
-		Helo: "ahiii",
 	}
 }

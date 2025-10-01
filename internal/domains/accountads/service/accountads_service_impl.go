@@ -25,6 +25,23 @@ func NewAccountadsService(repository repository.AccountadsRepository) Accountads
 	}
 }
 
+// GetTotalAds implements AccountadsService.
+func (s *AccountadsServiceImpl) GetTotalAds() (*params.AccountadsTotalResponse, error) {
+	ads, err := s.FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var total uint
+	for _, ad := range ads {
+		total += ad.Ads
+	}
+
+	return &params.AccountadsTotalResponse{
+		TotalAds: total,
+	}, nil
+}
+
 // Create implements AccountadsService.
 func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
 	date, err := timehandler.ParseDate(req.Date)
@@ -122,8 +139,7 @@ func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsReq
 
 // FindAll implements AccountadsService.
 func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) {
-	filter := params.AccountadsFilter{}
-	items, err := s.repository.FindAll(filter)
+	items, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -187,5 +203,11 @@ func (s *AccountadsServiceImpl) WithAccountID(accountID string) AccountadsServic
 func (s *AccountadsServiceImpl) WithDateRange(startDate time.Time, endDate time.Time) AccountadsService {
 	s.options.StartDate = &startDate
 	s.options.EndDate = &endDate
+	return s
+}
+
+// WithAccounts implements AccountadsService.
+func (s *AccountadsServiceImpl) WithAccounts(accountIDs []string) AccountadsService {
+	s.options.AccountIDs = accountIDs
 	return s
 }
