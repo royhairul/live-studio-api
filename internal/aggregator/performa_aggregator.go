@@ -133,6 +133,7 @@ func (p *PerformaAggregatorImpl) CalculatePerforma(
 		total.CommissionPaid += tx.CommissionPaid
 		total.CommissionPending += tx.CommissionPending
 		total.CommissionTotal += tx.CommissionTotal
+		total.Income += item.Income
 	}
 
 	return list, total, nil
@@ -219,6 +220,7 @@ func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, sta
 		total.CommissionPaid += tx.CommissionPaid
 		total.CommissionPending += tx.CommissionPending
 		total.CommissionTotal += tx.CommissionTotal
+		total.Income += item.Income
 	}
 
 	return list, total, nil
