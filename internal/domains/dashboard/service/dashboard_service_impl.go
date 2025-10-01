@@ -94,7 +94,7 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 		var studioIncome, studioPrevIncome int64
 
 		// Get Account in this studio
-		accounts, err := d.accountSvc.FindByStudio(fmt.Sprintf("%d", studio.ID))
+		accounts, err := d.accountSvc.WithStudioID(fmt.Sprintf("%d", studio.ID)).FindAll()
 		if err != nil {
 			return nil, err
 		}
