@@ -9,21 +9,21 @@ import (
 
 	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
-	accountrepo "github.com/royhairul/live-studio-api/internal/domains/account/repository"
+	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
 )
 
 type LiveServiceImpl struct {
-	accountRepo   accountrepo.AccountRepository
+	accountSvc    accountservice.AccountService
 	shopeeLiveSvc shopeeservice.ShopeeLiveService
 }
 
-func NewLiveService(accountRepo accountrepo.AccountRepository, shopeeLiveSvc shopeeservice.ShopeeLiveService) LiveService {
-	return &LiveServiceImpl{accountRepo, shopeeLiveSvc}
+func NewLiveService(accountSvc accountservice.AccountService, shopeeLiveSvc shopeeservice.ShopeeLiveService) LiveService {
+	return &LiveServiceImpl{accountSvc, shopeeLiveSvc}
 }
 
 // GetLive implements LiveService.
 func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
-	accounts, err := l.accountRepo.FindAll()
+	accounts, err := l.accountSvc.FindAll()
 	if err != nil {
 		return nil, err
 	}
