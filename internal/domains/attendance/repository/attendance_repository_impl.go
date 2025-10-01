@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log"
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
@@ -33,6 +34,7 @@ func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *g
 	}
 
 	if filter.StudioID != nil {
+		log.Println("Filter Studio ID:", *filter.StudioID)
 		query = query.Where("studio_id", filter.StudioID)
 	}
 

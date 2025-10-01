@@ -18,4 +18,5 @@ type AttendanceService interface {
 	WithDateRange(startTime, endTime time.Time) AttendanceService
 	WithHostID(hostID string) AttendanceService
 	WithAccountID(accountID string) AttendanceService
+	WithStudioID(studioID string) AttendanceService
 }

@@ -74,9 +74,14 @@ func (s *AttendanceServiceImpl) WithHostID(hostID string) AttendanceService {
 	return s
 }
 
+// WithStudioID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithStudioID(studioID string) AttendanceService {
+	s.options.StudioID = &studioID
+	return s
+}
+
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
-	filter := &params.AttendanceFilter{}
-	attendances, err := s.repository.FindAll(*filter)
+	attendances, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +183,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 	}
 
 	// Create record for account session
-	accounts, err := s.accountSvc.FindByStudio(strconv.FormatUint(uint64(req.StudioID), 10))
+	accounts, err := s.accountSvc.WithStudioID(fmt.Sprintf("%d", req.StudioID)).FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +243,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 	}
 
 	for _, session := range accountSessions {
-		account, err := s.accountSvc.FindById(strconv.FormatUint(uint64(session.AccountID), 10))
+		account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne()
 		if err != nil {
 			log.Printf("Failed to get account ID %d: %v", session.AccountID, err)
 			continue
