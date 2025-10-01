@@ -7,6 +7,7 @@ import (
 	"github.com/royhairul/live-studio-api/config"
 	"github.com/royhairul/live-studio-api/database"
 	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/aggregator"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads"
@@ -58,6 +59,10 @@ func NewApp() *fx.App {
 			snowflakeid.InitSnowflake,
 			Start, // server.Start ini tetap untuk start HTTP server
 		),
+
+		// Aggregator
+		aggregator.Module,
+
 		// Module Domains
 		permission.Module,
 		role.Module,

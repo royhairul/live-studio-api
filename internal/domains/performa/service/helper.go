@@ -200,15 +200,49 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(
 	return list, totalGMV, totalAds, totalCommissionPaid, totalCommissionPending, totalIncome, nil
 }
 
+type TotalPerforma struct {
+	GMV               int64
+	Ads               int64
+	CommissionPaid    int64
+	CommissionPending int64
+	Income            int64
+}
+
+func (p *PerformaServiceImpl) BuildPerformaStudioDetail(
+	attendance []*attendanceparams.AttendanceResponse,
+	startDate, endDate *time.Time,
+) (list []params.PerformaStudioDetailItemResponse, total TotalPerforma, error error) {
+	// Initialize
+	list = []params.PerformaStudioDetailItemResponse{}
+	total = TotalPerforma{}
+
+	for _, att := range attendance {
+		sessions, _ := p.accountSessionSvc.
+			WithAttendanceID(fmt.Sprintf("%d", att.ID)).
+			FindAll()
+
+		for _, session := range sessions {
+			if session.CheckIn == nil || session.CheckOut == nil {
+				continue
+			}
+
+			total.GMV += int64(session.GMVPaid)
+		}
+
+	}
+
+	return list, total, nil
+}
+
 func NewMetric(curr, prev int64) params.Metric {
 	return params.Metric{
 		Total: curr,
 		Diff:  curr - prev,
-		Ratio: calcRatio(curr, prev),
+		Ratio: CalcRatio(curr, prev),
 	}
 }
 
-func calcRatio(curr, prev int64) int64 {
+func CalcRatio(curr, prev int64) int64 {
 	if prev == 0 {
 		if curr > 0 {
 			return 100

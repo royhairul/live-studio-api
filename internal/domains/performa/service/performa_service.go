@@ -7,7 +7,6 @@ type PerformaService interface {
 	GetHostByID(id string, startDate string, endDate string) (*params.PerformaHostDetailResponse, error)
 
 	GetAccounts(startDate string, endDate string) (*params.PerformaAccountResponse, error)
-	GetAccountByID()
 
 	GetStudios(startDate string, endDate string) (*params.PerformaStudioResponse, error)
 	GetStudioByID(id string, startDate string, endDate string) (*params.PerformaStudioDetailResponse, error)

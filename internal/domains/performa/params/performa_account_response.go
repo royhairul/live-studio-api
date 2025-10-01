@@ -1,10 +1,10 @@
 package params
 
 type PerformaAccountResponse struct {
-	CurrentPeriod  PeriodInfo                          `json:"current_period"`
-	PreviousPeriod PeriodInfo                          `json:"previous_period"`
-	Metrics        Metrics                             `json:"metrics"`
-	List           []PerformaAccountDetailItemResponse `json:"list"`
+	CurrentPeriod  PeriodInfo                         `json:"current_period"`
+	PreviousPeriod PeriodInfo                         `json:"previous_period"`
+	Metrics        Metrics                            `json:"metrics"`
+	List           []PerformaStudioDetailItemResponse `json:"list"`
 }
 
 type PerformaAccountDetailItemResponse struct {
