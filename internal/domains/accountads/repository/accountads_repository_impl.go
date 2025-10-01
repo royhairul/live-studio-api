@@ -32,7 +32,7 @@ func (r *AccountadsRepositoryImpl) BuildQuery(filter params.AccountadsFilter) *g
 	}
 
 	if filter.StartDate != nil && filter.EndDate != nil {
-		query = query.Where("account_id = ?", filter.AccountID)
+		query = query.Where("date::date BETWEEN ? AND ?", filter.StartDate, filter.EndDate)
 	}
 
 	return query

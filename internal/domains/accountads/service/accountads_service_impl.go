@@ -72,7 +72,12 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 		return nil, err
 	}
 
-	exist, err := s.repository.FindByDateAndAccount(parsedDate, fmt.Sprintf("%d", req.AccountID))
+	accountIDStr := fmt.Sprint(req.AccountID)
+	exist, err := s.repository.FindOne(params.AccountadsFilter{
+		AccountID: &accountIDStr,
+		StartDate: parsedDate,
+		EndDate:   parsedDate,
+	})
 	if err != nil {
 		// if error record not found, create a new
 		if errors.Is(err, gorm.ErrRecordNotFound) {
