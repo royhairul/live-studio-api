@@ -1,15 +1,18 @@
 package repository
 
-import "github.com/royhairul/live-studio-api/internal/domains/account/entity"
+import (
+	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
+	"github.com/royhairul/live-studio-api/internal/domains/account/params"
+)
 
 type AccountRepository interface {
-	FindAll() ([]*entity.Account, error)
-	FindById(id string) (*entity.Account, error)
-	FindByUniqueId(uid string) (*entity.Account, error)
+	FindAll(filter params.AccountFilter) ([]*entity.Account, error)
+	FindOne(filter params.AccountFilter) (*entity.Account, error)
 	Create(account *entity.Account) (*entity.Account, error)
 	Update(account *entity.Account) (*entity.Account, error)
 	Save(account *entity.Account) (*entity.Account, error)
 	Delete(id string) error
 
-	FindByStudio(studioId string) ([]*entity.Account, error)
+	// FindByUniqueId(uid string) (*entity.Account, error)
+	// FindByStudio(studioId string) ([]*entity.Account, error)
 }

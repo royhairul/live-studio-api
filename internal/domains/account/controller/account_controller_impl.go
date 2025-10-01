@@ -25,7 +25,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 	studioId := ctx.Query("studio")
 
 	if studioId != "" {
-		accounts, err := a.AccountService.FindByStudio(studioId)
+		accounts, err := a.AccountService.WithStudioID(studioId).FindAll()
 		if err != nil {
 			errorhandler.HandleError(ctx, err)
 			return
@@ -48,7 +48,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	account, err := a.AccountService.FindById(id)
+	account, err := a.AccountService.WithID(id).FindOne()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -117,7 +117,7 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
 	studioId := ctx.Param("studioId")
 
-	accounts, err := a.AccountService.FindByStudio(studioId)
+	accounts, err := a.AccountService.WithStudioID(studioId).FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
