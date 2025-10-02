@@ -3,10 +3,12 @@ package timehandler
 import (
 	"fmt"
 	"time"
+
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 )
 
 func ParseDate(str string) (*time.Time, error) {
-	layout := "2006-01-02"
+	layout := constants.LayoutYYMMDD
 
 	parsedDate, err := time.Parse(layout, str)
 	if err != nil {
@@ -26,7 +28,7 @@ func ParseInt64Date(timestamp int64) *time.Time {
 }
 
 func FormatDate(date *time.Time) string {
-	layout := "2006-01-02"
+	layout := constants.LayoutYYMMDD
 
 	return date.Format(layout)
 }
