@@ -11,7 +11,7 @@ type CreateAccountadsRequest struct {
 }
 
 type UpdateAccountadsRequest struct {
-	AccountID *uint   `json:"accountid" validate:"required"`
+	AccountID *uint   `json:"account_id" validate:"required"`
 	Date      *string `json:"date" validate:"required"`
 	Ads       *uint   `json:"ads" vaildate:"required"`
 }
