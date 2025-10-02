@@ -15,6 +15,8 @@ import (
 	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 	studioservice "github.com/royhairul/live-studio-api/internal/domains/studio/service"
 	transactionservice "github.com/royhairul/live-studio-api/internal/domains/transaction/service"
+
+	performaagg "github.com/royhairul/live-studio-api/internal/aggregator"
 )
 
 type DashboardServiceImpl struct {
@@ -26,6 +28,7 @@ type DashboardServiceImpl struct {
 	transactionSvc    transactionservice.TransactionService
 	studioSvc         studioservice.StudioService
 	accountAdsSvc     accountadsservice.AccountadsService
+	performaAgg       performaagg.PerformaAggregator
 }
 
 func NewDashboardService(
@@ -36,6 +39,7 @@ func NewDashboardService(
 	transactionSvc transactionservice.TransactionService,
 	accountAdsSvc accountadsservice.AccountadsService,
 	studioSvc studioservice.StudioService,
+	performaAgg performaagg.PerformaAggregator,
 ) DashboardService {
 	return &DashboardServiceImpl{
 		hostSvc,
@@ -45,6 +49,7 @@ func NewDashboardService(
 		transactionSvc,
 		studioSvc,
 		accountAdsSvc,
+		performaAgg,
 	}
 }
 
@@ -60,136 +65,62 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 	prevEnd := start.AddDate(0, 0, -1)
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
-	// Get Attendances (current + previous)
-	attendances, err := d.attendanceSvc.WithDateRange(*start, *end).FindAll()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get attendances: %v", err)
-	}
-
-	prevAttendances, err := d.attendanceSvc.WithDateRange(prevStart, prevEnd).FindAll()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get prev attendances: %v", err)
-	}
-
 	// Get All Studio
 	studios, err := d.studioSvc.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
-	list := []performaparams.PerformaStudioItemResponse{}
+	var charts []params.Chart
+	for day := *start; !day.After(*end); day = day.AddDate(0, 0, 1) {
+		startDay := timehandler.StartOfDay(day)
+		endDay := timehandler.EndOfDay(day)
 
-	var currGMV, prevGMV int64
-	var currCommissionPaid, prevCommissionPaid int64
-	var currCommissionPending, prevCommissionPending int64
-	var currAds, prevAds uint
-	var currIncome, prevIncome int64
-
-	for _, studio := range studios {
-		// Reset per studio
-		var studioGMV, studioPrevGMV int64
-		var studioCommissionPaid, studioPrevCommissionPaid int64
-		var studioCommissionPending, studioPrevCommissionPending int64
-		var studioAds, studioPrevAds uint
-		var studioIncome, studioPrevIncome int64
-
-		// Get Account in this studio
-		accounts, err := d.accountSvc.WithStudioID(fmt.Sprintf("%d", studio.ID)).FindAll()
+		_, total, err := d.performaAgg.CalculatePerforma(startDay, endDay)
 		if err != nil {
 			return nil, err
 		}
+		charts = append(charts, params.Chart{
+			Date:       timehandler.FormatDate(&day),
+			GMV:        total.GMV,
+			Ads:        total.Ads,
+			Commission: total.CommissionTotal,
+			Income:     total.Income,
+		})
+	}
 
-		for _, account := range accounts {
-			// current transactions
-			transactions, err := d.transactionSvc.
-				WithAccountID(fmt.Sprintf("%d", account.ID)).
-				WithDate(*start, *end).
-				FindAll()
-			if err != nil {
-				return nil, err
-			}
-			for _, tx := range transactions {
-				studioCommissionPaid += int64(tx.Commission.Paid)
-				studioCommissionPending += int64(tx.Commission.Pending)
-			}
+	list := []performaparams.PerformaStudioItemResponse{}
 
-			// previous transactions
-			prevTransactions, err := d.transactionSvc.
-				WithAccountID(fmt.Sprintf("%d", account.ID)).
-				WithDate(prevStart, prevEnd).
-				FindAll()
-			if err != nil {
-				return nil, err
-			}
-			for _, tx := range prevTransactions {
-				studioPrevCommissionPaid += int64(tx.Commission.Paid)
-				studioPrevCommissionPending += int64(tx.Commission.Pending)
-			}
+	var (
+		currGMV, prevGMV               int64
+		currCommission, prevCommission int64
+		currAds, prevAds               int64
+		currIncome, prevIncome         int64
+	)
 
-			// ads
-			allAds, err := d.accountAdsSvc.FindByDateAndAccounts(start, end, fmt.Sprintf("%d", account.ID))
-			if err != nil {
-				return nil, err
-			}
-			for _, a := range allAds {
-				studioAds += a.Ads
-			}
-
-			prevAllAds, err := d.accountAdsSvc.FindByDateAndAccounts(&prevStart, &prevEnd, fmt.Sprintf("%d", account.ID))
-			if err != nil {
-				return nil, err
-			}
-			for _, a := range prevAllAds {
-				studioPrevAds += a.Ads
-			}
-		}
-
-		// GMV current
-		for _, att := range attendances {
-			accountsessions, err := d.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
-			if err != nil {
-				return nil, err
-			}
-			for _, session := range accountsessions {
-				studioGMV += int64(session.GMVPaid)
-			}
-		}
-
-		// GMV previous
-		for _, att := range prevAttendances {
-			accountsessions, err := d.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
-			if err != nil {
-				return nil, err
-			}
-			for _, session := range accountsessions {
-				studioPrevGMV += int64(session.GMVPaid)
-			}
-		}
-
-		studioIncome = (studioCommissionPaid + studioCommissionPending) - int64(studioAds)
-		studioPrevIncome = (studioPrevCommissionPaid + studioPrevCommissionPending) - int64(studioPrevAds)
+	for _, studio := range studios {
+		_, currTotal, _ := d.performaAgg.CalculatePerformaByStudio(fmt.Sprint(studio.ID), start, end)
+		_, prevTotal, _ := d.performaAgg.CalculatePerformaByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 
 		// Tambahkan ke list
 		list = append(list, performaparams.PerformaStudioItemResponse{
 			StudioID:   fmt.Sprintf("%d", studio.ID),
 			StudioName: studio.Name,
-			Commission: studioCommissionPaid + studioCommissionPending,
-			GMV:        studioGMV,
-			Ads:        int64(studioAds),
-			Income:     studioIncome,
+			Commission: currTotal.CommissionTotal,
+			GMV:        currTotal.GMV,
+			Ads:        currTotal.Ads,
+			Income:     currTotal.Income,
 		})
 
 		// Akumulasi ke total metrics
-		currGMV += studioGMV
-		prevGMV += studioPrevGMV
-		currCommissionPaid += studioCommissionPaid
-		prevCommissionPaid += studioPrevCommissionPaid
-		currCommissionPending += studioCommissionPending
-		prevCommissionPending += studioPrevCommissionPending
-		currAds += studioAds
-		prevAds += studioPrevAds
-		currIncome += studioIncome
-		prevIncome += studioPrevIncome
+		currGMV += currTotal.GMV
+		prevGMV += prevTotal.GMV
+		currCommission += currTotal.CommissionTotal
+		prevCommission += prevTotal.CommissionTotal
+		currAds += currTotal.Ads
+		prevAds += prevTotal.Ads
+		currIncome += currTotal.Income
+		prevIncome += prevTotal.Income
 	}
 
 	accounts, err := d.accountSvc.FindAll()
@@ -214,14 +145,16 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 			Days:  days,
 		},
 		Metrics: params.Metrics{
-			Commission: NewMetric((currCommissionPaid + currCommissionPending), (prevCommissionPaid + prevCommissionPending)),
+			Commission: NewMetric(currCommission, prevCommission),
 			GMV:        NewMetric(currGMV, prevGMV),
 			Ads:        NewMetric(int64(currAds), int64(prevAds)),
 			Income:     NewMetric(currIncome, prevIncome),
 			Account:    int64(len(accounts)),
 			Host:       int64(len(hosts)),
+			Studio:     int64(len(studios)),
 		},
-		List: list,
+		Charts: charts,
+		List:   list,
 	}
 
 	return results, nil

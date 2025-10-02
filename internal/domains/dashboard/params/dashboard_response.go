@@ -23,6 +23,15 @@ type Metrics struct {
 	Ads        Metric `json:"ads"`
 	Account    int64  `json:"account"`
 	Host       int64  `json:"host"`
+	Studio     int64  `json:"studio"`
+}
+
+type Chart struct {
+	Date       string `json:"date"`
+	GMV        int64  `json:"gmv"`
+	Ads        int64  `json:"ads"`
+	Commission int64  `json:"commission"`
+	Income     int64  `json:"income"`
 }
 
 type DashboardResponse struct {
@@ -30,4 +39,5 @@ type DashboardResponse struct {
 	PreviousPeriod PeriodInfo                                  `json:"previous_period"`
 	Metrics        Metrics                                     `json:"metrics"`
 	List           []performaparams.PerformaStudioItemResponse `json:"list"`
+	Charts         []Chart                                     `json:"charts"`
 }
