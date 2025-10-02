@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"log"
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
@@ -19,7 +18,7 @@ func NewAttendanceRepository(db *gorm.DB) AttendanceRepository {
 }
 
 func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *gorm.DB {
-	query := r.DB.Model(entity.Attendance{}).Preload(clause.Associations)
+	query := r.DB.Debug().Model(entity.Attendance{}).Preload(clause.Associations)
 
 	if filter.AccountID != nil {
 		query = query.Where("account_id", filter.AccountID)
@@ -34,7 +33,6 @@ func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *g
 	}
 
 	if filter.StudioID != nil {
-		log.Println("Filter Studio ID:", *filter.StudioID)
 		query = query.Where("studio_id", filter.StudioID)
 	}
 

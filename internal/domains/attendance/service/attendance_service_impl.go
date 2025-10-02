@@ -94,11 +94,6 @@ func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) 
 	return results, nil
 }
 
-// FindAllByHostID implements AttendanceService.
-func (s *AttendanceServiceImpl) FindAllByHostID(id string) ([]*params.AttendanceResponse, error) {
-	panic("unimplemented")
-}
-
 // FindUncheckedOut implements AttendanceService.
 func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse, error) {
 	var results []*params.AttendanceResponse
@@ -122,21 +117,6 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 
 			Note: attendance.Note,
 		})
-	}
-
-	return results, nil
-}
-
-// FindByDateRange implements AttendanceService.
-func (s *AttendanceServiceImpl) FindByDateRange(startTime *time.Time, endTime *time.Time) ([]*params.AttendanceResponse, error) {
-	attendances, err := s.repository.FindAllByDateRange(startTime, endTime)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch attendances: %w", err)
-	}
-
-	var results []*params.AttendanceResponse
-	for _, attendance := range attendances {
-		results = append(results, params.NewAttendanceResponse(attendance))
 	}
 
 	return results, nil
@@ -268,22 +248,6 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		if err != nil {
 			return nil, fmt.Errorf("failed to update account session for attendance ID %d: %w", req.ID, err)
 		}
-	}
-
-	result := params.NewAttendanceResponse(attendance)
-	return result, nil
-}
-
-// FindByAccountID implements AttendanceService.
-func (s *AttendanceServiceImpl) FindByAccountID(id string) (*params.AttendanceResponse, error) {
-	parsedID, err := strconv.ParseInt(id, 10, 64) // basis 10
-	if err != nil {
-		return nil, fmt.Errorf("invalid account id: %w", err)
-	}
-
-	attendance, err := s.repository.FindByAccountID(uint(parsedID))
-	if err != nil {
-		return nil, err
 	}
 
 	result := params.NewAttendanceResponse(attendance)
