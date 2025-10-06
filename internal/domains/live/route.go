@@ -9,5 +9,6 @@ func RegisterRouter(router *gin.RouterGroup, controller controller.LiveControlle
 	routes := router.Group("/live")
 	{
 		routes.GET("/shopee", controller.GetLive)
+		routes.GET("/shopee/:id", controller.GetLiveDetail)
 	}
 }

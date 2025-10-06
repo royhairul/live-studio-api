@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -66,4 +67,41 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 
 	}
 	return allRealtimeData, nil
+}
+
+// GetLiveDetail implements LiveService.
+func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string) (*params.LiveDetailResponse, error) {
+	account, err := l.accountSvc.WithID(accountID).FindOne()
+	if err != nil {
+		return nil, err
+	}
+
+	overview, err := l.shopeeLiveSvc.GetDashboardOverviewRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	viewerProfile, err := l.shopeeLiveSvc.GetDashboardViewerRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	buyerProfile, err := l.shopeeLiveSvc.GetDashboardBuyerRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	productList, err := l.shopeeLiveSvc.GetDashboardProductListRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &params.LiveDetailResponse{
+		AccountID:     fmt.Sprint(account.ID),
+		AccountName:   account.Name,
+		Overview:      overview,
+		ViewerProfile: viewerProfile,
+		BuyerProfile:  buyerProfile,
+		ProductList:   productList,
+	}, nil
 }

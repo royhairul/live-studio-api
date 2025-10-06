@@ -6,4 +6,5 @@ import (
 
 type LiveService interface {
 	GetLive() ([]*params.LiveResponse, error)
+	GetLiveDetail(accountID, sessionID string) (*params.LiveDetailResponse, error)
 }

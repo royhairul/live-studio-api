@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/royhairul/live-studio-api/helpers"
+	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/domains/live/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type LiveControllerImpl struct {
@@ -74,4 +76,24 @@ func (l *LiveControllerImpl) GetLive(ctx *gin.Context) {
 			return
 		}
 	}
+}
+
+// GetLiveDetail implements LiveController.
+func (l *LiveControllerImpl) GetLiveDetail(ctx *gin.Context) {
+	accountID := ctx.Param("id")
+	sessionID := ctx.Query("sessionId")
+
+	if sessionID == "" {
+		ctx.JSON(http.StatusBadRequest, response.NewBaseResponse("session ID is required", nil))
+		return
+	}
+
+	live, err := l.service.GetLiveDetail(accountID, sessionID)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("live founded", live)
+	ctx.JSON(http.StatusOK, resp)
 }
