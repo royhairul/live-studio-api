@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/helpers"
+	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 func RequireRoles(roles ...string) gin.HandlerFunc {

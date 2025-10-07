@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/auth/params"
 	"github.com/royhairul/live-studio-api/internal/domains/auth/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type AuthControllerImpl struct {

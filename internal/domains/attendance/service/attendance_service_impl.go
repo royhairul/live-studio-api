@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/constants"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
 	accountsessionparams "github.com/royhairul/live-studio-api/internal/domains/accountsession/params"

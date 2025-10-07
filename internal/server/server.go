@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/config"
 	"github.com/royhairul/live-studio-api/database"
-	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
 	"github.com/royhairul/live-studio-api/internal/aggregator"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account"
@@ -30,8 +29,9 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/transaction"
 	"github.com/royhairul/live-studio-api/internal/domains/user"
 	"github.com/royhairul/live-studio-api/internal/pkg/httpclient"
+	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/validators"
 	"github.com/royhairul/live-studio-api/routes"
-	"github.com/royhairul/live-studio-api/validators"
 	"go.uber.org/fx"
 )
 

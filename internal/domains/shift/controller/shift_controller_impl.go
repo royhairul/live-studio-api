@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/paramhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/params"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/paramhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type ShiftControllerImpl struct {

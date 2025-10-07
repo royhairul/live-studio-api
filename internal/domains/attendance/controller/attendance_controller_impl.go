@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type AttendanceControllerImpl struct {

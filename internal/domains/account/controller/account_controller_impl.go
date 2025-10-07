@@ -6,26 +6,26 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type AccountControllerImpl struct {
-	AccountService service.AccountService
-	validate       *validator.Validate
+	service  service.AccountService
+	validate *validator.Validate
 }
 
-func NewAccountController(accountSvc service.AccountService) AccountController {
-	return &AccountControllerImpl{AccountService: accountSvc}
+func NewAccountController(service service.AccountService) AccountController {
+	return &AccountControllerImpl{service: service}
 }
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 	studioId := ctx.Query("studio")
 
 	if studioId != "" {
-		accounts, err := a.AccountService.WithStudioID(studioId).FindAll()
+		accounts, err := a.service.WithStudioID(studioId).FindAll()
 		if err != nil {
 			errorhandler.HandleError(ctx, err)
 			return
@@ -35,7 +35,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 		return
 	}
 
-	accounts, err := a.AccountService.FindAll()
+	accounts, err := a.service.FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -48,7 +48,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	account, err := a.AccountService.WithID(id).FindOne()
+	account, err := a.service.WithID(id).FindOne()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -65,7 +65,7 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 		return
 	}
 
-	account, err := a.AccountService.CreateOrUpdate(accountReq)
+	account, err := a.service.CreateOrUpdate(accountReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -90,7 +90,7 @@ func (a *AccountControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	result, err := a.AccountService.Update(id, req)
+	result, err := a.service.Update(id, req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -104,7 +104,7 @@ func (a *AccountControllerImpl) Update(ctx *gin.Context) {
 func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := a.AccountService.Delete(id); err != nil {
+	if err := a.service.Delete(id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
@@ -117,7 +117,7 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
 	studioId := ctx.Param("studioId")
 
-	accounts, err := a.AccountService.WithStudioID(studioId).FindAll()
+	accounts, err := a.service.WithStudioID(studioId).FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

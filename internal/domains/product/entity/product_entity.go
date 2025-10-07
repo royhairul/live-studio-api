@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
 	"gorm.io/gorm"
 )
 

@@ -7,12 +7,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/royhairul/live-studio-api/helpers"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/domains/auth/params"
 	"github.com/royhairul/live-studio-api/internal/domains/auth/repository"
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 	userrepo "github.com/royhairul/live-studio-api/internal/domains/user/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 

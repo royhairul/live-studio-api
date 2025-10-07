@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
 
 	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"

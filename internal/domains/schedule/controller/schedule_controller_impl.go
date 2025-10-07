@@ -5,11 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/paramhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule/params"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/paramhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type ScheduleControllerImpl struct {

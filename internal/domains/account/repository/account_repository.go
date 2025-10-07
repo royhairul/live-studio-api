@@ -12,7 +12,4 @@ type AccountRepository interface {
 	Update(account *entity.Account) (*entity.Account, error)
 	Save(account *entity.Account) (*entity.Account, error)
 	Delete(id string) error
-
-	// FindByUniqueId(uid string) (*entity.Account, error)
-	// FindByStudio(studioId string) ([]*entity.Account, error)
 }

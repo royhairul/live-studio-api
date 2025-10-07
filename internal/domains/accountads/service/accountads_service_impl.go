@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/constants"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 	"gorm.io/gorm"
 )
 

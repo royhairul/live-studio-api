@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/params"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/repository"
+	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 type ShiftServiceImpl struct {

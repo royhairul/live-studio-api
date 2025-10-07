@@ -6,8 +6,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/royhairul/live-studio-api/helpers/snowflakeid"
 	productentity "github.com/royhairul/live-studio-api/internal/domains/product/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
 )
 
 type Order struct {

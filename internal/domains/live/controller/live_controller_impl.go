@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/royhairul/live-studio-api/helpers"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/domains/live/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/pkg/response"
+	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 type LiveControllerImpl struct {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/aggregator"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 
 	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 

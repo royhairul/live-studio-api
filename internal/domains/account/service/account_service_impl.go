@@ -3,11 +3,11 @@ package service
 import (
 	"fmt"
 
-	"github.com/royhairul/live-studio-api/helpers"
 	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
+	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 type AccountServiceImpl struct {

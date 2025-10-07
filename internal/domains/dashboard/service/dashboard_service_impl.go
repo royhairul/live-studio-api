@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 
-	"github.com/royhairul/live-studio-api/helpers/timehandler"
 	"github.com/royhairul/live-studio-api/internal/domains/dashboard/params"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 
 	performaparams "github.com/royhairul/live-studio-api/internal/domains/performa/params"
 
