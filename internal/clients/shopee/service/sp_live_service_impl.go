@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
@@ -22,8 +21,8 @@ func NewShopeeLiveService(deps ShopeeLiveServiceDeps) ShopeeLiveService {
 	return &ShopeeLiveServiceImpl{ShopeeClient: deps.ShopeeClient}
 }
 
-// GetShopeeLiveRealTime implements ShopeeLiveService.
-func (s ShopeeLiveServiceImpl) GetShopeeLiveRealTime(cookie string) ([]params.ShopeeLiveReportItemRT, error) {
+// GetLiveSessionRT implements ShopeeLiveService.
+func (s ShopeeLiveServiceImpl) GetLiveSessionRT(cookie string) ([]params.ShopeeLiveReportItemRT, error) {
 	endpoint := "/supply/api/lm/sellercenter/realtime/sessionList"
 	query := map[string]string{
 		"page":     "1",
@@ -75,7 +74,15 @@ func (s *ShopeeLiveServiceImpl) GetDashboardOverviewRT(cookie string, sessionID 
 }
 
 // GetDashboardProductListRT implements ShopeeLiveService.
-func (s *ShopeeLiveServiceImpl) GetDashboardProductListRT(cookie string, sessionID string) ([]params.ShopeeLiveProductResponse, error) {
+func (s *ShopeeLiveServiceImpl) GetDashboardProductListRT(cookie string, sessionID string, page int, pageSize int) (params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse], error) {
+	if page <= 0 {
+		page = 1
+	}
+
+	if pageSize <= 0 {
+		page = 10
+	}
+
 	endpoint := "/supply/api/lm/sellercenter/realtime/dashboard/productList"
 	query := map[string]string{
 		"sessionId":            sessionID,
@@ -83,25 +90,25 @@ func (s *ShopeeLiveServiceImpl) GetDashboardProductListRT(cookie string, session
 		"productListTimeRange": "0",
 		"productListOrderBy":   "productClicks",
 		"sort":                 "desc",
-		"page":                 "1",
-		"pageSize":             "10",
+		"page":                 fmt.Sprint(page),
+		"pageSize":             fmt.Sprint(pageSize),
 	}
 
 	req, err := s.ShopeeClient.NewShopeeRequest("GET", endpoint, query, nil, cookie)
 	if err != nil {
-		return nil, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
+		return params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse]{}, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
 	}
 
 	var result params.ShopeeApiResponse[params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse]]
 	if err := s.ShopeeClient.DoShopeeRequest(req, &result); err != nil {
-		return nil, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
+		return params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse]{}, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
 	}
 
 	if result.Error != 0 {
-		return nil, fmt.Errorf(result.ErrorMsg)
+		return params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse]{}, fmt.Errorf(result.ErrorMsg)
 	}
 
-	return result.Data.List, nil
+	return result.Data, nil
 }
 
 // GetDashboardBuyerRT implements ShopeeLiveService.
@@ -140,14 +147,10 @@ func (s *ShopeeLiveServiceImpl) GetDashboardViewerRT(cookie string, sessionID st
 		return nil, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
 	}
 
-	log.Println("Success to get request dashboard")
-
 	var result params.ShopeeApiResponse[[]params.ShopeeLiveAudienceAnalyticsResponse]
 	if err := s.ShopeeClient.DoShopeeRequest(req, &result); err != nil {
 		return nil, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
 	}
-
-	log.Println(result.Data)
 
 	if result.Error != 0 {
 		return nil, fmt.Errorf(result.ErrorMsg)
