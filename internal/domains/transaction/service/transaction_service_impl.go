@@ -48,27 +48,31 @@ func NewTransactionService(
 
 // WithID implements TransactionService.
 func (s *TransactionServiceImpl) WithID(id string) TransactionService {
-	s.options.ID = &id
-	return s
+	instance := *s
+	instance.options.ID = &id
+	return &instance
 }
 
 // WithStatus implements TransactionService.
 func (s *TransactionServiceImpl) WithStatus(status string) TransactionService {
-	s.options.Status = &status
-	return s
+	instance := *s
+	instance.options.Status = &status
+	return &instance
 }
 
 // WithAccountID implements TransactionService.
 func (s *TransactionServiceImpl) WithAccountID(accountID string) TransactionService {
-	s.options.AccountID = &accountID
-	return s
+	instance := *s
+	instance.options.AccountID = &accountID
+	return &instance
 }
 
 // WithDate implements TransactionService.
 func (s *TransactionServiceImpl) WithDate(startTime time.Time, endTime time.Time) TransactionService {
-	s.options.StartTime = &startTime
-	s.options.EndTime = &endTime
-	return s
+	instance := *s
+	instance.options.StartTime = &startTime
+	instance.options.EndTime = &endTime
+	return &instance
 }
 
 // Create implements TransactionService.

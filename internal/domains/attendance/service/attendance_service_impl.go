@@ -57,27 +57,31 @@ func NewAttendanceService(
 
 // WithAccountID implements AttendanceService.
 func (s *AttendanceServiceImpl) WithAccountID(accountID string) AttendanceService {
-	s.options.AccountID = &accountID
-	return s
+	instance := *s
+	instance.options.AccountID = &accountID
+	return &instance
 }
 
 // WithDateRange implements AttendanceService.
 func (s *AttendanceServiceImpl) WithDateRange(startTime time.Time, endTime time.Time) AttendanceService {
-	s.options.StartTime = &startTime
-	s.options.EndTime = &endTime
-	return s
+	instance := *s
+	instance.options.StartTime = &startTime
+	instance.options.EndTime = &endTime
+	return &instance
 }
 
 // WithHostID implements AttendanceService.
 func (s *AttendanceServiceImpl) WithHostID(hostID string) AttendanceService {
-	s.options.HostID = &hostID
-	return s
+	instance := *s
+	instance.options.HostID = &hostID
+	return &instance
 }
 
 // WithStudioID implements AttendanceService.
 func (s *AttendanceServiceImpl) WithStudioID(studioID string) AttendanceService {
-	s.options.StudioID = &studioID
-	return s
+	instance := *s
+	instance.options.StudioID = &studioID
+	return &instance
 }
 
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
@@ -170,7 +174,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 
 	for _, account := range accounts {
 
-		live, err := s.shopeeSvc.GetShopeeLiveRealTime(account.Cookie)
+		live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
 		if err != nil {
 			log.Printf("Failed to get live data for account %s: %v", account.Name, err)
 			continue
@@ -229,7 +233,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 			continue
 		}
 
-		live, err := s.shopeeSvc.GetShopeeLiveRealTime(account.Cookie)
+		live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
 		if err != nil {
 			log.Printf("Failed to get live data for account %s: %v", account.Name, err)
 			continue

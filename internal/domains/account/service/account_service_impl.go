@@ -29,20 +29,23 @@ func NewAccountService(
 
 // WithID implements AccountService.
 func (a *AccountServiceImpl) WithID(id string) AccountService {
-	a.options.ID = &id
-	return a
+	instance := *a
+	instance.options.ID = &id
+	return &instance
 }
 
 // WithStudioID implements AccountService.
 func (a *AccountServiceImpl) WithStudioID(studioID string) AccountService {
-	a.options.StudioID = &studioID
-	return a
+	instance := *a
+	instance.options.StudioID = &studioID
+	return &instance
 }
 
 // WithUniqueID implements AccountService.
 func (a *AccountServiceImpl) WithUniqueID(uid string) AccountService {
-	a.options.UniqueID = &uid
-	return a
+	instance := *a
+	instance.options.UniqueID = &uid
+	return &instance
 }
 
 func (a *AccountServiceImpl) FindAll() ([]*params.AccountResponse, error) {
