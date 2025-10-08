@@ -60,6 +60,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 		}
 
 		allRealtimeData = append(allRealtimeData, &params.LiveResponse{
+			AccountID:   fmt.Sprint(account.ID),
 			AccountName: account.Name,
 			Total:       len(realtimeData),
 			Relive:      len(todayData),
