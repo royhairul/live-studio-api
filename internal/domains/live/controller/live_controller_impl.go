@@ -80,15 +80,20 @@ func (l *LiveControllerImpl) GetLive(ctx *gin.Context) {
 
 // GetLiveDetail implements LiveController.
 func (l *LiveControllerImpl) GetLiveDetail(ctx *gin.Context) {
+	// Handle Params
 	accountID := ctx.Param("id")
-	sessionID := ctx.Query("sessionId")
+	sessionID := ctx.Param("sessionId")
+
+	// Handle Query
+	productPage := ctx.Query("productPage")
+	productPageSize := ctx.Query("productPageSize")
 
 	if sessionID == "" {
 		ctx.JSON(http.StatusBadRequest, response.NewBaseResponse("session ID is required", nil))
 		return
 	}
 
-	live, err := l.service.GetLiveDetail(accountID, sessionID)
+	live, err := l.service.GetLiveDetail(accountID, sessionID, productPage, productPageSize)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
@@ -32,7 +33,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 	var allRealtimeData []*params.LiveResponse
 
 	for _, account := range accounts {
-		realtimeData, err := l.shopeeLiveSvc.GetShopeeLiveRealTime(account.Cookie)
+		realtimeData, err := l.shopeeLiveSvc.GetLiveSessionRT(account.Cookie)
 		if err != nil {
 			log.Printf("Failed to get data realtime for account %s: %v", account.Name, err)
 			continue
@@ -70,7 +71,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 }
 
 // GetLiveDetail implements LiveService.
-func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string) (*params.LiveDetailResponse, error) {
+func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, productPage string, productPageSize string) (*params.LiveDetailResponse, error) {
 	account, err := l.accountSvc.WithID(accountID).FindOne()
 	if err != nil {
 		return nil, err
@@ -91,7 +92,10 @@ func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string) (*pa
 		return nil, err
 	}
 
-	productList, err := l.shopeeLiveSvc.GetDashboardProductListRT(account.Cookie, sessionID)
+	productPageInt, _ := strconv.Atoi(productPage)
+	productPageSizeInt, _ := strconv.Atoi(productPageSize)
+
+	productList, err := l.shopeeLiveSvc.GetDashboardProductListRT(account.Cookie, sessionID, productPageInt, productPageSizeInt)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +106,6 @@ func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string) (*pa
 		Overview:      overview,
 		ViewerProfile: viewerProfile,
 		BuyerProfile:  buyerProfile,
-		ProductList:   productList,
+		Products:      productList,
 	}, nil
 }
