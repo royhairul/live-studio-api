@@ -23,19 +23,18 @@ func NewAccountController(service service.AccountService) AccountController {
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 	studioId := ctx.Query("studio")
+	uniqueId := ctx.Query("uniqueId")
+
+	service := a.service
 
 	if studioId != "" {
-		accounts, err := a.service.WithStudioID(studioId).FindAll()
-		if err != nil {
-			errorhandler.HandleError(ctx, err)
-			return
-		}
-		resp := response.NewBaseResponse("retrieved accounts by studio successfully", accounts)
-		ctx.JSON(http.StatusOK, resp)
-		return
+		service = service.WithStudioID(studioId)
+	}
+	if uniqueId != "" {
+		service = service.WithUniqueID(uniqueId)
 	}
 
-	accounts, err := a.service.FindAll()
+	accounts, err := service.FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -54,7 +53,7 @@ func (a *AccountControllerImpl) FindById(ctx *gin.Context) {
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved detail successfully", account)
+	resp := response.NewBaseResponse("retrieved an account successfully", account)
 	ctx.JSON(http.StatusOK, resp)
 }
 
