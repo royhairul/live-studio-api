@@ -3,10 +3,11 @@ package server
 import (
 	"fmt"
 
+	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
+
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/config"
 	"github.com/royhairul/live-studio-api/database"
-	"github.com/royhairul/live-studio-api/internal/aggregator"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/domains/account"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads"
@@ -57,11 +58,11 @@ func NewApp() *fx.App {
 		fx.Invoke(
 			database.MigrateDatabase,
 			snowflakeid.InitSnowflake,
-			Start, // server.Start ini tetap untuk start HTTP server
+			Start,
 		),
 
 		// Aggregator
-		aggregator.Module,
+		performaagg.Module,
 
 		// Module Domains
 		permission.Module,

@@ -1,4 +1,4 @@
-package aggregator
+package performa
 
 import (
 	"fmt"
@@ -14,11 +14,6 @@ import (
 	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
 	transactionservice "github.com/royhairul/live-studio-api/internal/domains/transaction/service"
 )
-
-type PerformaAggregator interface {
-	CalculatePerforma(startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error)
-	CalculatePerformaByStudio(studio_id string, startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error)
-}
 
 type PerformaAggregatorImpl struct {
 	attendanceSvc     attendanceservice.AttendanceService
@@ -41,17 +36,8 @@ func NewPerformaAggregator(
 	}
 }
 
-type TotalPerforma struct {
-	GMV               int64
-	Ads               int64
-	CommissionTotal   int64
-	CommissionPaid    int64
-	CommissionPending int64
-	Income            int64
-}
-
-// CalculatePerforma implements PerformaAggregator.
-func (p *PerformaAggregatorImpl) CalculatePerforma(
+// Calculate implements PerformaAggregator.
+func (p *PerformaAggregatorImpl) Calculate(
 	startDate, endDate *time.Time,
 ) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
 	list := []performaparam.PerformaStudioDetailItemResponse{}
@@ -121,8 +107,8 @@ func (p *PerformaAggregatorImpl) CalculatePerforma(
 			Commission:  tx.CommissionTotal,
 			Ads:         int64(ads.TotalAds),
 			Income:      tx.CommissionTotal - int64(ads.TotalAds),
-			Acos:        CalcACOS(int64(ads.TotalAds), int64(session.GMVPaid)),
-			Roas:        CalcROAS(int64(ads.TotalAds), int64(session.GMVPaid)),
+			Acos:        calcACOS(int64(ads.TotalAds), int64(session.GMVPaid)),
+			Roas:        calcROAS(int64(ads.TotalAds), int64(session.GMVPaid)),
 		}
 
 		list = append(list, item)
@@ -139,12 +125,12 @@ func (p *PerformaAggregatorImpl) CalculatePerforma(
 	return list, total, nil
 }
 
-// CalculatePerformaByStudio implements PerformaAggregator.
-func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, startDate *time.Time, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
+// CalculateByStudio implements PerformaAggregator.
+func (p *PerformaAggregatorImpl) CalculateByStudio(studio_id string, startDate *time.Time, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
 	list := []performaparam.PerformaStudioDetailItemResponse{}
 	total := TotalPerforma{}
 
-	// Ambil attendance
+	// Get Attendances
 	attendances, err := p.attendanceSvc.WithStudioID(studio_id).WithDateRange(*startDate, *endDate).FindAll()
 	if err != nil {
 		return nil, TotalPerforma{}, err
@@ -157,20 +143,20 @@ func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, sta
 		allSessions = append(allSessions, sessions...)
 	}
 
-	// Ambil unique accountIDs
+	// Get unique accountIDs
 	accountIDs := make(map[string]*accountsessionparam.AccountsessionResponse)
 	for _, session := range allSessions {
 		key := fmt.Sprint(session.AccountID)
-		// Simpan session pertama sebagai referensi AccountName
+		// Save first session as reference
 		if _, exists := accountIDs[key]; !exists {
 			accountIDs[key] = session
 		} else {
-			// Akumulasi GMV kalau sudah ada
+			// Acumulate GMV
 			accountIDs[key].GMVPaid += session.GMVPaid
 		}
 	}
 
-	// Ambil transaksi dan ads per account
+	// Get tranaction per account
 	txMap := make(map[string]transactionparam.TransactionCommission)
 	adsMap := make(map[string]accountadsparam.AccountadsTotalResponse)
 
@@ -196,7 +182,7 @@ func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, sta
 		adsMap[id] = *adsTotal
 	}
 
-	// Bangun hasil per account
+	// Create result per account
 	for id, session := range accountIDs {
 		tx := txMap[id]
 		ads := adsMap[id]
@@ -208,8 +194,8 @@ func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, sta
 			Commission:  tx.CommissionTotal,
 			Ads:         int64(ads.TotalAds),
 			Income:      tx.CommissionTotal - int64(ads.TotalAds),
-			Acos:        CalcACOS(int64(ads.TotalAds), int64(session.GMVPaid)),
-			Roas:        CalcROAS(int64(ads.TotalAds), int64(session.GMVPaid)),
+			Acos:        calcACOS(int64(ads.TotalAds), int64(session.GMVPaid)),
+			Roas:        calcROAS(int64(ads.TotalAds), int64(session.GMVPaid)),
 		}
 
 		list = append(list, item)
@@ -227,7 +213,7 @@ func (p *PerformaAggregatorImpl) CalculatePerformaByStudio(studio_id string, sta
 }
 
 // Hitung ACOS (%)
-func CalcACOS(ads, revenue int64) float64 {
+func calcACOS(ads, revenue int64) float64 {
 	if revenue == 0 {
 		return 0
 	}
@@ -235,7 +221,7 @@ func CalcACOS(ads, revenue int64) float64 {
 }
 
 // Hitung ROAS (rasio)
-func CalcROAS(ads, revenue int64) float64 {
+func calcROAS(ads, revenue int64) float64 {
 	if ads == 0 {
 		return 0 // Tidak ada biaya iklan → anggap ROAS = 0
 	}
