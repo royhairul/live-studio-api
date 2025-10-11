@@ -1,7 +1,9 @@
 package params
 
 type TargetRequest struct {
-	// TODO: add request fields
+	Month  string `json:"month"`
+	Year   string `json:"year"`
+	Studio string `json:"studio"`
 }
 
 type CreateTargetRequest struct {

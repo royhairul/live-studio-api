@@ -45,6 +45,7 @@ func (c *TargetControllerImpl) Create(ctx *gin.Context) {
 
 func (c *TargetControllerImpl) Update(ctx *gin.Context) {
 	id := ctx.Param("id")
+
 	var req params.UpdateTargetRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -68,17 +69,23 @@ func (c *TargetControllerImpl) Update(ctx *gin.Context) {
 }
 
 func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
-	// Query
 	month := ctx.Query("month")
 	year := ctx.Query("year")
+	studio := ctx.Query("studio")
 
-	result, err := c.service.FindAllByDate(month, year)
+	req := params.TargetRequest{
+		Month:  month,
+		Year:   year,
+		Studio: studio,
+	}
+
+	result, err := c.service.FindAll(req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved all target successfully", result)
+	resp := response.NewBaseResponse("retrieved target data successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
