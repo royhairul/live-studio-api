@@ -9,46 +9,30 @@ import (
 	performaparams "github.com/royhairul/live-studio-api/internal/domains/performa/params"
 
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
-	accountadsservice "github.com/royhairul/live-studio-api/internal/domains/accountads/service"
-	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
-	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
 	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 	studioservice "github.com/royhairul/live-studio-api/internal/domains/studio/service"
-	transactionservice "github.com/royhairul/live-studio-api/internal/domains/transaction/service"
 
-	performaagg "github.com/royhairul/live-studio-api/internal/aggregator"
+	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
 )
 
 type DashboardServiceImpl struct {
 	// TODO: add repository dependency
-	hostSvc           hostservice.HostService
-	attendanceSvc     attendanceservice.AttendanceService
-	accountSessionSvc accountsessionservice.AccountsessionService
-	accountSvc        accountservice.AccountService
-	transactionSvc    transactionservice.TransactionService
-	studioSvc         studioservice.StudioService
-	accountAdsSvc     accountadsservice.AccountadsService
-	performaAgg       performaagg.PerformaAggregator
+	hostSvc     hostservice.HostService
+	accountSvc  accountservice.AccountService
+	studioSvc   studioservice.StudioService
+	performaAgg performaagg.PerformaAggregator
 }
 
 func NewDashboardService(
 	hostSvc hostservice.HostService,
-	attendanceSvc attendanceservice.AttendanceService,
-	accountSessionSvc accountsessionservice.AccountsessionService,
 	accountSvc accountservice.AccountService,
-	transactionSvc transactionservice.TransactionService,
-	accountAdsSvc accountadsservice.AccountadsService,
 	studioSvc studioservice.StudioService,
 	performaAgg performaagg.PerformaAggregator,
 ) DashboardService {
 	return &DashboardServiceImpl{
 		hostSvc,
-		attendanceSvc,
-		accountSessionSvc,
 		accountSvc,
-		transactionSvc,
 		studioSvc,
-		accountAdsSvc,
 		performaAgg,
 	}
 }
@@ -76,7 +60,7 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 		startDay := timehandler.StartOfDay(day)
 		endDay := timehandler.EndOfDay(day)
 
-		_, total, err := d.performaAgg.CalculatePerforma(startDay, endDay)
+		_, total, err := d.performaAgg.Calculate(startDay, endDay)
 		if err != nil {
 			return nil, err
 		}
@@ -99,8 +83,8 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 	)
 
 	for _, studio := range studios {
-		_, currTotal, _ := d.performaAgg.CalculatePerformaByStudio(fmt.Sprint(studio.ID), start, end)
-		_, prevTotal, _ := d.performaAgg.CalculatePerformaByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+		_, currTotal, _ := d.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
+		_, prevTotal, _ := d.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 
 		// Tambahkan ke list
 		list = append(list, performaparams.PerformaStudioItemResponse{
