@@ -8,7 +8,6 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/params"
 	"github.com/royhairul/live-studio-api/internal/domains/accountads/repository"
-	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 	"gorm.io/gorm"
 )
@@ -32,9 +31,9 @@ func (s *AccountadsServiceImpl) GetTotalAds() (*params.AccountadsTotalResponse, 
 		return nil, err
 	}
 
-	var total uint
+	var total int64
 	for _, ad := range ads {
-		total += ad.Ads
+		total += int64(ad.Ads)
 	}
 
 	return &params.AccountadsTotalResponse{
@@ -154,28 +153,6 @@ func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) 
 		result = append(result, params.NewAccountadsResponse(item))
 	}
 	return result, nil
-}
-
-// FindByDateAndAccounts implements AccountadsService.
-func (s *AccountadsServiceImpl) FindByDateAndAccounts(startDate, endDate *time.Time, accountID string) ([]*params.AccountadsResponse, error) {
-	// item, err := s.repository.FindByDateAndAccount(date, accountID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	var results []*params.AccountadsResponse
-	for d := *startDate; !d.After(*endDate); d = d.AddDate(0, 0, 1) {
-		item, err := s.repository.FindByDateAndAccount(&d, accountID)
-		if err != nil {
-			// kalau error query, bisa langsung return atau skip
-			return nil, fmt.Errorf("failed on date %s: %w", d.Format(constants.LayoutYYMMDD), err)
-		}
-		if item != nil {
-			results = append(results, params.NewAccountadsResponse(item))
-		}
-	}
-
-	return results, nil
 }
 
 // FindByID implements AccountadsService.

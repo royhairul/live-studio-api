@@ -19,6 +19,4 @@ type AccountadsService interface {
 	WithAccountID(accountID string) AccountadsService
 	WithAccounts(accountIDs []string) AccountadsService
 	WithDateRange(startDate, endDate time.Time) AccountadsService
-
-	FindByDateAndAccounts(startDate, endDate *time.Time, accountID string) ([]*params.AccountadsResponse, error)
 }

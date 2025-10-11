@@ -6,7 +6,7 @@ import (
 )
 
 type AccountadsTotalResponse struct {
-	TotalAds uint `json:"total_ads"`
+	TotalAds int64 `json:"total_ads"`
 }
 
 type AccountadsResponse struct {
