@@ -7,7 +7,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
-	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
+	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 type AccountServiceImpl struct {
@@ -81,7 +81,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 	}
 
 	account := entity.Account{
-		Name:     helpers.GetDisplayName(accountShopee.Nickname, accountShopee.Username),
+		Name:     utils.GetDisplayName(accountShopee.Nickname, accountShopee.Username),
 		Username: accountShopee.Username,
 		Email:    accountShopee.Email,
 		UniqueID: fmt.Sprintf("%d", accountShopee.ShopId),

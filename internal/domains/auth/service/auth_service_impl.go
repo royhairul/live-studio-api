@@ -12,7 +12,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 	userrepo "github.com/royhairul/live-studio-api/internal/domains/user/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
-	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
+	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/gomail.v2"
 
@@ -51,7 +51,7 @@ func (s *AuthServiceImpl) Login(user params.LoginRequest) (params.LoginResponse,
 		return params.LoginResponse{}, errorhandler.NewNotFoundError("email atau password salah")
 	}
 
-	token, err := helpers.GenerateTokenJWT(existingUser)
+	token, err := utils.GenerateTokenJWT(existingUser)
 	if err != nil {
 		return params.LoginResponse{}, err
 	}

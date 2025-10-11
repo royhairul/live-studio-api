@@ -4,7 +4,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/shift/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/params"
 	"github.com/royhairul/live-studio-api/internal/domains/shift/repository"
-	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
+	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
 type ShiftServiceImpl struct {
@@ -18,12 +18,12 @@ func NewShiftService(repository repository.ShiftRepository) ShiftService {
 
 // Create implements ShiftService.
 func (s *ShiftServiceImpl) Create(shiftReq *params.CreateShiftRequest) (*params.ShiftResponse, error) {
-	parseStartTime, err := helpers.ParseTime(shiftReq.StartTime)
+	parseStartTime, err := utils.ParseTime(shiftReq.StartTime)
 	if err != nil {
 		return nil, err
 	}
 
-	parseEndTime, err := helpers.ParseTime(shiftReq.EndTime)
+	parseEndTime, err := utils.ParseTime(shiftReq.EndTime)
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +78,12 @@ func (s *ShiftServiceImpl) FindByID(id uint) (*params.ShiftResponse, error) {
 
 // Update implements ShiftService.
 func (s *ShiftServiceImpl) Update(id uint, shiftReq *params.UpdateShiftRequest) (*params.ShiftResponse, error) {
-	parseStartTime, err := helpers.ParseTime(*shiftReq.StartTime)
+	parseStartTime, err := utils.ParseTime(*shiftReq.StartTime)
 	if err != nil {
 		return nil, err
 	}
 
-	parseEndTime, err := helpers.ParseTime(*shiftReq.EndTime)
+	parseEndTime, err := utils.ParseTime(*shiftReq.EndTime)
 	if err != nil {
 		return nil, err
 	}
