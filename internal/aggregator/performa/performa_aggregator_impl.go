@@ -6,6 +6,7 @@ import (
 
 	accountadsparam "github.com/royhairul/live-studio-api/internal/domains/accountads/params"
 	accountsessionparam "github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
+	attendanceparam "github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	performaparam "github.com/royhairul/live-studio-api/internal/domains/performa/params"
 	transactionparam "github.com/royhairul/live-studio-api/internal/domains/transaction/params"
 
@@ -40,102 +41,33 @@ func NewPerformaAggregator(
 func (p *PerformaAggregatorImpl) Calculate(
 	startDate, endDate *time.Time,
 ) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
-	list := []performaparam.PerformaStudioDetailItemResponse{}
-	total := TotalPerforma{}
-
 	// Ambil attendance
 	attendances, err := p.attendanceSvc.WithDateRange(*startDate, *endDate).FindAll()
 	if err != nil {
 		return nil, TotalPerforma{}, err
 	}
 
-	// Kumpulkan semua session
-	var allSessions []*accountsessionparam.AccountsessionResponse
-	for _, att := range attendances {
-		sessions, _ := p.accountsessionSvc.WithAttendanceID(fmt.Sprint(att.ID)).FindAll()
-		allSessions = append(allSessions, sessions...)
-	}
-
-	// Ambil unique accountIDs
-	accountIDs := make(map[string]*accountsessionparam.AccountsessionResponse)
-	for _, session := range allSessions {
-		key := fmt.Sprint(session.AccountID)
-		// Simpan session pertama sebagai referensi AccountName
-		if _, exists := accountIDs[key]; !exists {
-			accountIDs[key] = session
-		} else {
-			// Akumulasi GMV kalau sudah ada
-			accountIDs[key].GMVPaid += session.GMVPaid
-		}
-	}
-
-	// Ambil transaksi dan ads per account
-	txMap := make(map[string]transactionparam.TransactionCommission)
-	adsMap := make(map[string]accountadsparam.AccountadsTotalResponse)
-
-	for id := range accountIDs {
-		// Commission
-		transaction, err := p.transactionSvc.
-			WithAccountID(id).
-			WithDate(*startDate, *endDate).
-			GetTotalCommission()
-		if err != nil {
-			return nil, TotalPerforma{}, err
-		}
-		txMap[id] = *transaction
-
-		// Ads
-		adsTotal, err := p.accountadsSvc.
-			WithAccountID(id).
-			WithDateRange(*startDate, *endDate).
-			GetTotalAds()
-		if err != nil {
-			return nil, TotalPerforma{}, err
-		}
-		adsMap[id] = *adsTotal
-	}
-
-	// Bangun hasil per account
-	for id, session := range accountIDs {
-		tx := txMap[id]
-		ads := adsMap[id]
-
-		item := performaparam.PerformaStudioDetailItemResponse{
-			AccountID:   session.AccountID,
-			AccountName: session.AccountName,
-			GMV:         int64(session.GMVPaid),
-			Commission:  tx.CommissionTotal,
-			Ads:         int64(ads.TotalAds),
-			Income:      tx.CommissionTotal - int64(ads.TotalAds),
-			Acos:        calcACOS(int64(ads.TotalAds), int64(session.GMVPaid)),
-			Roas:        calcROAS(int64(ads.TotalAds), int64(session.GMVPaid)),
-		}
-
-		list = append(list, item)
-
-		// Update global total
-		total.GMV += item.GMV
-		total.Ads += item.Ads
-		total.CommissionPaid += tx.CommissionPaid
-		total.CommissionPending += tx.CommissionPending
-		total.CommissionTotal += tx.CommissionTotal
-		total.Income += item.Income
-	}
-
-	return list, total, nil
+	return p.aggregateByAttendances(attendances, startDate, endDate)
 }
 
 // CalculateByStudio implements PerformaAggregator.
 func (p *PerformaAggregatorImpl) CalculateByStudio(studio_id string, startDate *time.Time, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
-	list := []performaparam.PerformaStudioDetailItemResponse{}
-	total := TotalPerforma{}
-
 	// Get Attendances
 	attendances, err := p.attendanceSvc.WithStudioID(studio_id).WithDateRange(*startDate, *endDate).FindAll()
 	if err != nil {
 		return nil, TotalPerforma{}, err
 	}
 
+	return p.aggregateByAttendances(attendances, startDate, endDate)
+}
+
+func (p *PerformaAggregatorImpl) aggregateByAttendances(
+	attendances []*attendanceparam.AttendanceResponse,
+	startDate, endDate *time.Time,
+) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerforma, error) {
+	list := []performaparam.PerformaStudioDetailItemResponse{}
+	total := TotalPerforma{}
+
 	// Kumpulkan semua session
 	var allSessions []*accountsessionparam.AccountsessionResponse
 	for _, att := range attendances {
@@ -143,46 +75,36 @@ func (p *PerformaAggregatorImpl) CalculateByStudio(studio_id string, startDate *
 		allSessions = append(allSessions, sessions...)
 	}
 
-	// Get unique accountIDs
+	// Gabungkan berdasarkan AccountID
 	accountIDs := make(map[string]*accountsessionparam.AccountsessionResponse)
 	for _, session := range allSessions {
 		key := fmt.Sprint(session.AccountID)
-		// Save first session as reference
-		if _, exists := accountIDs[key]; !exists {
-			accountIDs[key] = session
+		if acc, exists := accountIDs[key]; exists {
+			acc.GMVPaid += session.GMVPaid
 		} else {
-			// Acumulate GMV
-			accountIDs[key].GMVPaid += session.GMVPaid
+			accountIDs[key] = session
 		}
 	}
 
-	// Get tranaction per account
-	txMap := make(map[string]transactionparam.TransactionCommission)
-	adsMap := make(map[string]accountadsparam.AccountadsTotalResponse)
+	// Ambil data transaksi & ads per akun
+	txMap := map[string]transactionparam.TransactionCommission{}
+	adsMap := map[string]accountadsparam.AccountadsTotalResponse{}
 
 	for id := range accountIDs {
-		// Commission
-		transaction, err := p.transactionSvc.
-			WithAccountID(id).
-			WithDate(*startDate, *endDate).
-			GetTotalCommission()
+		tx, err := p.transactionSvc.WithAccountID(id).WithDate(*startDate, *endDate).GetTotalCommission()
 		if err != nil {
 			return nil, TotalPerforma{}, err
 		}
-		txMap[id] = *transaction
+		txMap[id] = *tx
 
-		// Ads
-		adsTotal, err := p.accountadsSvc.
-			WithAccountID(id).
-			WithDateRange(*startDate, *endDate).
-			GetTotalAds()
+		ads, err := p.accountadsSvc.WithAccountID(id).WithDateRange(*startDate, *endDate).GetTotalAds()
 		if err != nil {
 			return nil, TotalPerforma{}, err
 		}
-		adsMap[id] = *adsTotal
+		adsMap[id] = *ads
 	}
 
-	// Create result per account
+	// Bangun hasil akhir per akun
 	for id, session := range accountIDs {
 		tx := txMap[id]
 		ads := adsMap[id]
@@ -200,7 +122,6 @@ func (p *PerformaAggregatorImpl) CalculateByStudio(studio_id string, startDate *
 
 		list = append(list, item)
 
-		// Update global total
 		total.GMV += item.GMV
 		total.Ads += item.Ads
 		total.CommissionPaid += tx.CommissionPaid
