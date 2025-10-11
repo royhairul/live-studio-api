@@ -5,11 +5,11 @@ import (
 )
 
 type LiveResponse struct {
-	AccountID   string `json:"id"`
-	AccountName string `json:"name"`
-	Relive      int    `json:"relive"`
-	Total       int    `json:"total"`
-	ReportLive  any    `json:"reportLive"`
+	AccountID   string                               `json:"id"`
+	AccountName string                               `json:"name"`
+	Relive      int                                  `json:"relive"`
+	Total       int                                  `json:"total"`
+	ReportLive  []shopeeparam.ShopeeLiveReportItemRT `json:"reportLive"`
 }
 
 type LiveDetailResponse struct {

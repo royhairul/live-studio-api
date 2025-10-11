@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
-	helpers "github.com/royhairul/live-studio-api/internal/pkg/utils"
+	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 
 	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
@@ -40,9 +40,9 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 		}
 
 		// Filter berdasarkan tanggal hari ini
-		var todayData []*shopeeparams.ShopeeLiveReportItemRT
+		var todayData []shopeeparams.ShopeeLiveReportItemRT
 		for _, session := range realtimeData {
-			if helpers.IsToday(session.StartTime) {
+			if utils.IsToday(session.StartTime) {
 				//  duration
 				session.Duration = time.Now().UnixMilli() - session.StartTime
 
@@ -55,7 +55,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 				} else {
 					session.OmsetPerHour = 0
 				}
-				todayData = append(todayData, &session)
+				todayData = append(todayData, session)
 			}
 		}
 
