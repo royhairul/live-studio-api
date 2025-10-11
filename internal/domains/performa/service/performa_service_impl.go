@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/royhairul/live-studio-api/internal/aggregator"
+	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
@@ -30,7 +30,7 @@ type PerformaServiceImpl struct {
 	transactionSvc    transactionservice.TransactionService
 	studioSvc         studioservice.StudioService
 	accountAdsSvc     accountadsservice.AccountadsService
-	aggregator        aggregator.PerformaAggregator
+	aggregator        performaagg.PerformaAggregator
 }
 
 func NewPerformaService(
@@ -42,7 +42,7 @@ func NewPerformaService(
 	transactionSvc transactionservice.TransactionService,
 	accountAdsSvc accountadsservice.AccountadsService,
 	studioSvc studioservice.StudioService,
-	aggregator aggregator.PerformaAggregator,
+	aggregator performaagg.PerformaAggregator,
 ) PerformaService {
 	return &PerformaServiceImpl{
 		repository,
@@ -225,13 +225,13 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// === Current Period ===
-	currList, currTotal, err := p.aggregator.CalculatePerforma(start, end)
+	currList, currTotal, err := p.aggregator.Calculate(start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build current performa list: %w", err)
 	}
 
 	// === Previous Period ===
-	_, prevTotal, err := p.aggregator.CalculatePerforma(start, end)
+	_, prevTotal, err := p.aggregator.Calculate(start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build previous performa list: %w", err)
 	}
@@ -288,12 +288,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 	list := []params.PerformaStudioItemResponse{}
 	for _, studio := range studios {
-		_, currTotal, err := p.aggregator.CalculatePerformaByStudio(fmt.Sprint(studio.ID), start, end)
+		_, currTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
 		if err != nil {
 			return nil, err
 		}
 
-		_, prevTotal, err := p.aggregator.CalculatePerformaByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+		_, prevTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 		if err != nil {
 			return nil, err
 		}
@@ -364,13 +364,13 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 	}
 
 	// Current Performa
-	currList, currTotal, err := p.aggregator.CalculatePerformaByStudio(fmt.Sprint(studio.ID), start, end)
+	currList, currTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
 	if err != nil {
 		return nil, err
 	}
 
 	// Previous Performa
-	_, prevTotal, err := p.aggregator.CalculatePerformaByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+	_, prevTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 	if err != nil {
 		return nil, err
 	}

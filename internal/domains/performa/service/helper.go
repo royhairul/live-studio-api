@@ -73,7 +73,7 @@ func (p *PerformaServiceImpl) buildPerformaAccountDetailList(
 
 		// --- Ads ---
 		var accountAds int64
-		ads, err := p.accountAdsSvc.FindByDateAndAccounts(start, end, fmt.Sprintf("%d", accID))
+		ads, err := p.accountAdsSvc.WithAccountID(fmt.Sprintf("%d", accID)).WithDateRange(*start, *end).FindAll()
 		if err != nil {
 			return nil, 0, 0, 0, 0, 0,
 				fmt.Errorf("failed to get ads for account %d: %w", accID, err)
@@ -170,7 +170,7 @@ func (p *PerformaServiceImpl) buildPerformaDetailList(
 
 			// --- Ads ---
 			var accountAds int64
-			ads, err := p.accountAdsSvc.FindByDateAndAccounts(start, end, fmt.Sprintf("%d", session.AccountID))
+			ads, err := p.accountAdsSvc.WithAccountID(fmt.Sprintf("%d", session.AccountID)).WithDateRange(*start, *end).FindAll()
 			if err != nil {
 				return nil, 0, 0, 0, 0, 0, fmt.Errorf("failed to get ads for account %d: %w", session.AccountID, err)
 			}
