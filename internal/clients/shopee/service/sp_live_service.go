@@ -8,5 +8,6 @@ type ShopeeLiveService interface {
 	GetDashboardOverviewRT(cookie, sessionID string) (params.ShopeeLiveOverviewResponse, error)
 	GetDashboardBuyerRT(cookie, sessionID string) ([]params.ShopeeLiveAudienceAnalyticsResponse, error)
 	GetDashboardViewerRT(cookie string, sessionID string) ([]params.ShopeeLiveAudienceAnalyticsResponse, error)
+	GetDashboardViewerSourceRT(cookie string, sessionID string) (params.ShopeeLiveAudienceAnalyticsResponse, error)
 	GetDashboardProductListRT(cookie, sessionID string, page, pageSize int) (params.ShopeeApiPaginationResult[params.ShopeeLiveProductResponse], error)
 }

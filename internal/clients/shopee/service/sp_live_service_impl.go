@@ -158,3 +158,27 @@ func (s *ShopeeLiveServiceImpl) GetDashboardViewerRT(cookie string, sessionID st
 
 	return result.Data, nil
 }
+
+// GetDashboardViewerSourceRT implements ShopeeLiveService.
+func (s *ShopeeLiveServiceImpl) GetDashboardViewerSourceRT(cookie string, sessionID string) (params.ShopeeLiveAudienceAnalyticsResponse, error) {
+	endpoint := "/supply/api/lm/sellercenter/realtime/dashboard/viewer-source"
+	query := map[string]string{
+		"sessionId": sessionID,
+	}
+
+	req, err := s.ShopeeClient.NewShopeeRequest("GET", endpoint, query, nil, cookie)
+	if err != nil {
+		return params.ShopeeLiveAudienceAnalyticsResponse{}, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
+	}
+
+	var result params.ShopeeApiResponse[params.ShopeeLiveAudienceAnalyticsResponse]
+	if err := s.ShopeeClient.DoShopeeRequest(req, &result); err != nil {
+		return params.ShopeeLiveAudienceAnalyticsResponse{}, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
+	}
+
+	if result.Error != 0 {
+		return params.ShopeeLiveAudienceAnalyticsResponse{}, fmt.Errorf(result.ErrorMsg)
+	}
+
+	return result.Data, nil
+}

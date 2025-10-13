@@ -88,6 +88,12 @@ func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, prod
 		return nil, err
 	}
 
+	viewerSource, err := l.shopeeLiveSvc.GetDashboardViewerSourceRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	viewerSource.CalculatePercentage()
+
 	buyerProfile, err := l.shopeeLiveSvc.GetDashboardBuyerRT(account.Cookie, sessionID)
 	if err != nil {
 		return nil, err
@@ -106,6 +112,7 @@ func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, prod
 		AccountName:   account.Name,
 		Overview:      overview,
 		ViewerProfile: viewerProfile,
+		ViewerSource:  viewerSource,
 		BuyerProfile:  buyerProfile,
 		Products:      productList,
 	}, nil

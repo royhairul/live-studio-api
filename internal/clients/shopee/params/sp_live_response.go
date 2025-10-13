@@ -91,6 +91,22 @@ type ShopeeLiveAudienceAnalyticsResponse struct {
 }
 
 type ShopeeLiveAudienceAnalyticsItem struct {
-	ItemName string `json:"itemName"`
-	Value    int    `json:"value"`
+	ItemName   string  `json:"itemName"`
+	Value      int     `json:"value"`
+	Percentage float64 `json:"percentage,omitempty"`
+}
+
+func (r *ShopeeLiveAudienceAnalyticsResponse) CalculatePercentage() {
+	var total int
+	for _, item := range r.Distribution {
+		total += item.Value
+	}
+
+	if total == 0 {
+		return
+	}
+
+	for i := range r.Distribution {
+		r.Distribution[i].Percentage = (float64(r.Distribution[i].Value) / float64(total)) * 100
+	}
 }
