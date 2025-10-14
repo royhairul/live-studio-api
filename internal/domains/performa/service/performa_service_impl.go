@@ -2,127 +2,54 @@ package service
 
 import (
 	"fmt"
-	"log"
 
-	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 
-	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
+	// aggregator
+	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
 
-	attendanceparams "github.com/royhairul/live-studio-api/internal/domains/attendance/params"
-	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
-
+	// service
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
-	accountadsservice "github.com/royhairul/live-studio-api/internal/domains/accountads/service"
-	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
+	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 	studioservice "github.com/royhairul/live-studio-api/internal/domains/studio/service"
-	transactionservice "github.com/royhairul/live-studio-api/internal/domains/transaction/service"
 )
 
 type PerformaServiceImpl struct {
-	repository        repository.PerformaRepository
-	hostSvc           hostservice.HostService
-	attendanceSvc     attendanceservice.AttendanceService
-	accountSessionSvc accountsessionservice.AccountsessionService
-	accountSvc        accountservice.AccountService
-	transactionSvc    transactionservice.TransactionService
-	studioSvc         studioservice.StudioService
-	accountAdsSvc     accountadsservice.AccountadsService
-	aggregator        performaagg.PerformaAggregator
+	repository repository.PerformaRepository
+	hostSvc    hostservice.HostService
+	accountSvc accountservice.AccountService
+	studioSvc  studioservice.StudioService
+	aggregator performaagg.PerformaAggregator
 }
 
 func NewPerformaService(
 	repository repository.PerformaRepository,
 	hostSvc hostservice.HostService,
-	attendanceSvc attendanceservice.AttendanceService,
-	accountSessionSvc accountsessionservice.AccountsessionService,
 	accountSvc accountservice.AccountService,
-	transactionSvc transactionservice.TransactionService,
-	accountAdsSvc accountadsservice.AccountadsService,
 	studioSvc studioservice.StudioService,
 	aggregator performaagg.PerformaAggregator,
 ) PerformaService {
 	return &PerformaServiceImpl{
 		repository,
 		hostSvc,
-		attendanceSvc,
-		accountSessionSvc,
 		accountSvc,
-		transactionSvc,
 		studioSvc,
-		accountAdsSvc,
 		aggregator,
 	}
 }
 
 // GetHosts implements PerformaService.
-func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*params.PerformaHostResponse, error) {
-	// Set default value
-	if startDate == "" {
-		startDate = *timehandler.DateNow()
-	}
-	if endDate == "" {
-		endDate = *timehandler.DateNow()
-	}
-
+func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*params.PerformaHostSummaryResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get Attendances by date range
-	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get attendances: %v", err)
-	}
-
-	// Get all host
-	hosts, err := p.hostSvc.FindAll()
+	results, err := p.aggregator.CalculateByHosts(start, end)
 	if err != nil {
 		return nil, err
-	}
-
-	var results []*params.PerformaHostResponse
-
-	for _, host := range hosts {
-		var totalDuration int64
-		var totalSales uint
-		var totalPaid uint
-
-		// Get attendances by Host ID
-		for _, att := range attendances {
-			if att.HostID == host.ID {
-				continue
-			}
-
-			accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
-			if err != nil {
-				return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
-			}
-
-			for _, session := range accountSessions {
-				if session.CheckIn == nil || session.CheckOut == nil {
-					continue
-				}
-
-				// Calculate duration
-				duration := session.CheckOut.Sub(*session.CheckIn)
-				durationSeconds := duration.Seconds()
-
-				totalDuration += int64(durationSeconds)
-				totalSales += session.GMVSales
-				totalPaid += session.GMVPaid
-			}
-		}
-
-		results = append(results, &params.PerformaHostResponse{
-			ID:            host.ID.String(),
-			Name:          host.Name,
-			TotalDuration: totalDuration,
-			TotalSales:    totalSales,
-		})
 	}
 
 	return results, nil
@@ -135,81 +62,12 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 		return nil, err
 	}
 
-	// Get attendance by startTime and endTime
-	attendances, err := p.attendanceSvc.WithDateRange(*start, *end).FindAll()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get attendances: %v", err)
-	}
-
-	// Get Host By ID
-	host, err := p.hostSvc.FindByID(id)
+	results, err := p.aggregator.CalculateByHost(id, start, end)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get attendances by Host ID
-	var hostAttendances []attendanceparams.AttendanceResponse
-	for _, att := range attendances {
-		if att.HostID == host.ID {
-			hostAttendances = append(hostAttendances, *att)
-		}
-	}
-
-	var totalDuration int64
-	var totalSales uint
-	var totalPaid uint
-	detailList := []params.PerformaHostItemResponse{}
-
-	for _, att := range hostAttendances {
-		accountSessions, err := p.accountSessionSvc.WithAttendanceID(fmt.Sprintf("%d", att.ID)).FindAll()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get account sessions for attendance %d: %w", att.ID, err)
-		}
-
-		for _, session := range accountSessions {
-			if session.CheckIn == nil || session.CheckOut == nil {
-				continue
-			}
-
-			detailList = append(detailList, params.PerformaHostItemResponse{
-				AccountName: session.AccountName,
-				Duration:    session.Duration,
-				Sales:       session.GMVSales,
-				Paid:        session.GMVPaid,
-			})
-
-			log.Printf("account: %s", session.AccountName)
-
-			// Hitung durasi
-			duration := session.CheckOut.Sub(*session.CheckIn)
-			durationSeconds := duration.Seconds()
-
-			totalDuration += int64(durationSeconds)
-			totalSales += session.GMVSales
-			totalPaid += session.GMVPaid
-
-		}
-	}
-
-	var avgSales uint
-	var avgPaid uint
-	count := len(detailList)
-	if count > 0 {
-		avgSales = totalSales / uint(count)
-		avgPaid = totalPaid / uint(count)
-	}
-
-	result := &params.PerformaHostDetailResponse{
-		ID:            host.ID.String(),
-		Name:          host.Name,
-		TotalDuration: totalDuration,
-		TotalSales:    totalSales,
-		AvgSales:      avgSales,
-		AvgPaid:       avgPaid,
-		List:          detailList,
-	}
-
-	return result, nil
+	return &results, nil
 }
 
 // GetAccounts implements PerformaService.
@@ -301,10 +159,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 		item := params.PerformaStudioItemResponse{
 			StudioID:   fmt.Sprint(studio.ID),
 			StudioName: studio.Name,
-			GMV:        currTotal.GMV,
-			Commission: currTotal.CommissionPaid + currTotal.CommissionPending,
-			Ads:        currTotal.Ads,
-			Income:     currTotal.Income,
+			PerformaMetricItem: params.PerformaMetricItem{
+				GMV:        currTotal.GMV,
+				Commission: currTotal.CommissionPaid + currTotal.CommissionPending,
+				Ads:        currTotal.Ads,
+				Income:     currTotal.Income,
+			},
 		}
 
 		list = append(list, item)

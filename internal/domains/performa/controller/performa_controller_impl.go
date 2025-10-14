@@ -24,10 +24,10 @@ func NewPerformaController(service service.PerformaService, validate *validator.
 
 // GetHosts implements PerformaController.
 func (p *PerformaControllerImpl) GetHosts(ctx *gin.Context) {
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetHosts(startTime, endTime)
+	result, err := p.service.GetHosts(startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -41,17 +41,17 @@ func (p *PerformaControllerImpl) GetHosts(ctx *gin.Context) {
 func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	startTime := ctx.Query("startTime")
-	endTime := ctx.Query("endTime")
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
 
 	// Jika salah satu atau keduanya kosong, isi dengan hari ini
-	if startTime == "" || endTime == "" {
+	if startDate == "" || endDate == "" {
 		today := time.Now().Format(constants.LayoutYYMMDD)
-		startTime = today
-		endTime = today
+		startDate = today
+		endDate = today
 	}
 
-	result, err := p.service.GetHostByID(id, startTime, endTime)
+	result, err := p.service.GetHostByID(id, startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -107,86 +107,3 @@ func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
 	resp := response.NewBaseResponse("performa studio found", result)
 	ctx.JSON(http.StatusOK, resp)
 }
-
-// func (c *PerformaControllerImpl) Create(ctx *gin.Context) {
-// 	var req params.CreatePerformaRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid request data", err))
-// 		return
-// 	}
-
-// 	if err := c.validate.Struct(req); err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	result, err := c.service.Create(req)
-// 	if err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	resp := response.NewBaseResponse("created performa successfully", result)
-// 	ctx.JSON(http.StatusCreated, resp)
-// }
-
-// func (c *PerformaControllerImpl) Update(ctx *gin.Context) {
-// 	id := ctx.Param("id")
-// 	var req params.UpdatePerformaRequest
-
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid request data", err))
-// 		return
-// 	}
-
-// 	// Validasi hanya field yang tidak nil (optional)
-// 	if err := c.validate.Struct(req); err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	result, err := c.service.Update(id, req)
-// 	if err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	resp := response.NewBaseResponse("updated performa successfully", result)
-// 	ctx.JSON(http.StatusOK, resp)
-// }
-
-// func (c *PerformaControllerImpl) FindAll(ctx *gin.Context) {
-// 	result, err := c.service.FindAll()
-// 	if err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	resp := response.NewBaseResponse("retrieved all performa successfully", result)
-// 	ctx.JSON(http.StatusOK, resp)
-// }
-
-// func (c *PerformaControllerImpl) FindByID(ctx *gin.Context) {
-// 	id := ctx.Param("id")
-
-// 	result, err := c.service.FindByID(id)
-// 	if err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	resp := response.NewBaseResponse("performa found", result)
-// 	ctx.JSON(http.StatusOK, resp)
-// }
-
-// func (c *PerformaControllerImpl) Delete(ctx *gin.Context) {
-// 	id := ctx.Param("id")
-
-// 	if err := c.service.Delete(id); err != nil {
-// 		errorhandler.HandleError(ctx, err)
-// 		return
-// 	}
-
-// 	resp := response.NewBaseResponse("deleted performa successfully", nil)
-// 	ctx.JSON(http.StatusOK, resp)
-// }

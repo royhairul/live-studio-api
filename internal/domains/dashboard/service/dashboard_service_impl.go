@@ -90,10 +90,12 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 		list = append(list, performaparams.PerformaStudioItemResponse{
 			StudioID:   fmt.Sprintf("%d", studio.ID),
 			StudioName: studio.Name,
-			Commission: currTotal.CommissionTotal,
-			GMV:        currTotal.GMV,
-			Ads:        currTotal.Ads,
-			Income:     currTotal.Income,
+			PerformaMetricItem: performaparams.PerformaMetricItem{
+				Commission: currTotal.CommissionTotal,
+				GMV:        currTotal.GMV,
+				Ads:        currTotal.Ads,
+				Income:     currTotal.Income,
+			},
 		})
 
 		// Akumulasi ke total metrics
