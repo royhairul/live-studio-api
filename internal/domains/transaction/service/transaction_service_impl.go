@@ -95,9 +95,9 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 	for _, account := range accounts {
 
 		responseItem := params.CreatedTransactionResponse{
-			AccountID:   account.ID,
-			AccountName: account.Name,
-			Total:       0,
+			AccountID:      account.ID,
+			AccountName:    account.Name,
+			NewTransaction: 0,
 		}
 
 		if account.Platform == "Shopee" {
@@ -164,7 +164,7 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 				}
 
 				if created != nil {
-					responseItem.Total++
+					responseItem.NewTransaction++
 				}
 
 			}
@@ -188,53 +188,33 @@ func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error
 		return nil, err
 	}
 
-	grouped := make(map[uint]*params.TransactionResponse)
-
-	for _, tx := range transactions {
-		if _, exists := grouped[tx.AccountID]; !exists {
-			grouped[tx.AccountID] = &params.TransactionResponse{
-				AccountID:   tx.Account.ID,
-				AccountName: tx.Account.Name,
-				Commission: params.Commission{
-					Total:   0,
-					Pending: 0,
-					Paid:    0,
-				},
-				Total: 0,
-				List:  []params.TransactionDetailResponse{},
-			}
-		}
-
-		grouped[tx.AccountID].Total++
-		grouped[tx.AccountID].Commission.Total += tx.EstimatedTotalCommission
-
-		if tx.Status == "Waiting for payment" || tx.Status == "Completed" {
-			grouped[tx.AccountID].Commission.Paid += tx.EstimatedTotalCommission
-		}
-
-		if tx.Status == "Pending" {
-			grouped[tx.AccountID].Commission.Pending += tx.EstimatedTotalCommission
-		}
-
-		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionDetailResponse(tx))
-	}
-
 	var results []*params.TransactionResponse
-	for _, res := range grouped {
-		results = append(results, res)
+	for _, tx := range transactions {
+		results = append(results, params.NewTransactionResponse(tx))
 	}
 
 	return results, nil
 }
 
+// FindAllGrouped implements TransactionService.
+func (s *TransactionServiceImpl) FindAllGrouped() ([]*params.TransactionGroupedResponse, error) {
+	transactions, err := s.repository.FindAll(s.options)
+	if err != nil {
+		return nil, err
+	}
+
+	results := GroupTransactions(transactions)
+	return results, nil
+}
+
 // FindOne implements TransactionService.
-func (s *TransactionServiceImpl) FindOne() (*params.TransactionDetailResponse, error) {
+func (s *TransactionServiceImpl) FindOne() (*params.TransactionResponse, error) {
 	transaction, err := s.repository.FindOne(s.options)
 	if err != nil {
 		return nil, err
 	}
 
-	result := params.NewTransactionDetailResponse(transaction)
+	result := params.NewTransactionResponse(transaction)
 	return result, nil
 }
 
@@ -244,17 +224,17 @@ func (s *TransactionServiceImpl) Delete(id string) error {
 }
 
 // GetTotalCommission implements TransactionService.
-func (s *TransactionServiceImpl) GetTotalCommission() (*params.TransactionCommission, error) {
-	transactions, err := s.FindAll()
+func (s *TransactionServiceImpl) GetTotalCommission() (*params.Commission, error) {
+	transactions, err := s.FindAllGrouped()
 	if err != nil {
-		return &params.TransactionCommission{}, err
+		return &params.Commission{}, err
 	}
 
-	var result params.TransactionCommission
+	var result params.Commission
 	for _, tx := range transactions {
-		result.CommissionTotal += tx.Commission.Total
-		result.CommissionPaid += tx.Commission.Paid
-		result.CommissionPending += tx.Commission.Pending
+		result.Total += tx.Commission.Total
+		result.Paid += tx.Commission.Paid
+		result.Pending += tx.Commission.Pending
 	}
 
 	return &result, nil

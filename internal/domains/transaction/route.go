@@ -7,12 +7,13 @@ import (
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.TransactionController) {
 	// TODO: define routes
-	transactionRouter := router.Group("/transaction")
+	routes := router.Group("/transaction")
 	{
-		transactionRouter.GET("", controller.FindAll)
-		transactionRouter.POST("", controller.Create)
-		// transactionRouter.GET("/:id", controller.FindByID)
-		transactionRouter.PUT("/:id", controller.Update)
-		transactionRouter.DELETE("/:id", controller.Delete)
+		routes.GET("", controller.FindAll)
+		routes.POST("", controller.Create)
+		routes.GET("/grouped", controller.FindAllGrouped)
+		routes.GET("/:id", controller.FindByID)
+		routes.PUT("/:id", controller.Update)
+		routes.DELETE("/:id", controller.Delete)
 	}
 }

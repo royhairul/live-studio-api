@@ -10,6 +10,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/service"
 	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/pkg/response"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 )
 
 type TransactionControllerImpl struct {
@@ -70,18 +71,56 @@ func (c *TransactionControllerImpl) Update(ctx *gin.Context) {
 
 func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 	status := ctx.Query("status")
+	account := ctx.Query("account")
 
-	var (
-		result []*params.TransactionResponse
-		err    error
-	)
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
+	start, end, _ := timehandler.ParseDateRange(startDate, endDate)
+
+	service := c.service
 
 	if status != "" {
-		result, err = c.service.WithStatus(status).FindAll()
-	} else {
-		result, err = c.service.FindAll()
+		service = service.WithStatus(status)
+	}
+	if account != "" {
+		service = service.WithAccountID(account)
+	}
+	if startDate != "" || endDate != "" {
+		service = service.WithDate(*start, *end)
 	}
 
+	result, err := service.FindAll()
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved all transaction successfully", result)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// FindAllGrouped implements TransactionController.
+func (c *TransactionControllerImpl) FindAllGrouped(ctx *gin.Context) {
+	status := ctx.Query("status")
+	account := ctx.Query("account")
+
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
+	start, end, _ := timehandler.ParseDateRange(startDate, endDate)
+
+	service := c.service
+
+	if status != "" {
+		service = service.WithStatus(status)
+	}
+	if account != "" {
+		service = service.WithAccountID(account)
+	}
+	if startDate != "" || endDate != "" {
+		service = service.WithDate(*start, *end)
+	}
+
+	result, err := service.FindAllGrouped()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

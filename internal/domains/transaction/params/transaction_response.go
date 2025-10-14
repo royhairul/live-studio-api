@@ -14,44 +14,37 @@ type Commission struct {
 	Paid    int64 `json:"paid"`
 }
 
-type TransactionCommission struct {
-	CommissionTotal   int64
-	CommissionPaid    int64
-	CommissionPending int64
-}
-
 type TransactionResponse struct {
-	// TODO: add response fields
-	AccountID   uint                        `json:"account_id"`
-	AccountName string                      `json:"account_name"`
-	Total       int                         `json:"total"`
-	Commission  Commission                  `json:"commission"`
-	List        []TransactionDetailResponse `json:"list"`
-}
-
-type CreatedTransactionResponse struct {
-	// TODO: add response fields
-	AccountID   uint   `json:"account_id"`
-	AccountName string `json:"account_name"`
-	Total       int    `json:"total"`
-}
-
-type TransactionDetailResponse struct {
 	// TODO: add response fields
 	ID                              int64                       `json:"id"`
 	AccountID                       uint                        `json:"account_id"`
 	AccountName                     string                      `json:"account_name"`
 	UniqueID                        string                      `json:"unique_id"`
 	Status                          string                      `json:"status"`
-	EstimatedTotalCommission        int64                       `json:"est_total_comission"`
-	EstimatedTotalCommissionWithMCN int64                       `json:"est_total_comission_with_mcn"`
+	EstimatedTotalCommission        int64                       `json:"est_total_commission"`
+	EstimatedTotalCommissionWithMCN int64                       `json:"est_total_commission_with_mcn"`
 	PurchaseTime                    *time.Time                  `json:"purchase_time"`
 	CompleteTime                    *time.Time                  `json:"complete_time"`
-	Orders                          []orderparams.OrderResponse `json:"orders"`
+	Orders                          []orderparams.OrderResponse `json:"orders,omitempty"`
 }
 
-func NewTransactionDetailResponse(transaction *entity.Transaction) *TransactionDetailResponse {
-	return &TransactionDetailResponse{
+type TransactionGroupedResponse struct {
+	// TODO: add response fields
+	AccountID   uint                  `json:"account_id"`
+	AccountName string                `json:"account_name"`
+	Total       int                   `json:"total"`
+	Commission  Commission            `json:"commission"`
+	List        []TransactionResponse `json:"list"`
+}
+
+type CreatedTransactionResponse struct {
+	AccountID      uint   `json:"account_id"`
+	AccountName    string `json:"account_name"`
+	NewTransaction int    `json:"new_transaction"`
+}
+
+func NewTransactionResponse(transaction *entity.Transaction) *TransactionResponse {
+	return &TransactionResponse{
 		ID:                       transaction.ID,
 		UniqueID:                 transaction.UniqueID,
 		AccountID:                transaction.Account.ID,

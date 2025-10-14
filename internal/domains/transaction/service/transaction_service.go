@@ -8,12 +8,13 @@ import (
 
 type TransactionService interface {
 	FindAll() ([]*params.TransactionResponse, error)
-	FindOne() (*params.TransactionDetailResponse, error)
+	FindAllGrouped() ([]*params.TransactionGroupedResponse, error)
+	FindOne() (*params.TransactionResponse, error)
 	Create(req params.CreateTransactionRequest) ([]*params.CreatedTransactionResponse, error)
 	Update(id string, req params.UpdateTransactionRequest) (*params.TransactionResponse, error)
 	Delete(id string) error
 
-	GetTotalCommission() (*params.TransactionCommission, error)
+	GetTotalCommission() (*params.Commission, error)
 
 	WithID(id string) TransactionService
 	WithAccountID(accountID string) TransactionService
