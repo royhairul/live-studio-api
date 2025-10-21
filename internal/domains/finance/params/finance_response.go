@@ -1,32 +1,66 @@
 package params
 
+import (
+	"fmt"
+	"time"
+
+	shopeeparam "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	accountparam "github.com/royhairul/live-studio-api/internal/domains/account/params"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
+)
+
 type FinanceResponse struct {
-	AccountName string `json:"name"`
-	Total       int    `json:"total"`
-	ReportLive  any    `json:"reportLive"`
+	AccountID      string `json:"id"`
+	AccountName    string `json:"name"`
+	OrderDate      string `json:"order_date"`
+	ValidationDate string `json:"validation_date"`
+	Commission     int64  `json:"commission"`
+	PaymentStatus  string `json:"payment_status"`
+	PaymentMethod  string `json:"payment_method"`
+	PaymentDate    string `json:"payment_date"`
 }
 
-type CommissionTotalResponse struct {
-	TotalGMV        uint                       `json:"total_gmv"`
-	TotalCommission uint                       `json:"total_commission"`
-	TotalIncome     uint                       `json:"total_income"`
-	List            []CommissionStudioResponse `json:"list"`
-}
-type CommissionStudioResponse struct {
-	StudioName      string `json:"studio_name"`
-	TotalGMV        uint   `json:"total_gmv"`
-	TotalCommission uint   `json:"total_commission"`
-	TotalIncome     uint   `json:"total_income"`
+func GetPaymentMethod(value int) string {
+	switch value {
+	case 1:
+		return "Transfer Bank"
+	case 2:
+		return "ShopeePay"
+	default:
+		return "-"
+	}
 }
 
-type CommissionStudioDetailResponse struct {
-	StudioName        string `json:"studio_name"`
-	AccountName       string `json:"account_name"`
-	GMV               uint   `json:"gmv"`
-	CommissionSuccess uint   `json:"commission_success"`
-	CommissionPending uint   `json:"commission_pending"`
-	ACOS              uint   `json:"acos"`
-	ROAS              uint   `json:"roas"`
-	Ads               uint   `json:"ads"`
-	Income            uint   `json:"income"`
+func GetPaymentStatusLabel(status int) string {
+	switch status {
+	case 4:
+		return "Sudah Dibayar"
+	case 9:
+		return "Menunggu Validasi"
+	case 10:
+		return "Menunggu Dibayar"
+	default:
+		return "Unknown"
+	}
+}
+
+func ParsePaymentDate(paymentTime int64) string {
+	t, err := time.Parse("20060102", fmt.Sprint(paymentTime))
+	if err != nil {
+		return ""
+	}
+	return t.Format("2006-01-02")
+}
+
+func NewFinanceResponse(account accountparam.AccountResponse, commission shopeeparam.ShopeeFinanceCommissionList) *FinanceResponse {
+	return &FinanceResponse{
+		AccountID:      account.UniqueID,
+		AccountName:    account.Name,
+		Commission:     commission.TotalPaymentAmount,
+		OrderDate:      timehandler.FormatInt64Date(commission.OrderCompletedPeriodEndTime),
+		ValidationDate: timehandler.FormatInt64Date(commission.ValidationReviewTime),
+		PaymentDate:    ParsePaymentDate(commission.PaymentTime),
+		PaymentStatus:  GetPaymentStatusLabel(commission.PaymentStatus),
+		PaymentMethod:  GetPaymentMethod(commission.PaymentChannel),
+	}
 }

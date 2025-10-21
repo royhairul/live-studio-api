@@ -1,93 +1,123 @@
 package service
 
 import (
-	"fmt"
 	"log"
+	"sync"
+	"time"
 
-	"github.com/royhairul/live-studio-api/internal/domains/finance/params"
-
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
+	accountparams "github.com/royhairul/live-studio-api/internal/domains/account/params"
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
-	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
-	studioservice "github.com/royhairul/live-studio-api/internal/domains/studio/service"
+	"github.com/royhairul/live-studio-api/internal/domains/finance/params"
 )
 
 type FinanceServiceImpl struct {
-	shopeeSvc         ShopeeService.ShopeeFinanceService
-	studioSvc         studioservice.StudioService
-	accountSvc        accountservice.AccountService
-	accountSessionSvc accountsessionservice.AccountsessionService
+	shopeeSvc  ShopeeService.ShopeeFinanceService
+	accountSvc accountservice.AccountService
+	options    params.FinanceFilter
 }
+
+// --- Builder Pattern (WithX) ---
+
+func (f *FinanceServiceImpl) WithAccountUniqueID(uniqueID string) FinanceService {
+	instance := *f
+	instance.options.UniqueID = &uniqueID
+	return &instance
+}
+
+func (f *FinanceServiceImpl) WithStudioID(studioID string) FinanceService {
+	instance := *f
+	instance.options.StudioID = &studioID
+	return &instance
+}
+
+func (f *FinanceServiceImpl) WithStatus(status string) FinanceService {
+	instance := *f
+	instance.options.Status = &status
+	return &instance
+}
+
+func (f *FinanceServiceImpl) WithPaymentMethod(method string) FinanceService {
+	instance := *f
+	instance.options.PaymentMethod = &method
+	return &instance
+}
+
+// --- Constructor ---
 
 func NewFinanceService(
 	shopeeSvc ShopeeService.ShopeeFinanceService,
-	studioSvc studioservice.StudioService,
 	accountSvc accountservice.AccountService,
-	accountSessionSvc accountsessionservice.AccountsessionService,
 ) FinanceService {
-	return &FinanceServiceImpl{shopeeSvc, studioSvc, accountSvc, accountSessionSvc}
+	return &FinanceServiceImpl{
+		shopeeSvc:  shopeeSvc,
+		accountSvc: accountSvc,
+		options:    params.FinanceFilter{},
+	}
 }
 
-func (f *FinanceServiceImpl) FindAll(financeReq ShopeeParams.ShopeeLiveFinanceRequest) ([]*params.FinanceResponse, error) {
-	accounts, err := f.accountSvc.FindAll()
+// --- Core Logic ---
+
+func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) ([]*params.FinanceResponse, error) {
+	accountQuery := f.accountSvc
+
+	// Apply optional filters for account
+	if f.options.UniqueID != nil {
+		accountQuery = accountQuery.WithUniqueID(*f.options.UniqueID)
+	}
+	if f.options.StudioID != nil {
+		accountQuery = accountQuery.WithStudioID(*f.options.StudioID)
+	}
+
+	// Get all filtered accounts
+	accounts, err := accountQuery.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*params.FinanceResponse
-	for _, account := range accounts {
-		report, err := f.shopeeSvc.GetShopeeLiveSalesReportRange(financeReq, account.Cookie)
-		if err != nil {
-			log.Println("failed to get report for account %s: %v\n", account.Name, err)
-			continue
-		}
+	var (
+		mu     sync.Mutex
+		wg     sync.WaitGroup
+		sem    = make(chan struct{}, 5)
+		result []*params.FinanceResponse
+	)
 
-		result = append(result, &params.FinanceResponse{
-			AccountName: account.Name,
-			Total:       len(report),
-			ReportLive:  report,
-		})
-	}
+	for _, acc := range accounts {
+		wg.Add(1)
+		sem <- struct{}{}
 
-	return result, nil
-}
+		go func(account *accountparams.AccountResponse) {
+			defer wg.Done()
+			defer func() { <-sem }()
 
-// FindAllCommission implements FinanceService.
-func (f *FinanceServiceImpl) FindAllCommission() (*params.CommissionTotalResponse, error) {
-	studios, err := f.studioSvc.FindAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var results params.CommissionTotalResponse
-	for _, studio := range studios {
-		accounts, err := f.accountSvc.WithStudioID(fmt.Sprintf("%d", studio.ID)).FindAll()
-		if err != nil {
-			return nil, err
-		}
-
-		var list params.CommissionStudioResponse
-		list.StudioName = studio.Name
-		list.TotalGMV = 0
-		list.TotalCommission = 0
-		list.TotalIncome = 0
-
-		for _, acc := range accounts {
-			sessions, err := f.accountSessionSvc.WithAccountID(fmt.Sprintf("%d", acc.ID)).FindAll()
+			commissions, err := f.shopeeSvc.GetPaymentCommission(account.Cookie, startDate, endDate)
 			if err != nil {
-				continue
+				log.Printf("failed to get commission for %s: %v", account.Name, err)
+				return
 			}
-			for _, session := range sessions {
-				list.TotalGMV += session.GMVSales
+
+			var localResult []*params.FinanceResponse
+			for _, comm := range commissions.List {
+				resp := params.NewFinanceResponse(*account, comm)
+
+				// --- Internal filtering (status + method) ---
+				if f.options.Status != nil && resp.PaymentStatus != *f.options.Status {
+					continue
+				}
+				if f.options.PaymentMethod != nil && resp.PaymentMethod != *f.options.PaymentMethod {
+					continue
+				}
+
+				localResult = append(localResult, resp)
 			}
-		}
+
+			// Thread-safe append
+			mu.Lock()
+			result = append(result, localResult...)
+			mu.Unlock()
+		}(acc)
 	}
 
-	return &results, nil
-}
-
-// FindByStudioCommission implements FinanceService.
-func (f *FinanceServiceImpl) FindByStudioCommission() (*params.CommissionStudioDetailResponse, error) {
-	panic("unimplemented")
+	wg.Wait()
+	return result, nil
 }
