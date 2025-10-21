@@ -78,7 +78,7 @@ func (a *AccountRepositoryImpl) Update(account *entity.Account) (*entity.Account
 }
 
 func (a *AccountRepositoryImpl) Save(account *entity.Account) (*entity.Account, error) {
-	if err := a.DB.Preload("Studio").Save(account).Error; err != nil {
+	if err := a.DB.Save(account).Error; err != nil {
 		return nil, err
 	}
 

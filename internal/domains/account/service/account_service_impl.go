@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
@@ -8,6 +9,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type AccountServiceImpl struct {
@@ -74,7 +76,7 @@ func (a *AccountServiceImpl) FindOne() (*params.AccountResponse, error) {
 }
 
 func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*params.AccountResponse, error) {
-	// Get Shopee Account
+	// Get Shopee Account info
 	accountShopee, err := a.shopeeSvc.GetShopeeAccount(req.Cookie)
 	if err != nil {
 		return nil, err
@@ -93,20 +95,31 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 
 	existing, err := a.repository.FindOne(params.AccountFilter{UniqueID: &account.UniqueID})
 	if err != nil {
-		account, err := a.repository.Create(&account)
-		if err != nil {
-			return nil, err
+		// Create new if not found
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			created, err := a.repository.Create(&account)
+			if err != nil {
+				return nil, err
+			}
+			return params.NewAccountResponse(created), nil
 		}
-
-		return params.NewAccountResponse(account), nil
+		return nil, err
 	}
 
-	updatedAccount, err := a.repository.Save(existing)
+	// Update fields if exists
+	existing.Name = account.Name
+	existing.Username = account.Username
+	existing.Email = account.Email
+	existing.Cookie = account.Cookie
+	existing.Device = account.Device
+	existing.StudioID = account.StudioID
+
+	updated, err := a.repository.Save(existing)
 	if err != nil {
 		return nil, err
 	}
 
-	return params.NewAccountResponse(updatedAccount), nil
+	return params.NewAccountResponse(updated), nil
 }
 
 // Update implements AccountService.
