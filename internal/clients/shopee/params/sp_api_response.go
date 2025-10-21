@@ -1,8 +1,10 @@
 package params
 
 type ShopeeApiResponse[T any] struct {
-	Error    int    `json:"error"`
-	ErrorMsg string `json:"error_msg"`
+	Error    int    `json:"error,omitempty"`
+	ErrorMsg string `json:"error_msg,omitempty"`
+	Msg      string `json:"msg,omitempty"`
+	Code     int    `json:"code,omitempty"`
 	Data     T      `json:"data"`
 }
 
