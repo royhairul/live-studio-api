@@ -5,60 +5,65 @@ import (
 
 	"gorm.io/gorm"
 
+	// Entities
 	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	accountadsentity "github.com/royhairul/live-studio-api/internal/domains/accountads/entity"
 	accountsessionentity "github.com/royhairul/live-studio-api/internal/domains/accountsession/entity"
 	attendanceentity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
+	authentity "github.com/royhairul/live-studio-api/internal/domains/auth/entity"
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"
 	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 	productentity "github.com/royhairul/live-studio-api/internal/domains/product/entity"
 	roleentity "github.com/royhairul/live-studio-api/internal/domains/role/entity"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
+	shiftentity "github.com/royhairul/live-studio-api/internal/domains/shift/entity"
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 	targetentity "github.com/royhairul/live-studio-api/internal/domains/target/entity"
 	transactionentity "github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
+	userentity "github.com/royhairul/live-studio-api/internal/domains/user/entity"
 )
 
-// List All Model
+// modelsList contains all entities for migration
 var modelsList = []interface{}{
-	// &models.Product{},
-	// &models.User{},
-	// &models.Studio{},
-	// &models.ResetPassword{},
+	// User & Auth
+	&userentity.User{},
+	&authentity.ResetPassword{},
 
-	// // User Relation model
-	// &models.UserRelation{},
-
-	// // Schedule model
-	// &models.ScheduleShift{},
-
-	// // Role and Permission
-	// &models.Role{},
-	// &models.Permission{},
-
+	// Role & Permission
 	&permissionentity.Permission{},
 	&roleentity.Role{},
+
+	// Host
 	&hostentity.Host{},
+
+	// Account related
 	&accountentity.Account{},
-	&studioentity.Studio{},
-	&scheduleentity.Schedule{},
-	&attendanceentity.Attendance{},
 	&accountsessionentity.Accountsession{},
 	&accountadsentity.Accountads{},
 
+	// Studio
+	&studioentity.Studio{},
+
+	// Attendance & Schedule
+	&attendanceentity.Attendance{},
+	&scheduleentity.Schedule{},
+	&shiftentity.Shift{},
+
+	// Targets
 	&targetentity.Target{},
-	&productentity.Product{},
+
+	// Transactions & Products
 	&transactionentity.Transaction{},
+	&productentity.Product{},
 	&orderentity.Order{},
 }
 
+// MigrateDatabase runs auto-migration for all models
 func MigrateDatabase(db *gorm.DB) {
-	// Run AutoMigrate for all models
-	if error := db.AutoMigrate(modelsList...); error != nil {
-		log.Fatalf("Failed to migrate database: %v", error)
+	if err := db.AutoMigrate(modelsList...); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	// Succesfully migration
 	log.Println("✅ Database migration completed successfully!")
 }
