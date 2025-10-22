@@ -197,7 +197,6 @@ func (s *TransactionServiceImpl) FindAll() (*params.TransactionResponse, error) 
 		return nil, err
 	}
 
-<<<<<<< HEAD
 	var list []params.TransactionList
 
 	for _, tx := range transactions {
@@ -205,27 +204,6 @@ func (s *TransactionServiceImpl) FindAll() (*params.TransactionResponse, error) 
 	}
 
 	return params.NewTransactionResponse(list), nil
-=======
-	var (
-		commission params.Commission
-		list       []params.TransactionList
-	)
-
-	for _, tx := range transactions {
-		list = append(list, *params.NewTransactionItem(tx))
-
-		switch tx.Status {
-		case "Paid", "Waiting for payment", "Success":
-			commission.Paid += tx.EstimatedTotalCommission
-		case "Pending":
-			commission.Pending += tx.EstimatedTotalCommission
-		}
-
-		commission.Total += tx.EstimatedTotalCommission
-	}
-
-	return params.NewTransactionResponse(commission, list), nil
->>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 }
 
 // FindAllGrouped implements TransactionService.

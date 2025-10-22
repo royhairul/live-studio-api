@@ -14,7 +14,6 @@ type Commission struct {
 	Paid    int64 `json:"paid"`
 }
 
-<<<<<<< HEAD
 type CommissionMetric struct {
 	Total        int64 `json:"total"`
 	Pending      int64 `json:"pending"`
@@ -47,31 +46,6 @@ type TransactionList struct {
 	PurchaseTime           *time.Time                  `json:"purchase_time"`
 	CompleteTime           *time.Time                  `json:"complete_time,omitempty"`
 	Orders                 []orderparams.OrderResponse `json:"orders,omitempty"`
-=======
-// 🔹 Tambahan: Rasio komisi
-type CommissionRatio struct {
-	Pending float64 `json:"pending_ratio"`
-	Paid    float64 `json:"paid_ratio"`
-}
-
-type TransactionResponse struct {
-	Commission      Commission        `json:"commission"`
-	CommissionRatio CommissionRatio   `json:"commission_ratio"`
-	List            []TransactionList `json:"list"`
-}
-
-type TransactionList struct {
-	ID                              int64                       `json:"id"`
-	AccountID                       uint                        `json:"account_id"`
-	AccountName                     string                      `json:"account_name"`
-	UniqueID                        string                      `json:"unique_id"`
-	Status                          string                      `json:"status"`
-	EstimatedTotalCommission        int64                       `json:"est_total_commission"`
-	EstimatedTotalCommissionWithMCN int64                       `json:"est_total_commission_with_mcn"`
-	PurchaseTime                    *time.Time                  `json:"purchase_time"`
-	CompleteTime                    *time.Time                  `json:"complete_time,omitempty"`
-	Orders                          []orderparams.OrderResponse `json:"orders,omitempty"`
->>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 }
 
 type TransactionGroupedResponse struct {
@@ -90,7 +64,6 @@ type CreatedTransactionResponse struct {
 
 func NewTransactionItem(transaction *entity.Transaction) *TransactionList {
 	return &TransactionList{
-<<<<<<< HEAD
 		ID:                     transaction.ID,
 		UniqueID:               transaction.UniqueID,
 		AccountID:              transaction.Account.ID,
@@ -121,36 +94,6 @@ func NewTransactionResponse(list []TransactionList) *TransactionResponse {
 			TotalPurchase:          totalPurchase,
 			TotalCommission:        totalCommission,
 			TotalCommissionWithMCN: totalCommissionWithMCN,
-		},
-		List: list,
-=======
-		ID:                       transaction.ID,
-		UniqueID:                 transaction.UniqueID,
-		AccountID:                transaction.Account.ID,
-		AccountName:              transaction.Account.Name,
-		Status:                   transaction.Status,
-		EstimatedTotalCommission: transaction.EstimatedTotalCommission,
-		PurchaseTime:             transaction.PurchaseTime,
-		CompleteTime:             transaction.CompleteTime,
->>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
-	}
-}
-
-// 🔹 Helper untuk buat TransactionResponse dengan rasio
-func NewTransactionResponse(commission Commission, list []TransactionList) *TransactionResponse {
-	total := commission.Total
-	var pendingRatio, paidRatio float64
-
-	if total > 0 {
-		pendingRatio = float64(commission.Pending) / float64(total) * 100
-		paidRatio = float64(commission.Paid) / float64(total) * 100
-	}
-
-	return &TransactionResponse{
-		Commission: commission,
-		CommissionRatio: CommissionRatio{
-			Pending: round2(pendingRatio),
-			Paid:    round2(paidRatio),
 		},
 		List: list,
 	}
