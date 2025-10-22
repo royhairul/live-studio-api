@@ -58,7 +58,7 @@ func NewFinanceService(
 
 // --- Core Logic ---
 
-func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) ([]*params.FinanceResponse, error) {
+func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (*params.FinanceResponse, error) {
 	accountQuery := f.accountSvc
 
 	// Apply optional filters for account
@@ -76,10 +76,10 @@ func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (
 	}
 
 	var (
-		mu     sync.Mutex
-		wg     sync.WaitGroup
-		sem    = make(chan struct{}, 5)
-		result []*params.FinanceResponse
+		mu    sync.Mutex
+		wg    sync.WaitGroup
+		sem   = make(chan struct{}, 5)
+		items []params.FinanceItem
 	)
 
 	for _, acc := range accounts {
@@ -92,32 +92,33 @@ func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (
 
 			commissions, err := f.shopeeSvc.GetPaymentCommission(account.Cookie, startDate, endDate)
 			if err != nil {
-				log.Printf("failed to get commission for %s: %v", account.Name, err)
+				log.Printf("⚠️ gagal mengambil komisi untuk %s: %v", account.Name, err)
 				return
 			}
 
-			var localResult []*params.FinanceResponse
+			var localItems []params.FinanceItem
 			for _, comm := range commissions.List {
-				resp := params.NewFinanceResponse(*account, comm)
+				item := params.NewFinanceItem(*account, comm)
 
 				// --- Internal filtering (status + method) ---
-				if f.options.Status != nil && resp.PaymentStatus != *f.options.Status {
+				if f.options.Status != nil && item.PaymentStatus != *f.options.Status {
 					continue
 				}
-				if f.options.PaymentMethod != nil && resp.PaymentMethod != *f.options.PaymentMethod {
+				if f.options.PaymentMethod != nil && item.PaymentMethod != *f.options.PaymentMethod {
 					continue
 				}
 
-				localResult = append(localResult, resp)
+				localItems = append(localItems, *item)
 			}
 
 			// Thread-safe append
 			mu.Lock()
-			result = append(result, localResult...)
+			items = append(items, localItems...)
 			mu.Unlock()
 		}(acc)
 	}
 
 	wg.Wait()
-	return result, nil
+
+	return params.NewFinanceResponse(items), nil
 }

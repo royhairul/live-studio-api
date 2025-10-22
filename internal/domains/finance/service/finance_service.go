@@ -7,7 +7,7 @@ import (
 )
 
 type FinanceService interface {
-	FindAll(startDate, endDate *time.Time) ([]*params.FinanceResponse, error)
+	FindAll(startDate, endDate *time.Time) (*params.FinanceResponse, error)
 
 	WithAccountUniqueID(unique_id string) FinanceService
 	WithStudioID(studio_id string) FinanceService

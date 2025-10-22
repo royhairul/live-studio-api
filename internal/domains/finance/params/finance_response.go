@@ -9,7 +9,19 @@ import (
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 )
 
+type FinanceMetric struct {
+	Total        int64   `json:"total"`
+	Pending      int64   `json:"pending"`
+	Paid         int64   `json:"paid"`
+	PendingRatio float64 `json:"pending_ratio"`
+	PaidRatio    float64 `json:"paid_ratio"`
+}
 type FinanceResponse struct {
+	Metric FinanceMetric `json:"metric"`
+	List   []FinanceItem `json:"list"`
+}
+
+type FinanceItem struct {
 	AccountID      string `json:"id"`
 	AccountName    string `json:"name"`
 	OrderDate      string `json:"order_date"`
@@ -52,8 +64,34 @@ func ParsePaymentDate(paymentTime int64) string {
 	return t.Format("2006-01-02")
 }
 
-func NewFinanceResponse(account accountparam.AccountResponse, commission shopeeparam.ShopeeFinanceCommissionList) *FinanceResponse {
+func NewFinanceResponse(items []FinanceItem) *FinanceResponse {
+	var metric FinanceMetric
+
+	for _, item := range items {
+		metric.Total += item.Commission
+
+		switch item.PaymentStatus {
+		case "Sudah Dibayar":
+			metric.Paid += item.Commission
+		case "Menunggu Dibayar", "Menunggu Validasi":
+			metric.Pending += item.Commission
+		}
+	}
+
+	// Hitung rasio
+	if metric.Total > 0 {
+		metric.PaidRatio = float64(metric.Paid) / float64(metric.Total) * 100
+		metric.PendingRatio = float64(metric.Pending) / float64(metric.Total) * 100
+	}
+
 	return &FinanceResponse{
+		Metric: metric,
+		List:   items,
+	}
+}
+
+func NewFinanceItem(account accountparam.AccountResponse, commission shopeeparam.ShopeeFinanceCommissionList) *FinanceItem {
+	return &FinanceItem{
 		AccountID:      account.UniqueID,
 		AccountName:    account.Name,
 		Commission:     commission.TotalPaymentAmount,
