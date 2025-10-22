@@ -18,8 +18,8 @@ type Transaction struct {
 	Status                          string
 	EstimatedTotalCommission        int64
 	EstimatedTotalCommissionWithMCN int64
-	PurchaseTime                    *time.Time          `gorm:"null"`
-	CompleteTime                    *time.Time          `gorm:"null"`
+	PurchaseTime                    *time.Time
+	CompleteTime                    *time.Time
 	Orders                          []orderentity.Order `gorm:"foreignKey:TransactionID;references:ID"`
 	AccountID                       uint
 	Account                         accountentity.Account `gorm:"foreignKey:AccountID;references:ID"`

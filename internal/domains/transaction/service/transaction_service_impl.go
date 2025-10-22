@@ -177,23 +177,36 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 }
 
 // Update implements TransactionService.
-func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionRequest) (*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionRequest) (*params.TransactionList, error) {
 	panic("unimplemented")
 }
 
 // FindAll implements TransactionService.
-func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) FindAll() (*params.TransactionResponse, error) {
 	transactions, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
 
-	var results []*params.TransactionResponse
+	var (
+		commission params.Commission
+		list       []params.TransactionList
+	)
+
 	for _, tx := range transactions {
-		results = append(results, params.NewTransactionResponse(tx))
+		list = append(list, *params.NewTransactionItem(tx))
+
+		switch tx.Status {
+		case "Paid", "Waiting for payment", "Success":
+			commission.Paid += tx.EstimatedTotalCommission
+		case "Pending":
+			commission.Pending += tx.EstimatedTotalCommission
+		}
+
+		commission.Total += tx.EstimatedTotalCommission
 	}
 
-	return results, nil
+	return params.NewTransactionResponse(commission, list), nil
 }
 
 // FindAllGrouped implements TransactionService.
@@ -208,13 +221,13 @@ func (s *TransactionServiceImpl) FindAllGrouped() ([]*params.TransactionGroupedR
 }
 
 // FindOne implements TransactionService.
-func (s *TransactionServiceImpl) FindOne() (*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) FindOne() (*params.TransactionList, error) {
 	transaction, err := s.repository.FindOne(s.options)
 	if err != nil {
 		return nil, err
 	}
 
-	result := params.NewTransactionResponse(transaction)
+	result := params.NewTransactionItem(transaction)
 	return result, nil
 }
 
