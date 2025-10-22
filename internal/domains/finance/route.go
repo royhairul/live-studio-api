@@ -8,8 +8,6 @@ import (
 func RegisterRouter(router *gin.RouterGroup, controller controller.FinanceController) {
 	routes := router.Group("/finance")
 	{
-		routes.POST("/shopee", controller.GetLiveFinance)
-
-		routes.GET("/commission", controller.GetLiveFinance)
+		routes.GET("", controller.FindAll)
 	}
 }

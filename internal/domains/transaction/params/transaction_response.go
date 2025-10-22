@@ -3,9 +3,8 @@ package params
 import (
 	"time"
 
-	"github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
-
 	orderparams "github.com/royhairul/live-studio-api/internal/domains/order/params"
+	"github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
 )
 
 type Commission struct {
@@ -14,27 +13,46 @@ type Commission struct {
 	Paid    int64 `json:"paid"`
 }
 
+type CommissionMetric struct {
+	Total        int64 `json:"total"`
+	Pending      int64 `json:"pending"`
+	Paid         int64 `json:"paid"`
+	PendingRatio int   `json:"pending_ratio"`
+	PaidRatio    int   `json:"paid_ratio"`
+}
+
+type TransactionMetric struct {
+	TotalPurchase          int64 `json:"total_purchase"`
+	TotalCommissionWithMCN int64 `json:"total_commission_with_mcn"`
+	TotalCommission        int64 `json:"total_commission"`
+}
+
 type TransactionResponse struct {
-	// TODO: add response fields
-	ID                              int64                       `json:"id"`
-	AccountID                       uint                        `json:"account_id"`
-	AccountName                     string                      `json:"account_name"`
-	UniqueID                        string                      `json:"unique_id"`
-	Status                          string                      `json:"status"`
-	EstimatedTotalCommission        int64                       `json:"est_total_commission"`
-	EstimatedTotalCommissionWithMCN int64                       `json:"est_total_commission_with_mcn"`
-	PurchaseTime                    *time.Time                  `json:"purchase_time"`
-	CompleteTime                    *time.Time                  `json:"complete_time"`
-	Orders                          []orderparams.OrderResponse `json:"orders,omitempty"`
+	Metric TransactionMetric `json:"metric"`
+	List   []TransactionList `json:"list"`
+}
+
+type TransactionList struct {
+	ID                     int64                       `json:"id"`
+	AccountID              uint                        `json:"account_id"`
+	AccountName            string                      `json:"account_name"`
+	AccountStudio          string                      `json:"account_studio"`
+	UniqueID               string                      `json:"unique_id"`
+	Status                 string                      `json:"status"`
+	TotalPurchase          int64                       `json:"total_purchase"`
+	TotalCommissionWithMCN int64                       `json:"total_commission_with_mcn"`
+	TotalCommission        int64                       `json:"total_commission"`
+	PurchaseTime           *time.Time                  `json:"purchase_time"`
+	CompleteTime           *time.Time                  `json:"complete_time,omitempty"`
+	Orders                 []orderparams.OrderResponse `json:"orders,omitempty"`
 }
 
 type TransactionGroupedResponse struct {
-	// TODO: add response fields
-	AccountID   uint                  `json:"account_id"`
-	AccountName string                `json:"account_name"`
-	Total       int                   `json:"total"`
-	Commission  Commission            `json:"commission"`
-	List        []TransactionResponse `json:"list"`
+	AccountID   uint              `json:"account_id"`
+	AccountName string            `json:"account_name"`
+	Total       int               `json:"total"`
+	Commission  Commission        `json:"commission"`
+	List        []TransactionList `json:"list"`
 }
 
 type CreatedTransactionResponse struct {
@@ -43,15 +61,39 @@ type CreatedTransactionResponse struct {
 	NewTransaction int    `json:"new_transaction"`
 }
 
-func NewTransactionResponse(transaction *entity.Transaction) *TransactionResponse {
+func NewTransactionItem(transaction *entity.Transaction) *TransactionList {
+	return &TransactionList{
+		ID:                     transaction.ID,
+		UniqueID:               transaction.UniqueID,
+		AccountID:              transaction.Account.ID,
+		AccountStudio:          transaction.Account.Studio.Name,
+		AccountName:            transaction.Account.Name,
+		Status:                 transaction.Status,
+		TotalPurchase:          transaction.TotalPurchase,
+		TotalCommission:        transaction.TotalCommission,
+		TotalCommissionWithMCN: transaction.TotalCommissionWithMCN,
+		PurchaseTime:           transaction.PurchaseTime,
+		CompleteTime:           transaction.CompleteTime,
+	}
+}
+
+func NewTransactionResponse(list []TransactionList) *TransactionResponse {
+	var totalPurchase int64
+	var totalCommission int64
+	var totalCommissionWithMCN int64
+
+	for _, item := range list {
+		totalPurchase += item.TotalPurchase
+		totalCommission += item.TotalCommission
+		totalCommissionWithMCN += item.TotalCommissionWithMCN
+	}
+
 	return &TransactionResponse{
-		ID:                       transaction.ID,
-		UniqueID:                 transaction.UniqueID,
-		AccountID:                transaction.Account.ID,
-		AccountName:              transaction.Account.Name,
-		Status:                   transaction.Status,
-		EstimatedTotalCommission: transaction.EstimatedTotalCommission,
-		PurchaseTime:             transaction.PurchaseTime,
-		CompleteTime:             transaction.CompleteTime,
+		Metric: TransactionMetric{
+			TotalPurchase:          totalPurchase,
+			TotalCommission:        totalCommission,
+			TotalCommissionWithMCN: totalCommissionWithMCN,
+		},
+		List: list,
 	}
 }

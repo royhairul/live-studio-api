@@ -21,19 +21,19 @@ func GroupTransactions(
 					Paid:    0,
 					Pending: 0,
 				},
-				List: []params.TransactionResponse{},
+				List: []params.TransactionList{},
 			}
 		}
 
 		grouped[tx.AccountID].Total++
-		grouped[tx.AccountID].Commission.Total += tx.EstimatedTotalCommissionWithMCN
+		grouped[tx.AccountID].Commission.Total += tx.TotalCommissionWithMCN
 		if tx.Status == "Waiting For Payment" {
-			grouped[tx.AccountID].Commission.Paid += tx.EstimatedTotalCommissionWithMCN
+			grouped[tx.AccountID].Commission.Paid += tx.TotalCommissionWithMCN
 		}
 		if tx.Status == "Pending" {
-			grouped[tx.AccountID].Commission.Pending += tx.EstimatedTotalCommissionWithMCN
+			grouped[tx.AccountID].Commission.Pending += tx.TotalCommissionWithMCN
 		}
-		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionResponse(tx))
+		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionItem(tx))
 	}
 
 	var results []*params.TransactionGroupedResponse

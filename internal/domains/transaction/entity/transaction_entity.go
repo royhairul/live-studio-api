@@ -13,19 +13,20 @@ import (
 )
 
 type Transaction struct {
-	ID                              int64  `gorm:"primaryKey"`
-	UniqueID                        string `gorm:"unique"`
-	Status                          string
-	EstimatedTotalCommission        int64
-	EstimatedTotalCommissionWithMCN int64
-	PurchaseTime                    *time.Time          `gorm:"null"`
-	CompleteTime                    *time.Time          `gorm:"null"`
-	Orders                          []orderentity.Order `gorm:"foreignKey:TransactionID;references:ID"`
-	AccountID                       uint
-	Account                         accountentity.Account `gorm:"foreignKey:AccountID;references:ID"`
-	CreatedAt                       time.Time
-	UpdatedAt                       time.Time
-	DeletedAt                       gorm.DeletedAt `gorm:"index"`
+	ID                     int64  `gorm:"primaryKey"`
+	UniqueID               string `gorm:"unique"`
+	Status                 string
+	TotalPurchase          int64
+	TotalCommission        int64
+	TotalCommissionWithMCN int64
+	PurchaseTime           *time.Time
+	CompleteTime           *time.Time
+	Orders                 []orderentity.Order `gorm:"foreignKey:TransactionID;references:ID"`
+	AccountID              uint
+	Account                accountentity.Account `gorm:"foreignKey:AccountID;references:ID;preload:Studio"`
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
+	DeletedAt              gorm.DeletedAt `gorm:"index"`
 }
 
 func (t *Transaction) BeforeCreate(tx *gorm.DB) error {

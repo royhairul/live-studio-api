@@ -12,11 +12,12 @@ import (
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 	"gorm.io/gorm"
 
+	orderparams "github.com/royhairul/live-studio-api/internal/domains/order/params"
+	productparams "github.com/royhairul/live-studio-api/internal/domains/product/params"
+
 	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
-	orderparams "github.com/royhairul/live-studio-api/internal/domains/order/params"
 	orderservice "github.com/royhairul/live-studio-api/internal/domains/order/service"
-	productparams "github.com/royhairul/live-studio-api/internal/domains/product/params"
 	productservice "github.com/royhairul/live-studio-api/internal/domains/product/service"
 )
 
@@ -67,6 +68,13 @@ func (s *TransactionServiceImpl) WithAccountID(accountID string) TransactionServ
 	return &instance
 }
 
+// WithStudioID implements TransactionService.
+func (s *TransactionServiceImpl) WithStudioID(studioID string) TransactionService {
+	instance := *s
+	instance.options.StudioID = &studioID
+	return &instance
+}
+
 // WithDate implements TransactionService.
 func (s *TransactionServiceImpl) WithDate(startTime time.Time, endTime time.Time) TransactionService {
 	instance := *s
@@ -107,7 +115,7 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 			}
 
 			for _, tx := range transactions.List {
-				exists, err := s.repository.FindByUniqueID(tx.CheckoutID)
+				exists, err := s.repository.FindOne(params.TransactionFilter{UniqueID: &tx.CheckoutID})
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
 						log.Println("not found true")
@@ -124,13 +132,14 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 				}
 
 				transaction := entity.Transaction{
-					UniqueID:                        tx.CheckoutID,
-					Status:                          tx.CheckoutStatus,
-					EstimatedTotalCommission:        tx.EstimatedTotalCommission,
-					EstimatedTotalCommissionWithMCN: tx.EstimatedTotalCommissionWithMCN,
-					PurchaseTime:                    timehandler.ParseInt64Date(tx.PurchaseTime),
-					CompleteTime:                    timehandler.ParseInt64Date(tx.CheckoutCompleteTime),
-					AccountID:                       account.ID,
+					UniqueID:               tx.CheckoutID,
+					Status:                 tx.CheckoutStatus,
+					TotalPurchase:          tx.TotalBrandCommission,
+					TotalCommission:        tx.EstimatedTotalCommission,
+					TotalCommissionWithMCN: tx.EstimatedTotalCommissionWithMCN,
+					PurchaseTime:           timehandler.ParseInt64Date(tx.PurchaseTime),
+					CompleteTime:           timehandler.ParseInt64Date(tx.CheckoutCompleteTime),
+					AccountID:              account.ID,
 				}
 
 				created, err := s.repository.Create(&transaction)
@@ -177,23 +186,24 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 }
 
 // Update implements TransactionService.
-func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionRequest) (*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionRequest) (*params.TransactionList, error) {
 	panic("unimplemented")
 }
 
 // FindAll implements TransactionService.
-func (s *TransactionServiceImpl) FindAll() ([]*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) FindAll() (*params.TransactionResponse, error) {
 	transactions, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
 
-	var results []*params.TransactionResponse
+	var list []params.TransactionList
+
 	for _, tx := range transactions {
-		results = append(results, params.NewTransactionResponse(tx))
+		list = append(list, *params.NewTransactionItem(tx))
 	}
 
-	return results, nil
+	return params.NewTransactionResponse(list), nil
 }
 
 // FindAllGrouped implements TransactionService.
@@ -208,13 +218,13 @@ func (s *TransactionServiceImpl) FindAllGrouped() ([]*params.TransactionGroupedR
 }
 
 // FindOne implements TransactionService.
-func (s *TransactionServiceImpl) FindOne() (*params.TransactionResponse, error) {
+func (s *TransactionServiceImpl) FindOne() (*params.TransactionList, error) {
 	transaction, err := s.repository.FindOne(s.options)
 	if err != nil {
 		return nil, err
 	}
 
-	result := params.NewTransactionResponse(transaction)
+	result := params.NewTransactionItem(transaction)
 	return result, nil
 }
 
