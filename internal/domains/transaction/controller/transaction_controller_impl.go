@@ -72,6 +72,7 @@ func (c *TransactionControllerImpl) Update(ctx *gin.Context) {
 func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 	status := ctx.Query("status")
 	account := ctx.Query("account")
+	studio := ctx.Query("studio")
 
 	startDate := ctx.Query("startDate")
 	endDate := ctx.Query("endDate")
@@ -87,6 +88,9 @@ func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 	}
 	if startDate != "" || endDate != "" {
 		service = service.WithDate(*start, *end)
+	}
+	if studio != "" {
+		service = service.WithStudioID(studio)
 	}
 
 	result, err := service.FindAll()

@@ -10,11 +10,19 @@ import (
 )
 
 type FinanceMetric struct {
+<<<<<<< HEAD
 	Total        int64 `json:"total"`
 	Pending      int64 `json:"pending"`
 	Paid         int64 `json:"paid"`
 	PendingRatio int   `json:"pending_ratio"`
 	PaidRatio    int   `json:"paid_ratio"`
+=======
+	Total        int64   `json:"total"`
+	Pending      int64   `json:"pending"`
+	Paid         int64   `json:"paid"`
+	PendingRatio float64 `json:"pending_ratio"`
+	PaidRatio    float64 `json:"paid_ratio"`
+>>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 }
 type FinanceResponse struct {
 	Metric FinanceMetric `json:"metric"`
@@ -22,10 +30,15 @@ type FinanceResponse struct {
 }
 
 type FinanceItem struct {
+<<<<<<< HEAD
 	ID             string `json:"id"`
 	AccountID      string `json:"account_id"`
 	AccountName    string `json:"account_name"`
 	AccountStudio  string `json:"account_studio"`
+=======
+	AccountID      string `json:"id"`
+	AccountName    string `json:"name"`
+>>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 	OrderDate      string `json:"order_date"`
 	ValidationDate string `json:"validation_date"`
 	Commission     int64  `json:"commission"`
@@ -82,8 +95,13 @@ func NewFinanceResponse(items []FinanceItem) *FinanceResponse {
 
 	// Hitung rasio
 	if metric.Total > 0 {
+<<<<<<< HEAD
 		metric.PaidRatio = int(float32(metric.Paid) / float32(metric.Total) * 100)
 		metric.PendingRatio = int(float32(metric.Pending) / float32(metric.Total) * 100)
+=======
+		metric.PaidRatio = float64(metric.Paid) / float64(metric.Total) * 100
+		metric.PendingRatio = float64(metric.Pending) / float64(metric.Total) * 100
+>>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 	}
 
 	return &FinanceResponse{
@@ -94,10 +112,15 @@ func NewFinanceResponse(items []FinanceItem) *FinanceResponse {
 
 func NewFinanceItem(account accountparam.AccountResponse, commission shopeeparam.ShopeeFinanceCommissionList) *FinanceItem {
 	return &FinanceItem{
+<<<<<<< HEAD
 		ID:             commission.PayoutID,
 		AccountID:      account.UniqueID,
 		AccountName:    account.Name,
 		AccountStudio:  account.StudioName,
+=======
+		AccountID:      account.UniqueID,
+		AccountName:    account.Name,
+>>>>>>> 05936c56bc49c4c6ae6fe3260a47122fce7656fe
 		Commission:     commission.TotalPaymentAmount,
 		OrderDate:      timehandler.FormatInt64Date(commission.OrderCompletedPeriodEndTime),
 		ValidationDate: timehandler.FormatInt64Date(commission.ValidationReviewTime),

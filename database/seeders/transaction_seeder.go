@@ -35,15 +35,15 @@ func TransactionSeeder() {
 	makeTransaction := func(uniqueID string, status string, commission int64, purchaseTime time.Time, accountID uint) transactionentity.Transaction {
 		snowflakeid.InitSnowflake()
 		return transactionentity.Transaction{
-			UniqueID:                        uniqueID,
-			Status:                          status,
-			EstimatedTotalCommission:        commission,
-			EstimatedTotalCommissionWithMCN: commission,
-			PurchaseTime:                    tptr(purchaseTime),
-			CompleteTime:                    tptr(purchaseTime.Add(48 * time.Hour)), // default complete 2 hari setelah purchase
-			AccountID:                       accountID,
-			CreatedAt:                       now,
-			UpdatedAt:                       now,
+			UniqueID:               uniqueID,
+			Status:                 status,
+			TotalCommission:        commission,
+			TotalCommissionWithMCN: commission,
+			PurchaseTime:           tptr(purchaseTime),
+			CompleteTime:           tptr(purchaseTime.Add(48 * time.Hour)), // default complete 2 hari setelah purchase
+			AccountID:              accountID,
+			CreatedAt:              now,
+			UpdatedAt:              now,
 		}
 	}
 

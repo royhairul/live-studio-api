@@ -11,6 +11,4 @@ type TransactionRepository interface {
 	Create(data *entity.Transaction) (*entity.Transaction, error)
 	Update(data *entity.Transaction) (*entity.Transaction, error)
 	Delete(id string) error
-
-	FindByUniqueID(uid string) (*entity.Transaction, error)
 }
