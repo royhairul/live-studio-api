@@ -18,6 +18,10 @@ func NewAccountRepository(db *gorm.DB) AccountRepository {
 func (a *AccountRepositoryImpl) BuildQuery(filter params.AccountFilter) *gorm.DB {
 	query := a.DB.Debug().Model(entity.Account{}).Preload(clause.Associations)
 
+	if filter.IncludeDeleted {
+		query = query.Unscoped()
+	}
+
 	if filter.ID != nil {
 		query = query.Where("id = ?", filter.ID)
 	}

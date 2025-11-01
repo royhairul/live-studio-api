@@ -93,10 +93,10 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 		Device:   req.Device,
 	}
 
-	existing, err := a.repository.FindOne(params.AccountFilter{UniqueID: &account.UniqueID})
+	existing, err := a.repository.FindOne(params.AccountFilter{UniqueID: &account.UniqueID, IncludeDeleted: true})
 	if err != nil {
 		// Create new if not found
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if existing == nil || errors.Is(err, gorm.ErrRecordNotFound) {
 			created, err := a.repository.Create(&account)
 			if err != nil {
 				return nil, err
@@ -104,6 +104,10 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 			return params.NewAccountResponse(created), nil
 		}
 		return nil, err
+	}
+
+	if existing.DeletedAt.Valid {
+		existing.DeletedAt = gorm.DeletedAt{}
 	}
 
 	// Update fields if exists
