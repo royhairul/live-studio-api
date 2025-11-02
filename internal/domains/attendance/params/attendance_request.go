@@ -7,5 +7,5 @@ type AttendanceCheckInRequest struct {
 }
 
 type AttendanceCheckOutRequest struct {
-	ID uint `json:"id" validate:"required"`
+	ID []uint `json:"id" validate:"required"`
 }

@@ -12,7 +12,7 @@ type AttendanceService interface {
 	FindUncheckedOut() ([]*params.AttendanceResponse, error)
 
 	CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error)
-	CheckOut(req params.AttendanceCheckOutRequest) (*params.AttendanceResponse, error)
+	CheckOut(req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error)
 	GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string
 
 	WithDateRange(startTime, endTime time.Time) AttendanceService

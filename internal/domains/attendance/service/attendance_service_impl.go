@@ -142,7 +142,7 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
 			return nil, fmt.Errorf("host %s already checkin", host.Name)
 		} else {
-			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: existAttendance.ID})
+			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: []uint{existAttendance.ID}})
 			if err != nil {
 				return nil, fmt.Errorf("failed to auto-checkout previous host: %w", err)
 			}
@@ -205,57 +205,72 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 	return result, nil
 }
 
-func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (*params.AttendanceResponse, error) {
-	attendance, err := s.repository.FindByID(req.ID)
-	if err != nil {
-		return nil, fmt.Errorf("Gagal menemukan attendance ID %d", req.ID)
-	}
+func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error) {
+	var responses []*params.AttendanceResponse
 
-	attendance.CheckedOutAt = timehandler.TimeNow()
-	attendance.Status = "inactive"
-
-	if err := s.repository.Save(attendance); err != nil {
-		return nil, fmt.Errorf("Gagal menyimpan attendance ID %d", req.ID)
-	}
-
-	// Update account session with checkout time
-	accountSessions, err := s.accountSessionSvc.
-		WithAttendanceID(fmt.Sprintf("%d", attendance.ID)).
-		FindAll()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, session := range accountSessions {
-		account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne()
+	for _, id := range req.ID {
+		attendance, err := s.repository.FindByID(id)
 		if err != nil {
-			log.Printf("Failed to get account ID %d: %v", session.AccountID, err)
+			log.Printf("Gagal menemukan attendance ID %d: %v", id, err)
 			continue
 		}
 
-		live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
-		if err != nil {
-			log.Printf("Failed to get live data for account %s: %v", account.Name, err)
+		attendance.CheckedOutAt = timehandler.TimeNow()
+		attendance.Status = "inactive"
+
+		if err := s.repository.Save(attendance); err != nil {
+			log.Printf("Gagal menyimpan attendance ID %d: %v", id, err)
 			continue
 		}
 
-		var updateReq accountsessionparams.UpdateEndSessionRequest
-		if len(live) > 0 {
-			updateReq.GMVSalesEnd = uint(live[0].ConfirmedSales)
-			updateReq.GMVPaidEnd = uint(live[0].PlacedSales)
-		} else {
-			updateReq.GMVSalesEnd = 0
-			updateReq.GMVPaidEnd = 0
+		// Update account session with checkout time
+		accountSessions, err := s.accountSessionSvc.
+			WithAttendanceID(fmt.Sprintf("%d", attendance.ID)).
+			FindAll()
+		if err != nil {
+			log.Printf("Failed to get account sessions for attendance ID %d: %v", id, err)
+			continue
 		}
 
-		_, err = s.accountSessionSvc.UpdateEndSession(strconv.FormatUint(uint64(session.ID), 10), updateReq)
-		if err != nil {
-			return nil, fmt.Errorf("failed to update account session for attendance ID %d: %w", req.ID, err)
+		for _, session := range accountSessions {
+			account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne()
+			if err != nil {
+				log.Printf("Failed to get account ID %d: %v", session.AccountID, err)
+				continue
+			}
+
+			live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
+			if err != nil {
+				log.Printf("Failed to get live data for account %s: %v", account.Name, err)
+				continue
+			}
+
+			var updateReq accountsessionparams.UpdateEndSessionRequest
+			if len(live) > 0 {
+				updateReq.GMVSalesEnd = uint(live[0].ConfirmedSales)
+				updateReq.GMVPaidEnd = uint(live[0].PlacedSales)
+			} else {
+				updateReq.GMVSalesEnd = 0
+				updateReq.GMVPaidEnd = 0
+			}
+
+			if _, err := s.accountSessionSvc.UpdateEndSession(
+				strconv.FormatUint(uint64(session.ID), 10),
+				updateReq,
+			); err != nil {
+				log.Printf("Failed to update account session for attendance ID %d: %v", id, err)
+				continue
+			}
 		}
+
+		responses = append(responses, params.NewAttendanceResponse(attendance))
 	}
 
-	result := params.NewAttendanceResponse(attendance)
-	return result, nil
+	if len(responses) == 0 {
+		return nil, fmt.Errorf("tidak ada attendance yang berhasil di-checkout")
+	}
+
+	return responses, nil
 }
 
 func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string {
