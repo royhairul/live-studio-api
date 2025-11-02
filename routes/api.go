@@ -1,10 +1,8 @@
 package routes
 
 import (
-	"time"
-
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 	"go.uber.org/fx"
 )
 
@@ -19,14 +17,7 @@ func GroupAPI(router *gin.Engine) *gin.RouterGroup {
 
 func SetupRouter() *gin.Engine {
 	route := gin.Default()
-	route.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:4173", "http://localhost:5174"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Role"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	route.Use(middleware.CORS)
 
 	route.Group("/api")
 
