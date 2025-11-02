@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/user/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.UserController) {
@@ -14,5 +15,15 @@ func RegisterRoutes(router *gin.RouterGroup, controller controller.UserControlle
 		routes.PUT("/:id", controller.Update)
 		routes.DELETE("/:id", controller.Delete)
 
+	}
+
+	superadmin := router.Group("api/superadmin")
+	superadmin.Use(middleware.RequireRoles("superadmin"))
+	{
+		superadmin.GET("/user", controller.GetAll)
+		superadmin.POST("/user", controller.Create)
+		superadmin.GET("/user/:id", controller.Create)
+		superadmin.PUT("user/:id", controller.Update)
+		superadmin.DELETE("/user/:id", controller.Delete)
 	}
 }
