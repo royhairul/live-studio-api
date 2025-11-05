@@ -43,7 +43,28 @@ func (s *RoleServiceImpl) Create(req params.CreateRoleRequest) (*params.RoleResp
 
 // Update implements RoleService.
 func (s *RoleServiceImpl) Update(id string, req params.UpdateRoleRequest) (*params.RoleResponse, error) {
-	panic("unimplemented")
+	role, err := s.repository.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update nama role
+	role.Name = req.Name
+
+	// Reset permissions agar tidak duplikat
+	role.Permissions = []permissionentity.Permission{}
+	for _, pid := range req.Permissions {
+		role.Permissions = append(role.Permissions, permissionentity.Permission{
+			Model: gorm.Model{ID: pid},
+		})
+	}
+
+	updated, err := s.repository.Update(role)
+	if err != nil {
+		return nil, err
+	}
+
+	return params.NewRoleResponse(updated), nil
 }
 
 // FindAll implements RoleService.

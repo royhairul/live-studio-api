@@ -20,7 +20,7 @@ func (r *RoleRepositoryImpl) Create(data *entity.Role) (*entity.Role, error) {
 	if err := r.DB.Create(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
@@ -49,7 +49,7 @@ func (r *RoleRepositoryImpl) Update(data *entity.Role) (*entity.Role, error) {
 	if err := r.DB.Model(&entity.Role{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
