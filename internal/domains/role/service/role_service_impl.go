@@ -78,5 +78,8 @@ func (s *RoleServiceImpl) FindByID(id string) (*params.RoleResponse, error) {
 
 // Delete implements RoleService.
 func (s *RoleServiceImpl) Delete(id string) error {
-	panic("unimplemented")
+	if err := s.repository.Delete(id); err != nil {
+		return err
+	}
+	return nil
 }
