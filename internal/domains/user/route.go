@@ -17,7 +17,7 @@ func RegisterRoutes(router *gin.RouterGroup, controller controller.UserControlle
 
 	}
 
-	superadmin := router.Group("api/superadmin")
+	superadmin := router.Group("/superadmin")
 	superadmin.Use(middleware.RequireRoles("superadmin"))
 	{
 		superadmin.GET("/user", controller.GetAll)
