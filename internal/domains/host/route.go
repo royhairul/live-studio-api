@@ -3,18 +3,22 @@ package host
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/host/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
-func RegisterRouter(router *gin.RouterGroup, controller controller.HostController) {
-	routes := router.Group("/host")
+func RegisterRoutes(router *gin.RouterGroup, controller controller.HostController) {
+	route := router.Group("/host")
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		routes.GET("", controller.FindAll)
-		routes.POST("", controller.Create)
+		route.GET("", controller.FindAll)
+		route.POST("", controller.Create)
 
-		routes.GET("/group-by-studio", controller.FindAllGroupedByStudio)
+		route.GET("/group-by-studio", controller.FindAllGroupedByStudio)
 
-		routes.GET("/:id", controller.FindByID)
-		routes.PUT("/:id", controller.Update)
-		routes.DELETE("/:id", controller.Delete)
+		route.GET("/:id", controller.FindByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,8 @@ type Target struct {
 	TargetIncome int64
 	StudioID     uint                `gorm:"uniqueIndex:idx_studio_month"`
 	Studio       studioentity.Studio `gorm:"foreignKey:StudioID;references:ID"`
+
+	tenantdb.TenantBase
 }
 
 func (t *Target) BeforeSave(tx *gorm.DB) (err error) {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +20,8 @@ type Product struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
+
+	tenantdb.TenantBase
 }
 
 func (p *Product) BeforeCreate(tx *gorm.DB) error {

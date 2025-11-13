@@ -3,16 +3,20 @@ package accountsession
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/accountsession/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.AccountsessionController) {
 	// TODO: define routes
-	accountsessionRouter := router.Group("/account-session")
+	route := router.Group("/account-session")
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		accountsessionRouter.GET("", controller.FindAll)
-		accountsessionRouter.POST("", controller.Create)
-		accountsessionRouter.GET("/:id", controller.FindByID)
-		accountsessionRouter.PUT("/:id", controller.Update)
-		accountsessionRouter.DELETE("/:id", controller.Delete)
+		route.GET("", controller.FindAll)
+		route.POST("", controller.Create)
+		route.GET("/:id", controller.FindByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 	}
 }

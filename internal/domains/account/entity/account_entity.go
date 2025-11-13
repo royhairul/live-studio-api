@@ -2,6 +2,7 @@ package entity
 
 import (
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/gorm"
 )
 
@@ -17,4 +18,6 @@ type Account struct {
 	Device   string              `gorm:"type:text"`
 	StudioID uint16              `gorm:"not null"`
 	Studio   studioentity.Studio `gorm:"foreignKey:StudioID;references:ID"`
+
+	tenantdb.TenantBase
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 )
 
 type JWTPayloadDTO struct {
@@ -15,6 +16,8 @@ type JWTPayloadDTO struct {
 	Name     string `json:"name"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
+
+	tenantdb.TenantBase
 	jwt.RegisteredClaims
 }
 
@@ -46,6 +49,9 @@ func GenerateTokenJWT(user *entity.User) (string, error) {
 		ID:   user.ID,
 		Name: user.Name,
 		Role: user.Role.Name,
+		TenantBase: tenantdb.TenantBase{
+			TenantID: user.TenantID,
+		},
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessToken)),

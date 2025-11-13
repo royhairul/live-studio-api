@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
-	"github.com/royhairul/live-studio-api/internal/domains/performa/repository"
 	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 
 	// aggregator
@@ -17,7 +16,6 @@ import (
 )
 
 type PerformaServiceImpl struct {
-	repository repository.PerformaRepository
 	hostSvc    hostservice.HostService
 	accountSvc accountservice.AccountService
 	studioSvc  studioservice.StudioService
@@ -25,14 +23,12 @@ type PerformaServiceImpl struct {
 }
 
 func NewPerformaService(
-	repository repository.PerformaRepository,
 	hostSvc hostservice.HostService,
 	accountSvc accountservice.AccountService,
 	studioSvc studioservice.StudioService,
 	aggregator performaagg.PerformaAggregator,
 ) PerformaService {
 	return &PerformaServiceImpl{
-		repository,
 		hostSvc,
 		accountSvc,
 		studioSvc,

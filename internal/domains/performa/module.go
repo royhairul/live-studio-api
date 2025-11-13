@@ -2,7 +2,6 @@ package performa
 
 import (
 	"github.com/royhairul/live-studio-api/internal/domains/performa/controller"
-	"github.com/royhairul/live-studio-api/internal/domains/performa/repository"
 	"github.com/royhairul/live-studio-api/internal/domains/performa/service"
 	"go.uber.org/fx"
 )
@@ -10,7 +9,6 @@ import (
 var Module = fx.Module(
 	"performa",
 	fx.Provide(
-		repository.NewPerformaRepository,
 		service.NewPerformaService,
 		controller.NewPerformaController,
 	),

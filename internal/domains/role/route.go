@@ -3,16 +3,20 @@ package role
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/role/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.RoleController) {
 	// TODO: define routes
-	roleRouter := router.Group("/role")
+	route := router.Group("/role")
+	route.Use(middleware.RequireRoles("superadmin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		roleRouter.GET("", controller.FindAll)
-		roleRouter.POST("", controller.Create)
-		roleRouter.GET("/:id", controller.FindByID)
-		roleRouter.PUT("/:id", controller.Update)
-		roleRouter.DELETE("/:id", controller.Delete)
+		route.GET("", controller.FindAll)
+		route.POST("", controller.Create)
+		route.GET("/:id", controller.FindByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 	}
 }

@@ -17,5 +17,5 @@ var Module = fx.Module(
 		service.NewFinanceService,
 		controller.NewFinanceController,
 	),
-	fx.Invoke(RegisterRouter),
+	fx.Invoke(RegisterRoutes),
 )

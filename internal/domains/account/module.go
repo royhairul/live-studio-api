@@ -18,5 +18,5 @@ var Module = fx.Module(
 		service.NewAccountService,
 		controller.NewAccountController,
 	),
-	fx.Invoke(RegisterRouter),
+	fx.Invoke(RegisterRoutes),
 )

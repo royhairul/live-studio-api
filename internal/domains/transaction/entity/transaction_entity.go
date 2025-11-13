@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 
 	accountentity "github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"
@@ -27,6 +28,8 @@ type Transaction struct {
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
 	DeletedAt              gorm.DeletedAt `gorm:"index"`
+
+	tenantdb.TenantBase
 }
 
 func (t *Transaction) BeforeCreate(tx *gorm.DB) error {

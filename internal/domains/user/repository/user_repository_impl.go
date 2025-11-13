@@ -5,6 +5,7 @@ import (
 
 	"github.com/royhairul/live-studio-api/internal/domains/user/entity"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepositoryImpl struct {
@@ -17,7 +18,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (r *UserRepositoryImpl) FindAll() ([]entity.User, error) {
 	var users []entity.User
-	err := r.db.Preload("Role").Find(&users).Error
+	err := r.db.Preload(clause.Associations).Find(&users).Error
 	return users, err
 }
 
@@ -31,7 +32,7 @@ func (r *UserRepositoryImpl) FindByID(id string) (*entity.User, error) {
 
 func (r *UserRepositoryImpl) FindByEmail(email string) (*entity.User, error) {
 	var user entity.User
-	err := r.db.Preload("Role").Where("email = ?", email).First(&user).Error
+	err := r.db.Preload(clause.Associations).Where("email = ?", email).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -48,7 +49,7 @@ func (r *UserRepositoryImpl) Create(user *entity.User) (*entity.User, error) {
 	}
 
 	var createdUser entity.User
-	if err := r.db.Preload("Role").First(&createdUser, user.ID).Error; err != nil {
+	if err := r.db.Preload(clause.Associations).First(&createdUser, user.ID).Error; err != nil {
 		return nil, err
 	}
 

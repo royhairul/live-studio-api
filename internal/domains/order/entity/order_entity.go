@@ -8,6 +8,7 @@ import (
 
 	productentity "github.com/royhairul/live-studio-api/internal/domains/product/entity"
 	"github.com/royhairul/live-studio-api/internal/pkg/snowflakeid"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 )
 
 type Order struct {
@@ -21,6 +22,8 @@ type Order struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 
 	Products []productentity.Product `gorm:"many2many:order_items;"`
+
+	tenantdb.TenantBase
 }
 
 func (o *Order) BeforeCreate(tx *gorm.DB) error {

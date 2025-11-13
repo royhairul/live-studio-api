@@ -3,12 +3,16 @@ package dashboard
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/dashboard/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.DashboardController) {
 	// TODO: define routes
-	dashboardRouter := router.Group("/dashboard")
+	route := router.Group("/dashboard")
+	route.Use(middleware.RequireRoles("superadmin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		dashboardRouter.GET("", controller.Dashboard)
+		route.GET("", controller.Dashboard)
 	}
 }

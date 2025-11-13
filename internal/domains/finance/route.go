@@ -3,11 +3,15 @@ package finance
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/finance/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
-func RegisterRouter(router *gin.RouterGroup, controller controller.FinanceController) {
-	routes := router.Group("/finance")
+func RegisterRoutes(router *gin.RouterGroup, controller controller.FinanceController) {
+	route := router.Group("/finance")
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		routes.GET("", controller.FindAll)
+		route.GET("", controller.FindAll)
 	}
 }

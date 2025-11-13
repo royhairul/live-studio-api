@@ -14,5 +14,5 @@ var Module = fx.Module(
 		service.NewHostService,
 		controller.NewHostController,
 	),
-	fx.Invoke(RegisterRouter),
+	fx.Invoke(RegisterRoutes),
 )

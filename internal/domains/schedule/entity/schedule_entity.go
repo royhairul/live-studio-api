@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
 	shiftentity "github.com/royhairul/live-studio-api/internal/domains/shift/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/gorm"
 )
 
@@ -20,4 +21,6 @@ type Schedule struct {
 	Date      time.Time `json:"date" gorm:"not null"`
 	StartTime time.Time `json:"start_time" gorm:"not null"`
 	EndTime   time.Time `json:"end_time" gorm:"not null"`
+
+	tenantdb.TenantBase
 }

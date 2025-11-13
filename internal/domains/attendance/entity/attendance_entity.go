@@ -10,6 +10,7 @@ import (
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	shiftentity "github.com/royhairul/live-studio-api/internal/domains/shift/entity"
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 )
 
 type Attendance struct {
@@ -32,6 +33,8 @@ type Attendance struct {
 
 	StudioID uint
 	Studio   studioentity.Studio `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+
+	tenantdb.TenantBase
 }
 
 func (a *Attendance) Duration() int64 {

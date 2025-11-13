@@ -15,5 +15,5 @@ var Module = fx.Module(
 		service.NewLiveService,
 		controller.NewLiveController,
 	),
-	fx.Invoke(RegisterRouter),
+	fx.Invoke(RegisterRoutes),
 )

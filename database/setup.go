@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/royhairul/live-studio-api/config"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -26,7 +27,10 @@ func ConnectDatabase(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	log.Println("Connected to database succesfully")
+
 	database.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
+	tenantdb.RegisterTenantCallback(database)
 
 	DB = database
 

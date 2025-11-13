@@ -3,16 +3,20 @@ package studio
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/studio/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.StudioController) {
-	// TODO: define routes
-	studioRouter := router.Group("/studio")
+	// TODO: define route
+	route := router.Group("/studio")
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		studioRouter.GET("", controller.FindAll)
-		studioRouter.POST("", controller.Create)
-		studioRouter.GET("/:id", controller.FindByID)
-		studioRouter.PUT("/:id", controller.Update)
-		studioRouter.DELETE("/:id", controller.Delete)
+		route.GET("", controller.FindAll)
+		route.POST("", controller.Create)
+		route.GET("/:id", controller.FindByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 	}
 }

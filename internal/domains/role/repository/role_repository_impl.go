@@ -46,12 +46,26 @@ func (r *RoleRepositoryImpl) FindByID(id string) (*entity.Role, error) {
 
 // Update implements RoleRepository.
 func (r *RoleRepositoryImpl) Update(data *entity.Role) (*entity.Role, error) {
-	if err := r.DB.Model(&entity.Role{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
+	// Update kolom role utama
+	if err := r.DB.Model(&entity.Role{}).
+		Where("id = ?", data.ID).
+		Updates(map[string]interface{}{
+			"name": data.Name,
+		}).Error; err != nil {
 		return nil, err
 	}
+
+	if err := r.DB.Model(data).
+		Association("Permissions").
+		Replace(data.Permissions); err != nil {
+		return nil, err
+	}
+
+	// Reload role lengkap setelah update
 	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
+
 	return data, nil
 }
 

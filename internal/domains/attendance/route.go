@@ -3,14 +3,18 @@ package attendance
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/controller"
+	"github.com/royhairul/live-studio-api/internal/middleware"
 )
 
-func RegisterRouter(router *gin.RouterGroup, controller controller.AttendanceController) {
-	routes := router.Group("/attendance")
+func RegisterRoutes(router *gin.RouterGroup, controller controller.AttendanceController) {
+	route := router.Group("/attendance")
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
+	route.Use(middleware.TenantMiddleware())
+
 	{
-		routes.GET("", controller.FindAll)
-		routes.GET("/unchecked-out", controller.FindUncheckedOut)
-		routes.POST("/check-in", controller.CheckIn)
-		routes.POST("/check-out", controller.CheckOut)
+		route.GET("", controller.FindAll)
+		route.GET("/unchecked-out", controller.FindUncheckedOut)
+		route.POST("/check-in", controller.CheckIn)
+		route.POST("/check-out", controller.CheckOut)
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 )
 
 type Host struct {
@@ -21,4 +22,6 @@ type Host struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
+
+	tenantdb.TenantBase
 }

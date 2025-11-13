@@ -14,5 +14,5 @@ var Module = fx.Module(
 		service.NewAttendanceService,
 		controller.NewAttendanceController,
 	),
-	fx.Invoke(RegisterRouter),
+	fx.Invoke(RegisterRoutes),
 )

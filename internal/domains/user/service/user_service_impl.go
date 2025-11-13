@@ -48,14 +48,13 @@ func (s *userServiceImpl) GetByID(id string) (*params.UserResponse, error) {
 }
 
 func (s *userServiceImpl) Create(input params.CreateUserRequest) (*entity.User, error) {
-
 	emailRegistered, err := s.repo.FindByEmail(input.Email)
 	if err != nil {
 		return nil, err
 	}
 
 	if emailRegistered != nil {
-		return nil, errors.New("email sudah terdaftar")
+		return nil, errors.New("email already used")
 	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -78,25 +77,22 @@ func (s *userServiceImpl) Create(input params.CreateUserRequest) (*entity.User, 
 
 func (s *userServiceImpl) Update(id string, input params.UpdateUserRequest) (*entity.User, error) {
 	u, err := s.repo.FindByID(id)
-
 	if err != nil {
 		return nil, err
 	}
 	if input.Email != u.Email {
 		existing, err := s.repo.FindByEmail(input.Email)
-
 		if err != nil {
 			return nil, err
 		}
 		if existing != nil && existing.ID != u.ID {
-			return nil, errors.New("email sudah digunakan")
+			return nil, errors.New("email already used")
 		}
 		u.Email = input.Email
 	}
 
 	if input.RoleID != nil && *input.RoleID != u.RoleID {
 		u.RoleID = *input.RoleID
-
 	}
 
 	if input.Name != u.Name {

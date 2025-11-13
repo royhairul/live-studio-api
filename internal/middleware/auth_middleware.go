@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -12,26 +14,26 @@ import (
 func RequireRoles(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized", "error": c.GetHeader("Authorization")})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"message": "Unauthorized: missing or invalid token",
+			})
 			return
 		}
 
-		tokenStr := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenStr = strings.TrimSpace(tokenStr)
 
-		// Verifikasi JWT
 		claims, err := utils.VerifyTokenJWT(tokenStr, os.Getenv("JWT_SECRET"))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			return
 		}
 
-		// Cek apakah role cocok
 		userRole := claims.Role
 		isAuthorized := false
-		for _, r := range roles {
-			if r == userRole {
+		for _, role := range roles {
+			if userRole == role {
 				isAuthorized = true
 				break
 			}
@@ -42,18 +44,20 @@ func RequireRoles(roles ...string) gin.HandlerFunc {
 			return
 		}
 
-		// Simpan ke context (jika ingin digunakan di handler berikutnya)
+		c.Set("user_id", claims.ID)
 		c.Set("name", claims.Name)
 		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 
-		if claims.Role == "superadmin" {
-			c.Set("superadmin_id", claims.ID)
-		} else {
-			c.Set("user_id", claims.ID)
+		// ✅ Tambahkan tenant_id dari JWT jika tersedia
+		if claims.TenantID != "" {
+			c.Set("tenant_id", claims.TenantID)
+			ctx := context.WithValue(c.Request.Context(), "tenant_id", claims.TenantID)
+			c.Request = c.Request.WithContext(ctx)
 		}
 
-		// Lanjut ke handler berikutnya
+		log.Print(claims.TenantID)
+
 		c.Next()
 	}
 }

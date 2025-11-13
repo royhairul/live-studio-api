@@ -7,18 +7,20 @@ import (
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.UserController) {
-	routes := router.Group("/users")
+	route := router.Group("/users")
+	route.Use(middleware.TenantMiddleware())
 	{
-		routes.GET("", controller.GetAll)
-		routes.POST("", controller.Create)
-		routes.GET("/:id", controller.GetByID)
-		routes.PUT("/:id", controller.Update)
-		routes.DELETE("/:id", controller.Delete)
+		route.GET("", controller.GetAll)
+		route.POST("", controller.Create)
+		route.GET("/:id", controller.GetByID)
+		route.PUT("/:id", controller.Update)
+		route.DELETE("/:id", controller.Delete)
 
 	}
 
 	superadmin := router.Group("/superadmin")
 	superadmin.Use(middleware.RequireRoles("superadmin"))
+	superadmin.Use(middleware.TenantMiddleware())
 	{
 		superadmin.GET("/user", controller.GetAll)
 		superadmin.POST("/user", controller.Create)
