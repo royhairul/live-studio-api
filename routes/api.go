@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/internal/middleware"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 	"go.uber.org/fx"
 )
 
@@ -19,7 +22,11 @@ func SetupRouter() *gin.Engine {
 	route := gin.Default()
 	route.Use(middleware.CORS)
 
-	route.Group("/api")
+	api := route.Group("/api")
+
+	api.GET("/healthcheck", func(c *gin.Context) {
+		c.JSON(http.StatusOK, response.NewBaseResponse("Everything OK!", nil))
+	})
 
 	// Serve OpenAPI JSON
 	route.StaticFile("/docs/openapi.json", "./docs/LiveStudio.openapi.json")
