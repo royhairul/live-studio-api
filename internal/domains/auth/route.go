@@ -7,14 +7,15 @@ import (
 )
 
 func RegisterRoutes(router *gin.RouterGroup, controller controller.AuthController) {
-	routes := router.Group("/auth")
-	{
-		routes.POST("/login", controller.Login)
-		routes.POST("/register", controller.Register)
-		routes.POST("/forgot-password", controller.ForgotPassword)
-		routes.POST("/verify-otp", controller.VerifyOtp)
-		routes.POST("/reset-password", controller.ResetPassword)
+	route := router.Group("/auth")
 
-		routes.GET("/me", middleware.RequireRoles("superadmin", "admin", "host"), controller.Me)
+	{
+		route.POST("/login", controller.Login)
+		route.POST("/register", controller.Register)
+		route.POST("/forgot-password", controller.ForgotPassword)
+		route.POST("/verify-otp", controller.VerifyOtp)
+		route.POST("/reset-password", controller.ResetPassword)
+
+		route.GET("/me", middleware.RequireRoles("superadmin", "admin", "host"), controller.Me)
 	}
 }
