@@ -1,18 +1,42 @@
 package service
 
 import (
+	"fmt"
+
+	"github.com/royhairul/live-studio-api/internal/clients/shopee"
 	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
-	"github.com/royhairul/live-studio-api/internal/clients/shopee/repository"
+	"go.uber.org/fx"
 )
 
-type shopeeAccountServiceImpl struct {
-	repo repository.AccountRepository
+type ShopeeAccountServiceDeps struct {
+	fx.In
+	ShopeeClient *shopee.ShopeeClient `name:"defaultShopeeClient"`
 }
 
-func NewAccountShopeeService(repo repository.AccountRepository) ShopeeAccountService {
-	return &shopeeAccountServiceImpl{repo: repo}
+type ShopeeAccountServiceImpl struct {
+	ShopeeClient *shopee.ShopeeClient
 }
 
-func (s *shopeeAccountServiceImpl) GetShopeeAccount(cookie string) (*params.ShopeeAccountResponse, error) {
-	return s.repo.GetShopeeAccount(cookie)
+func NewAccountShopeeService(deps ShopeeAccountServiceDeps) ShopeeAccountService {
+	return &ShopeeAccountServiceImpl{ShopeeClient: deps.ShopeeClient}
+}
+
+func (s *ShopeeAccountServiceImpl) GetShopeeAccount(cookie string) (*params.ShopeeAccountResponse, error) {
+	endpoint := "/api/v4/account/basic/get_account_info"
+
+	req, err := s.ShopeeClient.NewShopeeRequest("GET", endpoint, nil, nil, cookie)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request to %s: %w", endpoint, err)
+	}
+
+	var result params.ShopeeApiResponse[params.ShopeeAccountResponse]
+	if err := s.ShopeeClient.DoShopeeRequest(req, &result); err != nil {
+		return nil, fmt.Errorf("failed to execute request to %s: %w", endpoint, err)
+	}
+
+	if result.Error != 0 {
+		return nil, fmt.Errorf(result.ErrorMsg)
+	}
+
+	return &result.Data, nil
 }

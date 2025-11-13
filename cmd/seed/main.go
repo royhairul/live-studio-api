@@ -23,22 +23,32 @@ func main() {
 	switch args[1] {
 	case "host":
 		seeders.HostSeeder()
-		break
+
 	case "role":
 		seeders.PermissionSeeder()
-		break
+
 	case "permission":
 		seeders.RoleSeeder()
-		break
+
 	case "role-permission":
 		seeders.PermissionSeeder()
 		seeders.RoleSeeder()
-		break
+
+	case "attendance":
+		seeders.AttendanceSeeder()
+
+	case "accountsession":
+		seeders.AccountSessionSeeder()
+
+	case "accountads":
+		seeders.AccountAdsSeeder()
+
+	case "transaction":
+		seeders.TransactionSeeder()
 
 	// Handling superadmin
 	case "superadmin":
 		seeders.SuperadminSeeder()
-		break
 
 	default:
 		fmt.Println("Seeder tidak dikenal:", args[1])

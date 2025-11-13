@@ -5,11 +5,13 @@ type AccountInfoRequest struct {
 }
 
 type CreateAccountRequest struct {
-	StudioID uint16 `json:"studio_id" binding:"required"`
-	Cookie   string `json:"cookie" binding:"required"`
+	StudioID uint16 `json:"studio_id" validate:"required"`
+	Cookie   string `json:"cookie" validate:"required"`
+	Device   string `json:"device" validate:"omitempty"`
 }
 
 type UpdateAccountRequest struct {
-	StudioID *uint16 `json:"studio_id"`
-	Cookie   *string `json:"cookie"`
+	StudioID *uint16 `json:"studio_id" validate:"omitempty,min=1"`
+	Cookie   *string `json:"cookie" validate:"omitempty,min=1"`
+	Device   string  `json:"device" validate:"omitempty"`
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/schedule/params"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
 	shiftrepository "github.com/royhairul/live-studio-api/internal/domains/shift/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 )
 
 type ScheduleServiceImpl struct {
@@ -121,7 +122,7 @@ func (s *ScheduleServiceImpl) Update(id uint, scheduleReq *params.UpdateSchedule
 // FindByHostShiftAndDate implements ScheduleService.
 func (s *ScheduleServiceImpl) FindByShiftAndDate(shiftID string, dateStr string) ([]*params.ScheduleResponse, error) {
 	// Convert date string to time.Time if necessary
-	date, err := time.Parse("2006-01-02", dateStr)
+	date, err := time.Parse(constants.LayoutYYMMDD, dateStr)
 	if err != nil {
 		return nil, err
 	}

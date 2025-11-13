@@ -1,0 +1,2251 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Live Studio",
+    "description": "API for managing live streaming studios, including host accounts, schedules, attendance, performance tracking, and e-commerce integration.",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Host"
+    },
+    {
+      "name": "Studio"
+    },
+    {
+      "name": "Shift"
+    },
+    {
+      "name": "Account"
+    },
+    {
+      "name": "Finance"
+    },
+    {
+      "name": "Schedule"
+    },
+    {
+      "name": "Permission"
+    },
+    {
+      "name": "Role"
+    },
+    {
+      "name": "Live"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Attendance"
+    },
+    {
+      "name": "Transaction"
+    },
+    {
+      "name": "Order"
+    },
+    {
+      "name": "Performa"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "password"]
+              },
+              "example": {
+                "email": "ucup2@gmail.com",
+                "password": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Me",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlVjdXAyIiwidXNlcm5hbWUiOiIiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc1NDk2ODY1NSwiaWF0IjoxNzU0ODgyMjU1fQ.NZ3sE4L2782AT01DHmgg6RTPgVDrtoeYiYCmB18Dgk4",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["name", "username", "email", "password", "role"]
+              },
+              "example": {
+                "name": "Ucup100",
+                "email": "ucup100@gmail.com",
+                "password": "123456",
+                "role": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/forgot-password": {
+      "post": {
+        "summary": "Forgot Password",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email"]
+              },
+              "example": {
+                "email": "teasas@gmail.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/reset-password": {
+      "post": {
+        "summary": "Reset Password",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token", "password", "confirm_password"]
+              },
+              "example": {
+                "token": "584648",
+                "password": "1234",
+                "confirm_password": "1234"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/verify-token": {
+      "post": {
+        "summary": "Verify Token",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "required": ["token"]
+              },
+              "example": {
+                "token": "384570"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/perform": {
+      "get": {
+        "summary": "Host Performa",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [
+          {
+            "name": "startTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2025-08-08",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2025-08-08",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/perform/284a0b81-00cc-4e9f-afc1-3aabfc3bea0d": {
+      "get": {
+        "summary": "Host Performa Per Host",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [
+          {
+            "name": "startTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2025-08-08",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "2025-08-08",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host": {
+      "get": {
+        "summary": "Host GET ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Host CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "studio_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["name", "phone", "studio_id"]
+              },
+              "example": {
+                "name": "Joko",
+                "phone": "08123456789",
+                "studio_id": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/group-by-studio": {
+      "get": {
+        "summary": "Host GET ALL BY STUDIO",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/2/schedule": {
+      "get": {
+        "summary": "Host GET ID Schedules",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/b78c2159-30da-4651-a557-0ee36fb39434": {
+      "get": {
+        "summary": "Host GET BY ID",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "summary": "Host UPDATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "studio_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["name", "phone", "studio_id"]
+              },
+              "example": {
+                "name": "Jokok",
+                "phone": "0823923900239",
+                "studio_id": 2
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/host/2/delete": {
+      "delete": {
+        "summary": "Host UPDATE Copy",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Host"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studio_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["studio_id"]
+              },
+              "example": {
+                "studio_id": 10
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/studio": {
+      "get": {
+        "summary": "Studio GET ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Studio"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Studio CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Studio"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name"]
+              },
+              "example": {
+                "name": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/studio/4/edit": {
+      "put": {
+        "summary": "Studio EDIT",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Studio"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "address"]
+              },
+              "example": {
+                "name": "On Air",
+                "address": "Banyuwangi"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/studio/1": {
+      "get": {
+        "summary": "Studio SHOW",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Studio"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/shift": {
+      "get": {
+        "summary": "Shift ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Shift"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/shift/4": {
+      "get": {
+        "summary": "Shift SHOW",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Shift"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/shift/create": {
+      "post": {
+        "summary": "Shift CREATE Copy",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Shift"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "start_time", "end_time"]
+              },
+              "example": {
+                "name": "Shift Pagi",
+                "start_time": "06:00",
+                "end_time": "09:00"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/account": {
+      "get": {
+        "summary": "Account GET ALL BY Studio",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Account"],
+        "parameters": [
+          {
+            "name": "studio",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "28",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Account CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Account"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studio_id": {
+                    "type": "integer"
+                  },
+                  "cookie": {
+                    "type": "string"
+                  }
+                },
+                "required": ["studio_id", "cookie"]
+              },
+              "example": {
+                "studio_id": 1,
+                "cookie": "SPC_EC=.aVRTcXc2eEgwR2RzZnBzUfsPqO071ObSl0DfORiSPUWFKvTQcCSgtIOPZAF5KqidRaanaPU+3MgSagqWf1Ealv95wKiSpNgbLN3BslLNSNjlA0dZgMuHAVTveMJ0XOotRfZ8bK3wh1pCB+URonm5NBZyaVN2M0S/l0zQqXUTSxsClwRhWFtQimd9o441pVwy1er0IAecSClLgxGK3lCfZQ8njqjobwWKXkNB55ydJjiB+cJQDXMJr0VwXWj45VEU;SPC_U=1527518198;REC_T_ID=b690ab96-50ac-11f0-8b4f-722c80dc2fa8;SPC_F=8Afb3lT1Q0pgyOoxz09CcADIYOefPKjo;SPC_R_T_ID=mnStpSCr8kQgQ139PCADpzEoEgoAa4PkFoeHpA5WsC5FIFjfzzpYjFskIJ0+aPyIQfsan+739i0o/Gcm6YPPuxJrM6Rlz0Rrfqvn5co7NK7qZMTSWe9NkUaVBQrLVMLOvoUAuNh1diFwC1YEJEZFBjaExaV7T3/+qoc8QLypnoA=;SPC_R_T_IV=REFjT3BMR2NJUEMyb21iQQ==;SPC_ST=.cG9Ed241Rk1Td2htMVg0bR/AgHonYMjXMepUh0rxAb8GHDtLhrMWKUxGZ1nDebtlG4hCU7PrYUhuuk4pfLKfmjjG09YIGnrb/QTbsdrQ2qp1FVINGXAgKjhjp4oI9i1/hRMhuVxa/VGRsrIKsZCARAdZCv1Y1wR3MPYi873pWpcktjumef0EBWZCz2ALA1Pql7Ii+q4CFIGGTcyeAIJTfkstYuZE9gC+klUKnrq8xm1AD40QKofu8LA3P/UUX3yR;SPC_T_ID=mnStpSCr8kQgQ139PCADpzEoEgoAa4PkFoeHpA5WsC5FIFjfzzpYjFskIJ0+aPyIQfsan+739i0o/Gcm6YPPuxJrM6Rlz0Rrfqvn5co7NK7qZMTSWe9NkUaVBQrLVMLOvoUAuNh1diFwC1YEJEZFBjaExaV7T3/+qoc8QLypnoA=;SPC_T_IV=REFjT3BMR2NJUEMyb21iQQ=="
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/finance/shopee": {
+      "post": {
+        "summary": "Finance Live Report",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Finance"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "pageSize": {
+                    "type": "integer"
+                  },
+                  "orderBy": {
+                    "type": "string"
+                  },
+                  "sort": {
+                    "type": "string"
+                  },
+                  "timeDim": {
+                    "type": "string"
+                  },
+                  "endDate": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "page",
+                  "pageSize",
+                  "orderBy",
+                  "sort",
+                  "timeDim",
+                  "endDate"
+                ]
+              },
+              "example": {
+                "page": 1,
+                "pageSize": 100,
+                "orderBy": "",
+                "sort": "",
+                "timeDim": "1d",
+                "endDate": "2025-03-01"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/finance/shopee/realtime/ws": {
+      "get": {
+        "summary": "Finance Live Report Realtime",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Finance"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer"
+                  },
+                  "pageSize": {
+                    "type": "integer"
+                  },
+                  "orderBy": {
+                    "type": "string"
+                  },
+                  "sort": {
+                    "type": "string"
+                  },
+                  "timeDim": {
+                    "type": "string"
+                  },
+                  "endDate": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "page",
+                  "pageSize",
+                  "orderBy",
+                  "sort",
+                  "timeDim",
+                  "endDate"
+                ]
+              },
+              "example": {
+                "page": 1,
+                "pageSize": 100,
+                "orderBy": "",
+                "sort": "",
+                "timeDim": "1m",
+                "endDate": "2025-03-01"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/schedule": {
+      "get": {
+        "summary": "Schedule ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Schedule"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Schedule CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Schedule"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string"
+                  },
+                  "shift_id": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_id", "shift_id", "date"]
+              },
+              "example": {
+                "host_id": "2",
+                "shift_id": "4",
+                "date": "2025-06-03"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/schedule/scheduled": {
+      "get": {
+        "summary": "Schedule by host, shift, and date",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Schedule"],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "2025-07-01",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "shift_id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "1",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string"
+                  },
+                  "shift_id": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_id", "shift_id", "date"]
+              },
+              "example": "{\"host_id\": '2', \"shift_id\": '4', \"date\": '2025-06-03'}"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/permission": {
+      "get": {
+        "summary": "Permission ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Permission"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "group": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id", "name", "group", "description"]
+                      }
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/permission/grouped": {
+      "get": {
+        "summary": "Permission ALL Grouped",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Permission"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string"
+                  },
+                  "shift_id": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_id", "shift_id", "date"]
+              },
+              "example": ""
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/role": {
+      "post": {
+        "summary": "Role CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Role"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "permission": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "required": ["name", "permission"]
+              },
+              "example": {
+                "name": "New Role 1",
+                "permissions": [1, 2]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "get": {
+        "summary": "Role ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Role"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/live/shopee": {
+      "get": {
+        "summary": "Live Shopee GET",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Live"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_ids", "shift_id", "date"]
+              },
+              "example": {
+                "host_ids": [12],
+                "shift_id": 5,
+                "date": "2025-06-22T01:35:47.700Z"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/superadmin/user": {
+      "post": {
+        "summary": "User CREATE Copy",
+        "deprecated": false,
+        "description": "",
+        "tags": ["User"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJyb3loYWlydWwiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc0OTg5NzM1NiwiaWF0IjoxNzQ5ODEwOTU2fQ.j20gg1bglg_ZjR0egQXfdyoGRj1AHZRCoofgliymYm4",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": ["role", "email", "name", "username", "password"]
+              },
+              "example": {
+                "role": "admin",
+                "email": "admin@gmail.com",
+                "name": "admin 404",
+                "username": "admin404",
+                "password": "admin404"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/superadmin/user/19": {
+      "get": {
+        "summary": "User CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["User"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJyb3loYWlydWwiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc0OTg5NzA3NSwiaWF0IjoxNzQ5ODEwNjc1fQ.TcyiHUZBq1XvlcglyzI-Q6qQil9mVfK9HZ4Y2zD1ejY",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "studio_id": {
+                    "type": "string"
+                  },
+                  "current_user": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "username",
+                  "email",
+                  "password",
+                  "role",
+                  "studio_id",
+                  "current_user"
+                ]
+              },
+              "example": {
+                "username": "roy",
+                "email": "roy@gmail.com",
+                "password": "1213",
+                "role": "host",
+                "studio_id": "1",
+                "current_user": 7
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/attendance": {
+      "get": {
+        "summary": "Attendance ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Attendance"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/attendance/check-in": {
+      "post": {
+        "summary": "Checkin",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Attendance"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_ids", "shift_id", "date"]
+              },
+              "example": {
+                "date": "2025-08-20",
+                "shift_id": "1",
+                "host_id": "284a0b81-00cc-4e9f-afc1-3aabfc3bea0d",
+                "studio_id": "28"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/attendance/check-out": {
+      "post": {
+        "summary": "Checkout",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Attendance"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_ids", "shift_id", "date"]
+              },
+              "example": {
+                "id": 31
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/attendance/unchecked-out": {
+      "get": {
+        "summary": "Attendance ALL Copy",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Attendance"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string"
+                  }
+                },
+                "required": ["host_ids", "shift_id", "date"]
+              },
+              "example": ""
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/transaction": {
+      "get": {
+        "summary": "Transaction ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Transaction"],
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "",
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "Transaction CREATE",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Transaction"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "date": "2025-07-25"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "unique_id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "est_total_comission": {
+                          "type": "integer"
+                        },
+                        "est_total_comission_with_mcn": {
+                          "type": "integer"
+                        },
+                        "purchase_time": {
+                          "type": "integer"
+                        },
+                        "complete_time": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "unique_id",
+                        "status",
+                        "est_total_comission",
+                        "est_total_comission_with_mcn",
+                        "purchase_time",
+                        "complete_time"
+                      ]
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/order": {
+      "get": {
+        "summary": "Order ALL",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Order"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "serial_number": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "complete_time": {
+                            "type": "integer"
+                          },
+                          "transaction_id": {
+                            "type": "integer"
+                          },
+                          "products": {
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "serial_number",
+                          "status",
+                          "complete_time",
+                          "transaction_id",
+                          "products"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/performa/host": {
+      "get": {
+        "summary": "Performa Host All",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Performa"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "date": {
+                            "type": "string"
+                          },
+                          "total_duration": {
+                            "type": "integer"
+                          },
+                          "total_sales": {
+                            "type": "integer"
+                          },
+                          "total_paid": {
+                            "type": "integer"
+                          },
+                          "avg_sales": {
+                            "type": "integer"
+                          },
+                          "avg_paid": {
+                            "type": "integer"
+                          },
+                          "list": {
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "date",
+                          "total_duration",
+                          "total_sales",
+                          "total_paid",
+                          "avg_sales",
+                          "avg_paid",
+                          "list"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/performa/host/284a0b81-00cc-4e9f-afc1-3aabfc3bea0d": {
+      "get": {
+        "summary": "Performa Host By ID",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Performa"],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "{{$date.now|format('yyyy-MM-dd')}}",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "example": "{{$date.now|format('yyyy-MM-dd')}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "total_duration": {
+                          "type": "integer"
+                        },
+                        "total_sales": {
+                          "type": "integer"
+                        },
+                        "total_paid": {
+                          "type": "integer"
+                        },
+                        "avg_sales": {
+                          "type": "integer"
+                        },
+                        "avg_paid": {
+                          "type": "integer"
+                        },
+                        "list": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "date",
+                        "total_duration",
+                        "total_sales",
+                        "total_paid",
+                        "avg_sales",
+                        "avg_paid",
+                        "list"
+                      ]
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/performa/studio": {
+      "get": {
+        "summary": "Performa By Studio",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Performa"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "total_duration": {
+                            "type": "integer"
+                          },
+                          "total_sales": {
+                            "type": "integer"
+                          },
+                          "total_paid": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "total_duration",
+                          "total_sales",
+                          "total_paid"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["message", "data"]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/performa/studio/28": {
+      "get": {
+        "summary": "Show Performa Studio By ID",
+        "deprecated": false,
+        "description": "",
+        "tags": ["Performa"],
+        "parameters": [],
+        "responses": {
+          "500": {
+            "description": "",
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "New Request",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

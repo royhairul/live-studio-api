@@ -1,19 +1,23 @@
 package entity
 
 import (
-	models "github.com/royhairul/live-studio-api/models"
+	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"gorm.io/gorm"
 )
 
 type Account struct {
 	gorm.Model
-	Name     string        `gorm:"type:varchar(100);not null" json:"name"`
-	UniqueID string        `gorm:"type:varchar(20);not null;unique" json:"unique_id"`
-	Username string        `gorm:"type:varchar(100);not null" json:"username"`
-	Password string        `gorm:"type:varchar(100)" json:"-"`
-	Email    string        `gorm:"type:varchar(100);not null" json:"email"`
-	Platform string        `gorm:"type:varchar(100);not null" json:"platform"`
-	Cookie   string        `gorm:"type:text;not null" json:"cookie"`
-	StudioID uint16        `gorm:"not null" json:"studio_id"`
-	Studio   models.Studio `gorm:"foreignKey:StudioID;references:ID" json:"studio"`
+	Name     string              `gorm:"type:varchar(100);not null"`
+	UniqueID string              `gorm:"type:varchar(20);not null;unique"`
+	Username string              `gorm:"type:varchar(100);not null"`
+	Password string              `gorm:"type:varchar(100)"`
+	Email    string              `gorm:"type:varchar(100);not null"`
+	Platform string              `gorm:"type:varchar(100);not null"`
+	Cookie   string              `gorm:"type:text;not null"`
+	Device   string              `gorm:"type:text"`
+	StudioID uint16              `gorm:"not null"`
+	Studio   studioentity.Studio `gorm:"foreignKey:StudioID;references:ID"`
+
+	tenantdb.TenantBase
 }

@@ -9,14 +9,23 @@ import (
 
 	"github.com/royhairul/live-studio-api/internal/domains/host/params"
 	"github.com/royhairul/live-studio-api/internal/domains/host/repository"
+
+	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
+	attendanceservice "github.com/royhairul/live-studio-api/internal/domains/attendance/service"
 )
 
 type HostServiceImpl struct {
-	repository repository.HostRepository
+	repository        repository.HostRepository
+	attendanceSvc     attendanceservice.AttendanceService
+	accountSessionSvc accountsessionservice.AccountsessionService
 }
 
-func NewHostService(repository repository.HostRepository) HostService {
-	return &HostServiceImpl{repository}
+func NewHostService(
+	repository repository.HostRepository,
+	attendanceSvc attendanceservice.AttendanceService,
+	accountSessionSvc accountsessionservice.AccountsessionService,
+) HostService {
+	return &HostServiceImpl{repository, attendanceSvc, accountSessionSvc}
 }
 
 // Create implements HostService.

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -68,9 +69,8 @@ func (s *ScheduleRepositoryImpl) FindByShiftAndDate(shiftID string, date time.Ti
 		Preload("Host").
 		Preload("Host.Studio").
 		Preload("Shift").
-		Where("shift_id = ? OR DATE(date) = ?", shiftID, date.Format("2006-01-02")).
+		Where("shift_id = ? OR DATE(date) = ?", shiftID, date.Format(constants.LayoutYYMMDD)).
 		Find(&schedules).Error
-
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +85,8 @@ func (s *ScheduleRepositoryImpl) FindByHostShiftAndDate(hostID uuid.UUID, shiftI
 		Preload("Host").
 		Preload("Host.Studio").
 		Preload("Shift").
-		Where("host_id = ? AND shift_id = ? OR DATE(date) = ?", hostID, shiftID, date.Format("2006-01-02")).
+		Where("host_id = ? AND shift_id = ? OR DATE(date) = ?", hostID, shiftID, date.Format(constants.LayoutYYMMDD)).
 		First(&schedule).Error
-
 	if err != nil {
 		return nil, err
 	}

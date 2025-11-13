@@ -2,50 +2,97 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/constants"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
+
+	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
+	accountsessionparams "github.com/royhairul/live-studio-api/internal/domains/accountsession/params"
+	accountsessionservice "github.com/royhairul/live-studio-api/internal/domains/accountsession/service"
 	hostrepository "github.com/royhairul/live-studio-api/internal/domains/host/repository"
+	liveservice "github.com/royhairul/live-studio-api/internal/domains/live/service"
 	scheduleentity "github.com/royhairul/live-studio-api/internal/domains/schedule/entity"
 	schedulerepository "github.com/royhairul/live-studio-api/internal/domains/schedule/repository"
+
+	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 )
 
 type AttendanceServiceImpl struct {
-	repository   repository.AttendanceRepository
-	hostRepo     hostrepository.HostRepository
-	scheduleRepo schedulerepository.ScheduleRepository
+	repository        repository.AttendanceRepository
+	hostRepo          hostrepository.HostRepository
+	scheduleRepo      schedulerepository.ScheduleRepository
+	accountSvc        accountservice.AccountService
+	accountSessionSvc accountsessionservice.AccountsessionService
+	liveSvc           liveservice.LiveService
+	shopeeSvc         shopeeservice.ShopeeLiveService
+	options           params.AttendanceFilter
 }
 
-func NewAttendanceService(repository repository.AttendanceRepository, hostRepo hostrepository.HostRepository, scheduleRepo schedulerepository.ScheduleRepository) AttendanceService {
-	return &AttendanceServiceImpl{repository, hostRepo, scheduleRepo}
+func NewAttendanceService(
+	repository repository.AttendanceRepository,
+	hostRepo hostrepository.HostRepository,
+	scheduleRepo schedulerepository.ScheduleRepository,
+	accountSvc accountservice.AccountService,
+	accountSessionSvc accountsessionservice.AccountsessionService,
+	liveSvc liveservice.LiveService,
+	shopeeSvc shopeeservice.ShopeeLiveService,
+) AttendanceService {
+	return &AttendanceServiceImpl{
+		repository:        repository,
+		hostRepo:          hostRepo,
+		scheduleRepo:      scheduleRepo,
+		accountSvc:        accountSvc,
+		accountSessionSvc: accountSessionSvc,
+		liveSvc:           liveSvc,
+		shopeeSvc:         shopeeSvc,
+		options:           params.AttendanceFilter{},
+	}
+}
+
+// WithAccountID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithAccountID(accountID string) AttendanceService {
+	instance := *s
+	instance.options.AccountID = &accountID
+	return &instance
+}
+
+// WithDateRange implements AttendanceService.
+func (s *AttendanceServiceImpl) WithDateRange(startTime time.Time, endTime time.Time) AttendanceService {
+	instance := *s
+	instance.options.StartTime = &startTime
+	instance.options.EndTime = &endTime
+	return &instance
+}
+
+// WithHostID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithHostID(hostID string) AttendanceService {
+	instance := *s
+	instance.options.HostID = &hostID
+	return &instance
+}
+
+// WithStudioID implements AttendanceService.
+func (s *AttendanceServiceImpl) WithStudioID(studioID string) AttendanceService {
+	instance := *s
+	instance.options.StudioID = &studioID
+	return &instance
 }
 
 func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
-	var results []*params.AttendanceResponse
-
-	attendances, err := s.repository.FindAll()
+	attendances, err := s.repository.FindAll(s.options)
 	if err != nil {
 		return nil, err
 	}
 
+	var results []*params.AttendanceResponse
 	for _, attendance := range attendances {
-		results = append(results, &params.AttendanceResponse{
-			ID:       attendance.ID,
-			HostID:   *attendance.Host.ID,
-			Name:     attendance.Host.Name,
-			Date:     attendance.Date,
-			CheckIn:  attendance.CheckedInAt,
-			CheckOut: attendance.CheckedOutAt,
-
-			ShiftStartTime: attendance.Shift.StartTime,
-			ShiftEndTime:   attendance.Shift.EndTime,
-
-			Note: attendance.Note,
-		})
+		results = append(results, params.NewAttendanceResponse(attendance))
 	}
 
 	return results, nil
@@ -69,8 +116,8 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 			CheckIn:  attendance.CheckedInAt,
 			CheckOut: attendance.CheckedOutAt,
 
-			ShiftStartTime: attendance.Shift.StartTime,
-			ShiftEndTime:   attendance.Shift.EndTime,
+			ShiftID:   attendance.ShiftID,
+			ShiftName: attendance.Shift.Name,
 
 			Note: attendance.Note,
 		})
@@ -79,110 +126,151 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 	return results, nil
 }
 
-func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceCheckInSummary, error) {
-	var results []params.AttendanceCheckInResult
-	successCount := 0
-	failedCount := 0
-
-	tx := s.repository.BeginTransaction()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			panic(r)
-		}
-	}()
-
-	repoWithTx := s.repository.WithTx(tx)
-
-	parsedShiftID, err := strconv.ParseUint(req.ShiftID, 10, 0)
+func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
+	parsedDate, err := timehandler.ParseDate(*timehandler.DateNow())
 	if err != nil {
-		// handle error parsing, misalnya return error ke caller
-		return nil, fmt.Errorf("invalid shift ID: %v", err)
-	}
-
-	for _, hostID := range req.HostIDs {
-
-		host, err := s.hostRepo.FindByID(hostID.String())
-		if err != nil {
-			return nil, err
-		}
-
-		// Cari attendance existing
-		existingAttendance, err := s.repository.FindByHostShiftAndDate(hostID, req.ShiftID, req.Date)
-		if err == nil && existingAttendance != nil {
-			if existingAttendance.CheckedOutAt == nil {
-				// Sudah check-in & belum checkout → tolak check-in
-				results = append(results, params.AttendanceCheckInResult{
-					HostName: host.Name,
-					Message:  fmt.Sprintf("Host %s sudah check-in dan belum checkout", host.Name),
-					Status:   "failed",
-				})
-				failedCount++
-				continue
-			}
-			// else: sudah check-in & sudah checkout → boleh check-in lagi
-		}
-
-		note := s.GenerateNote(nil, req.Date, uint(parsedShiftID))
-
-		attendance := entity.Attendance{
-			Date:    &req.Date,
-			ShiftID: uint(parsedShiftID),
-
-			HostID: &hostID,
-
-			CheckedInAt: helpers.TimeNow(),
-
-			Status: "present",
-			Note:   note,
-		}
-
-		_, err = repoWithTx.Create(&attendance)
-		if err != nil {
-			results = append(results, params.AttendanceCheckInResult{
-				HostName: host.Name,
-				Message:  "Gagal menyimpan attendance",
-				Status:   "failed",
-			})
-			failedCount++
-			continue
-		}
-
-		results = append(results, params.AttendanceCheckInResult{
-			HostName: host.Name,
-			Message:  "Berhasil check-in",
-			Status:   "success",
-		})
-		successCount++
-	}
-
-	if err := tx.Commit().Error; err != nil {
 		return nil, err
 	}
 
-	return s.GenerateSummary(successCount, failedCount, results), nil
-}
+	host, err := s.hostRepo.FindByID(req.HostID)
+	if err != nil {
+		return nil, err
+	}
 
-func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) error {
-	var errs []error
-	for _, ids := range req.AttendanceIDs {
-		attendance, err := s.repository.FindByID(ids)
+	existAttendance, err := s.repository.FindUncheckedOutByStudio(fmt.Sprintf("%d", req.StudioID), parsedDate)
+	if err == nil && existAttendance != nil {
+		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
+			return nil, fmt.Errorf("host %s already checkin", host.Name)
+		} else {
+			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: []uint{existAttendance.ID}})
+			if err != nil {
+				return nil, fmt.Errorf("failed to auto-checkout previous host: %w", err)
+			}
+		}
+	}
+
+	note := s.GenerateNote(nil, *parsedDate, req.ShiftID)
+
+	attendance := entity.Attendance{
+		Date:        parsedDate,
+		ShiftID:     req.ShiftID,
+		HostID:      host.ID,
+		StudioID:    req.StudioID,
+		CheckedInAt: timehandler.TimeNow(),
+		Status:      "active",
+		Note:        note,
+	}
+
+	created, err := s.repository.Create(&attendance)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create record for account session
+	accounts, err := s.accountSvc.WithStudioID(fmt.Sprintf("%d", req.StudioID)).FindAll()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, account := range accounts {
+
+		live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("Gagal menemukan attendance ID %d", ids))
+			log.Printf("Failed to get live data for account %s: %v", account.Name, err)
 			continue
 		}
 
-		attendance.CheckedOutAt = helpers.TimeNow()
-		if err := s.repository.Save(attendance); err != nil {
-			errs = append(errs, fmt.Errorf("Gagal menyimpan attendance ID %d", ids))
+		accountSessionReq := accountsessionparams.CreateAccountsessionRequest{
+			AccountID:    account.ID,
+			AttendanceID: created.ID,
+			StudioID:     created.StudioID,
+		}
+
+		if len(live) == 0 {
+			accountSessionReq.GMVSalesStart = 0
+			accountSessionReq.GMVPaidStart = 0
+
+		} else {
+			accountSessionReq.GMVPaidStart = uint(live[0].PlacedSales)
+			accountSessionReq.GMVSalesStart = uint(live[0].ConfirmedSales)
+		}
+
+		_, err = s.accountSessionSvc.Create(accountSessionReq)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create account session for account %s: %w", account.Name, err)
 		}
 	}
 
-	if len(errs) > 0 {
-		return fmt.Errorf("Terdapat %d error saat check-out: %v", len(errs), errs)
+	result := params.NewAttendanceResponse(created)
+	return result, nil
+}
+
+func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error) {
+	var responses []*params.AttendanceResponse
+
+	for _, id := range req.ID {
+		attendance, err := s.repository.FindByID(id)
+		if err != nil {
+			log.Printf("Gagal menemukan attendance ID %d: %v", id, err)
+			continue
+		}
+
+		attendance.CheckedOutAt = timehandler.TimeNow()
+		attendance.Status = "inactive"
+
+		if err := s.repository.Save(attendance); err != nil {
+			log.Printf("Gagal menyimpan attendance ID %d: %v", id, err)
+			continue
+		}
+
+		// Update account session with checkout time
+		accountSessions, err := s.accountSessionSvc.
+			WithAttendanceID(fmt.Sprintf("%d", attendance.ID)).
+			FindAll()
+		if err != nil {
+			log.Printf("Failed to get account sessions for attendance ID %d: %v", id, err)
+			continue
+		}
+
+		for _, session := range accountSessions {
+			account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne()
+			if err != nil {
+				log.Printf("Failed to get account ID %d: %v", session.AccountID, err)
+				continue
+			}
+
+			live, err := s.shopeeSvc.GetLiveSessionRT(account.Cookie)
+			if err != nil {
+				log.Printf("Failed to get live data for account %s: %v", account.Name, err)
+				continue
+			}
+
+			var updateReq accountsessionparams.UpdateEndSessionRequest
+			if len(live) > 0 {
+				updateReq.GMVSalesEnd = uint(live[0].ConfirmedSales)
+				updateReq.GMVPaidEnd = uint(live[0].PlacedSales)
+			} else {
+				updateReq.GMVSalesEnd = 0
+				updateReq.GMVPaidEnd = 0
+			}
+
+			if _, err := s.accountSessionSvc.UpdateEndSession(
+				strconv.FormatUint(uint64(session.ID), 10),
+				updateReq,
+			); err != nil {
+				log.Printf("Failed to update account session for attendance ID %d: %v", id, err)
+				continue
+			}
+		}
+
+		responses = append(responses, params.NewAttendanceResponse(attendance))
 	}
 
-	return nil
+	if len(responses) == 0 {
+		return nil, fmt.Errorf("tidak ada attendance yang berhasil di-checkout")
+	}
+
+	return responses, nil
 }
 
 func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string {
@@ -190,8 +278,8 @@ func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, 
 		return "Tidak ada jadwal"
 	}
 
-	expectedDate := schedule.Date.Format("2006-01-02")
-	actualDate := attendanceDate.Format("2006-01-02")
+	expectedDate := schedule.Date.Format(constants.LayoutYYMMDD)
+	actualDate := attendanceDate.Format(constants.LayoutYYMMDD)
 
 	dateMatch := expectedDate == actualDate
 	shiftMatch := schedule.ShiftID == shiftID
@@ -206,20 +294,4 @@ func (s *AttendanceServiceImpl) GenerateNote(schedule *scheduleentity.Schedule, 
 		return "tanggal tidak sesuai"
 	}
 	return "tanggal dan shift tidak sesuai"
-}
-
-func (s *AttendanceServiceImpl) GenerateSummary(successCount, failedCount int, results []params.AttendanceCheckInResult) *params.AttendanceCheckInSummary {
-	finalMessage := "Berhasil check-in semua host"
-	if successCount == 0 {
-		finalMessage = "Gagal check-in semua host"
-	} else if failedCount > 0 {
-		finalMessage = "Sebagian berhasil check-in"
-	}
-
-	return &params.AttendanceCheckInSummary{
-		Message:      finalMessage,
-		SuccessCount: successCount,
-		FailedCount:  failedCount,
-		Results:      results,
-	}
 }

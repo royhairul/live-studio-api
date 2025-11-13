@@ -4,10 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 )
 
 type AttendanceResponse struct {
-	ID uint
+	ID uint `json:"id"`
 
 	HostID uuid.UUID `json:"host_id"`
 	Name   string    `json:"host_name"`
@@ -15,22 +16,30 @@ type AttendanceResponse struct {
 	Date     *time.Time `json:"date"`
 	CheckIn  *time.Time `json:"check_in"`
 	CheckOut *time.Time `json:"check_out"`
+	Duration int64      `json:"duration"`
 
-	ShiftStartTime time.Time `json:"start_time"`
-	ShiftEndTime   time.Time `json:"end_time"`
+	ShiftID   uint   `json:"shift_id"`
+	ShiftName string `json:"shift_name"`
+
+	StudioID   uint   `json:"studio_id"`
+	StudioName string `json:"studio_name"`
 
 	Note string `json:"note"`
 }
 
-type AttendanceCheckInResult struct {
-	HostName string `json:"host_name"`
-	Message  string `json:"message"`
-	Status   string `json:"status"` // success | failed | warning
-}
-
-type AttendanceCheckInSummary struct {
-	Message      string                    `json:"message"` // contoh: "Berhasil check-in semua host" atau "Sebagian berhasil check-in"
-	SuccessCount int                       `json:"success_count"`
-	FailedCount  int                       `json:"failed_count"`
-	Results      []AttendanceCheckInResult `json:"results"`
+func NewAttendanceResponse(attendance *entity.Attendance) *AttendanceResponse {
+	return &AttendanceResponse{
+		ID:         attendance.ID,
+		Name:       attendance.Host.Name,
+		HostID:     *attendance.Host.ID,
+		Date:       attendance.Date,
+		CheckIn:    attendance.CheckedInAt,
+		CheckOut:   attendance.CheckedOutAt,
+		Duration:   attendance.Duration(),
+		ShiftID:    attendance.Shift.ID,
+		ShiftName:  attendance.Shift.Name,
+		StudioID:   attendance.Studio.ID,
+		StudioName: attendance.Studio.Name,
+		Note:       attendance.Note,
+	}
 }

@@ -3,22 +3,24 @@ package repository
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
-	"gorm.io/gorm"
+	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
 )
 
 type AttendanceRepository interface {
-	FindAll() ([]*entity.Attendance, error)
+	FindAll(filter params.AttendanceFilter) ([]*entity.Attendance, error)
+	FindOne(filter params.AttendanceFilter) (*entity.Attendance, error)
 	Create(attendance *entity.Attendance) (*entity.Attendance, error)
 	Save(attendance *entity.Attendance) error
 	Delete(id string) error
 
-	WithTx(tx *gorm.DB) AttendanceRepository
-	BeginTransaction() *gorm.DB
-
 	FindUncheckedOutByHost() ([]*entity.Attendance, error)
+	FindUncheckedOutByStudio(studioID string, date *time.Time) (*entity.Attendance, error)
+
 	FindByID(id uint) (*entity.Attendance, error)
 	FindByScheduleID(id uint) (*entity.Attendance, error)
-	FindByHostShiftAndDate(hostID uuid.UUID, shiftID string, date time.Time) (*entity.Attendance, error)
+	FindByHostShiftAndDate(hostID string, shiftID uint, date time.Time) (*entity.Attendance, error)
+	FindAllByDateRange(startTime *time.Time, endTime *time.Time) ([]*entity.Attendance, error)
+	FindAllByHostID(id string) ([]*entity.Attendance, error)
+	FindByAccountID(id uint) (*entity.Attendance, error)
 }

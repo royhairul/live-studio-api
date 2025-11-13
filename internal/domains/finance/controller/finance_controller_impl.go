@@ -4,40 +4,54 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
-	"github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	"github.com/royhairul/live-studio-api/internal/domains/finance/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 )
 
 type FinanceControllerImpl struct {
-	FinanceService service.FinanceService
+	service service.FinanceService
 }
 
 func NewFinanceController(financeSvc service.FinanceService) FinanceController {
-	return &FinanceControllerImpl{FinanceService: financeSvc}
+	return &FinanceControllerImpl{service: financeSvc}
 }
 
-func (f *FinanceControllerImpl) GetLiveFinance(ctx *gin.Context) {
-	var req params.ShopeeLiveFinanceRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorhandler.HandleError(ctx, err)
-		return
+func (f *FinanceControllerImpl) FindAll(ctx *gin.Context) {
+	startDate := ctx.Query("startDate")
+	endDate := ctx.Query("endDate")
+	start, end, _ := timehandler.ParseDateRange(startDate, endDate)
+
+	account := ctx.Query("account")
+	studio := ctx.Query("studio")
+	status := ctx.Query("status")
+	payment := ctx.Query("payment")
+
+	service := f.service
+
+	if studio != "" {
+		service = service.WithStudioID(studio)
 	}
 
-	dataFinance, err := f.FinanceService.FindAll(req)
+	if account != "" {
+		service = service.WithAccountUniqueID(account)
+	}
+
+	if status != "" {
+		service = service.WithStatus(status)
+	}
+
+	if payment != "" {
+		service = service.WithPaymentMethod(payment)
+	}
+
+	finance, err := service.FindAll(start, end)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved data successfully", dataFinance)
+	resp := response.NewBaseResponse("retrieved data successfully", finance)
 	ctx.JSON(http.StatusOK, resp)
-}
-
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Sesuaikan policy production
-	},
 }

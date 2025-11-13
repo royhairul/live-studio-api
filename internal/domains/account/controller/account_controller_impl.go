@@ -4,22 +4,37 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/royhairul/live-studio-api/helpers/errorhandler"
-	"github.com/royhairul/live-studio-api/helpers/response"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/service"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
+	"github.com/royhairul/live-studio-api/internal/pkg/response"
 )
 
 type AccountControllerImpl struct {
-	AccountService service.AccountService
+	service  service.AccountService
+	validate *validator.Validate
 }
 
-func NewAccountController(accountSvc service.AccountService) AccountController {
-	return &AccountControllerImpl{AccountService: accountSvc}
+func NewAccountController(service service.AccountService) AccountController {
+	return &AccountControllerImpl{service: service}
 }
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
-	accounts, err := a.AccountService.FindAll()
+	studioId := ctx.Query("studio")
+	uniqueId := ctx.Query("uniqueId")
+
+	service := a.service
+
+	if studioId != "" {
+		service = service.WithStudioID(studioId)
+	}
+	if uniqueId != "" {
+		service = service.WithUniqueID(uniqueId)
+	}
+
+	accounts, err := service.FindAll()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -32,13 +47,13 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	account, err := a.AccountService.FindById(id)
+	account, err := a.service.WithID(id).FindOne()
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
 
-	resp := response.NewBaseResponse("retrieved detail successfully", account)
+	resp := response.NewBaseResponse("retrieved an account successfully", account)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -49,7 +64,7 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 		return
 	}
 
-	account, err := a.AccountService.CreateOrUpdate(accountReq)
+	account, err := a.service.CreateOrUpdate(accountReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -59,16 +74,36 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-// Create implements AccountController.
-func (a *AccountControllerImpl) Create(ctx *gin.Context) {
-	panic("unimplemented")
+// Update implements AccountController.
+func (a *AccountControllerImpl) Update(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var req params.UpdateAccountRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid request data", err))
+		return
+	}
+
+	if err := a.validate.Struct(req); err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	result, err := a.service.Update(id, req)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("updated accountads successfully", result)
+	ctx.JSON(http.StatusOK, resp)
 }
 
 // Delete implements AccountController.
 func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := a.AccountService.Delete(id); err != nil {
+	if err := a.service.Delete(id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
@@ -77,7 +112,16 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-// Update implements AccountController.
-func (a *AccountControllerImpl) Update(ctx *gin.Context) {
-	panic("unimplemented")
+// FindByStudio implements AccountController.
+func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
+	studioId := ctx.Param("studioId")
+
+	accounts, err := a.service.WithStudioID(studioId).FindAll()
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved accounts by studio successfully", accounts)
+	ctx.JSON(http.StatusOK, resp)
 }

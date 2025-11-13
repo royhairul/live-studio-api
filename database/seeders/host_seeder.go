@@ -7,15 +7,15 @@ import (
 
 	"github.com/go-faker/faker/v4"
 	"github.com/royhairul/live-studio-api/database"
-	"github.com/royhairul/live-studio-api/models"
-	"github.com/royhairul/live-studio-api/services/studio"
+	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+	studioentity "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 )
 
 func HostSeeder() {
+	var studios []studioentity.Studio
 
 	// Get All Studios
-	studios, err := studio.GetStudioAll()
-	if err != nil {
+	if err := database.DB.Find(&studios); err != nil {
 		fmt.Println("❌ Gagal mengambil data studio:", err)
 		return
 	}
@@ -33,10 +33,10 @@ func HostSeeder() {
 			name := faker.Name()
 			phone := faker.Phonenumber()
 
-			host := models.Host{
+			host := hostentity.Host{
 				Name:     name,
 				Phone:    phone,
-				StudioID: uint16(studio.ID),
+				StudioID: uint(studio.ID),
 			}
 
 			if err := database.DB.Create(&host).Error; err != nil {
@@ -46,5 +46,4 @@ func HostSeeder() {
 			}
 		}
 	}
-
 }

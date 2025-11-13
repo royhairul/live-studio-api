@@ -1,29 +1,31 @@
 package service
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 	"time"
 
-	"github.com/royhairul/live-studio-api/helpers"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
+	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 
-	ShopeeParams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
-	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
-	AccountRepo "github.com/royhairul/live-studio-api/internal/domains/account/repository"
+	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
+	shopeeservice "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
+	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
 )
 
 type LiveServiceImpl struct {
-	accountRepo   AccountRepo.AccountRepository
-	shopeeLiveSvc ShopeeService.ShopeeLiveService
+	accountSvc    accountservice.AccountService
+	shopeeLiveSvc shopeeservice.ShopeeLiveService
 }
 
-func NewLiveService(accountRepo AccountRepo.AccountRepository, shopeeLiveSvc ShopeeService.ShopeeLiveService) LiveService {
-	return &LiveServiceImpl{accountRepo, shopeeLiveSvc}
+func NewLiveService(accountSvc accountservice.AccountService, shopeeLiveSvc shopeeservice.ShopeeLiveService) LiveService {
+	return &LiveServiceImpl{accountSvc, shopeeLiveSvc}
 }
 
 // GetLive implements LiveService.
 func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
-	accounts, err := l.accountRepo.FindAll()
+	accounts, err := l.accountSvc.FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -31,16 +33,16 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 	var allRealtimeData []*params.LiveResponse
 
 	for _, account := range accounts {
-		realtimeData, err := l.shopeeLiveSvc.GetShopeeLiveRealTime(account.Cookie)
+		realtimeData, err := l.shopeeLiveSvc.GetLiveSessionRT(account.Cookie)
 		if err != nil {
 			log.Printf("Failed to get data realtime for account %s: %v", account.Name, err)
 			continue
 		}
 
 		// Filter berdasarkan tanggal hari ini
-		var todayData []*ShopeeParams.ShopeeLiveReportItemRT
+		var todayData []shopeeparams.ShopeeLiveReportItemRT
 		for _, session := range realtimeData {
-			if helpers.IsToday(session.StartTime) {
+			if utils.IsToday(session.StartTime) {
 				//  duration
 				session.Duration = time.Now().UnixMilli() - session.StartTime
 
@@ -53,11 +55,12 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 				} else {
 					session.OmsetPerHour = 0
 				}
-				todayData = append(todayData, &session)
+				todayData = append(todayData, session)
 			}
 		}
 
 		allRealtimeData = append(allRealtimeData, &params.LiveResponse{
+			AccountID:   fmt.Sprint(account.ID),
 			AccountName: account.Name,
 			Total:       len(realtimeData),
 			Relive:      len(todayData),
@@ -66,4 +69,51 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 
 	}
 	return allRealtimeData, nil
+}
+
+// GetLiveDetail implements LiveService.
+func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, productPage string, productPageSize string) (*params.LiveDetailResponse, error) {
+	account, err := l.accountSvc.WithID(accountID).FindOne()
+	if err != nil {
+		return nil, err
+	}
+
+	overview, err := l.shopeeLiveSvc.GetDashboardOverviewRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	viewerProfile, err := l.shopeeLiveSvc.GetDashboardViewerRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	viewerSource, err := l.shopeeLiveSvc.GetDashboardViewerSourceRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	viewerSource.CalculatePercentage()
+
+	buyerProfile, err := l.shopeeLiveSvc.GetDashboardBuyerRT(account.Cookie, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	productPageInt, _ := strconv.Atoi(productPage)
+	productPageSizeInt, _ := strconv.Atoi(productPageSize)
+
+	productList, err := l.shopeeLiveSvc.GetDashboardProductListRT(account.Cookie, sessionID, productPageInt, productPageSizeInt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &params.LiveDetailResponse{
+		AccountID:     fmt.Sprint(account.ID),
+		AccountName:   account.Name,
+		Overview:      overview,
+		ViewerProfile: viewerProfile,
+		ViewerSource:  viewerSource,
+		BuyerProfile:  buyerProfile,
+		Products:      productList,
+	}, nil
 }
