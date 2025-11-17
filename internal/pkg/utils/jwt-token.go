@@ -12,10 +12,9 @@ import (
 )
 
 type JWTPayloadDTO struct {
-	ID       uint   `json:"id"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	Role uint   `json:"role"`
 
 	tenantdb.TenantBase
 	jwt.RegisteredClaims
@@ -48,7 +47,7 @@ func GenerateTokenJWT(user *entity.User) (string, error) {
 	payload := JWTPayloadDTO{
 		ID:   user.ID,
 		Name: user.Name,
-		Role: user.Role.Name,
+		Role: user.RoleID,
 		TenantBase: tenantdb.TenantBase{
 			TenantID: user.TenantID,
 		},
