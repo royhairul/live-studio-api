@@ -24,7 +24,7 @@ func (r *UserRepositoryImpl) FindAll() ([]entity.User, error) {
 
 func (r *UserRepositoryImpl) FindByID(id string) (*entity.User, error) {
 	var user entity.User
-	if err := r.db.Preload("Role").First(&user, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload(clause.Associations).First(&user, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
