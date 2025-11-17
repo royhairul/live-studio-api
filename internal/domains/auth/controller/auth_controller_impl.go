@@ -94,20 +94,11 @@ func (ctrl *AuthControllerImpl) ResetPassword(c *gin.Context) {
 
 // Me implements AuthController.
 func (ctrl *AuthControllerImpl) Me(c *gin.Context) {
-	// Retrieve user ID from context
-	id, exists := c.Get("superadmin_id")
-	if !exists {
-		id, exists = c.Get("user_id")
-	}
-
-	// Get Role from context
-	role := c.GetString("role")
-
-	me, err := ctrl.service.Me(fmt.Sprintf("%v", id))
+	me, err := ctrl.service.Me(c)
 	if err != nil {
 		errorhandler.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.NewBaseResponse(fmt.Sprintf("Welcome, %s", role), me))
+	c.JSON(http.StatusOK, response.NewBaseResponse(fmt.Sprintf("Welcome, %s", me.Role), me))
 }

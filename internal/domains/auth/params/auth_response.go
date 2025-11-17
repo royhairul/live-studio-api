@@ -22,5 +22,6 @@ type ChangePasswordResponse struct {
 type MeResponse struct {
 	Name        string   `json:"name"`
 	Role        string   `json:"role"`
+	TenantID    string   `json:"tenant_id"`
 	Permissions []string `json:"permissions"`
 }

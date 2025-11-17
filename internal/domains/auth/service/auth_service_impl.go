@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -41,15 +42,15 @@ func NewAuthService(
 func (s *AuthServiceImpl) Login(user params.LoginRequest) (params.LoginResponse, error) {
 	existingUser, err := s.UserRepository.FindByEmail(user.Email)
 	if err != nil {
-		return params.LoginResponse{}, errorhandler.NewNotFoundError("email atau password salah")
+		return params.LoginResponse{}, errorhandler.NewNotFoundError("email or password invalid")
 	}
 
 	if existingUser == nil {
-		return params.LoginResponse{}, errorhandler.NewNotFoundError("email atau password salah")
+		return params.LoginResponse{}, errorhandler.NewNotFoundError("email or password invalid")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(user.Password))
 	if err != nil {
-		return params.LoginResponse{}, errorhandler.NewNotFoundError("email atau password salah")
+		return params.LoginResponse{}, errorhandler.NewNotFoundError("email or password invalid")
 	}
 
 	token, err := utils.GenerateTokenJWT(existingUser)
@@ -153,25 +154,28 @@ func (s *AuthServiceImpl) VerifyOtp(otp params.VerifyOTPRequest) (params.ChangeP
 }
 
 // Me implements AuthService.
-func (s *AuthServiceImpl) Me(userId string) (params.MeResponse, error) {
-	user, err := s.UserRepository.FindByID(userId)
+func (s *AuthServiceImpl) Me(ctx context.Context) (params.MeResponse, error) {
+	claims := ctx.Value("claims").(*utils.JWTPayloadDTO)
+
+	user, err := s.UserRepository.FindByID(fmt.Sprint(claims.ID))
 	if err != nil {
-		return params.MeResponse{}, fmt.Errorf("failed to find user with ID %s: %w", userId, err)
+		return params.MeResponse{}, err
 	}
 
-	role, err := s.RoleService.FindByID(fmt.Sprintf("%d", user.RoleID))
+	role, err := s.RoleService.FindByID(fmt.Sprint(user.RoleID))
 	if err != nil {
-		return params.MeResponse{}, fmt.Errorf("failed to find role with ID %d: %w", user.RoleID, err)
+		return params.MeResponse{}, err
 	}
 
-	permissions := []string{}
-	for _, p := range role.Permissions {
-		permissions = append(permissions, p.Name)
+	permissions := make([]string, len(role.Permissions))
+	for i, p := range role.Permissions {
+		permissions[i] = p.Name
 	}
 
 	return params.MeResponse{
-		Name:        user.Name,
+		Name:        claims.Name,
 		Role:        role.Name,
+		TenantID:    claims.TenantBase.TenantID,
 		Permissions: permissions,
 	}, nil
 }
