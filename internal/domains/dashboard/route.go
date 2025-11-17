@@ -9,7 +9,7 @@ import (
 func RegisterRoutes(router *gin.RouterGroup, controller controller.DashboardController) {
 	// TODO: define routes
 	route := router.Group("/dashboard")
-	route.Use(middleware.RequireRoles("superadmin"))
+	route.Use(middleware.RequireRoles("superadmin", "admin"))
 	route.Use(middleware.TenantMiddleware())
 
 	{
