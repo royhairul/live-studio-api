@@ -44,7 +44,7 @@ func NewApp() *fx.App {
 	return fx.New(
 		fx.Provide(
 			config.LoadConfig,
-			database.ConnectDatabase,
+			database.InitDatabase,
 			validators.InitValidator,
 			routes.SetupRouter,
 			routes.GroupAPI,

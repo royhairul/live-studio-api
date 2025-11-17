@@ -11,7 +11,7 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
-	database.ConnectDatabase(cfg)
+	database.InitDatabase(cfg)
 	database.MigrateDatabase(database.DB)
 
 	args := os.Args
