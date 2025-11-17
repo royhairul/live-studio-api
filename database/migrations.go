@@ -67,3 +67,41 @@ func MigrateDatabase(db *gorm.DB) {
 
 	log.Println("✅ Database migration completed successfully!")
 }
+
+// RefreshDatabase drops and recreates all tables
+func RefreshDatabase(db *gorm.DB) {
+	log.Println("⚠️ Starting database refresh...")
+
+	// 1. Drop all tables
+	log.Println("🔻 Dropping tables...")
+
+	for _, model := range modelsList {
+		// Parse schema to get table name
+		stmt := &gorm.Statement{DB: db}
+		if err := stmt.Parse(model); err != nil {
+			log.Printf("❌ Failed parsing model: %v\n", err)
+			continue
+		}
+		tableName := stmt.Schema.Table
+
+		// Drop table
+		if db.Migrator().HasTable(model) {
+			if err := db.Migrator().DropTable(model); err != nil {
+				log.Printf("❌ Failed to drop table %s: %v\n", tableName, err)
+			} else {
+				log.Printf("✅ Dropped table: %s", tableName)
+			}
+		} else {
+			log.Printf("ℹ️ Table %s does not exist, skipping.", tableName)
+		}
+	}
+
+	// 2. AutoMigrate all tables
+	log.Println("🔨 Recreating tables...")
+
+	if err := db.AutoMigrate(modelsList...); err != nil {
+		log.Fatalf("❌ Failed migrating tables: %v", err)
+	}
+
+	log.Println("✅ Database refresh completed successfully!")
+}
