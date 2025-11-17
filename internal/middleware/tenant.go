@@ -23,7 +23,7 @@ func TenantMiddleware() gin.HandlerFunc {
 
 		if tenant == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "Tenant ID tidak ditemukan. Silakan login ulang.",
+				"message": "tenant id not found. please login again.",
 			})
 			return
 		}

@@ -2,9 +2,31 @@ package tenantdb
 
 import (
 	"reflect"
+	"strings"
 
 	"gorm.io/gorm"
 )
+
+// whitelist endpoint
+var tenantWhitelist = []string{
+	"/api/auth/login",
+	"/api/auth/register",
+	"/api/auth/forgot-password",
+}
+
+func isWhitelisted(db *gorm.DB) bool {
+	path, ok := db.Statement.Context.Value("path").(string)
+	if !ok {
+		return false
+	}
+
+	for _, w := range tenantWhitelist {
+		if strings.HasPrefix(path, w) {
+			return true
+		}
+	}
+	return false
+}
 
 // RegisterTenantCallback sets tenant_id automatically for tenant models
 func RegisterTenantCallback(db *gorm.DB) {
@@ -28,6 +50,10 @@ func setTenantID(db *gorm.DB) {
 }
 
 func filterByTenantID(db *gorm.DB) {
+	if isWhitelisted(db) {
+		return
+	}
+
 	tenantID := ExtractTenant(db.Statement.Context)
 	if tenantID == "" {
 		return
