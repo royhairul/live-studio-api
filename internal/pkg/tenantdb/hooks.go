@@ -12,6 +12,8 @@ var tenantWhitelist = []string{
 	"/api/auth/login",
 	"/api/auth/register",
 	"/api/auth/forgot-password",
+	"/api/auth/reset-password",
+	"/api/auth/verify-otp",
 }
 
 func isWhitelisted(db *gorm.DB) bool {
