@@ -90,6 +90,11 @@ func (s *AuthServiceImpl) Register(user params.RegisterRequest) (params.Register
 		return params.RegisterResponse{}, err
 	}
 
+	_, err = CreateTenantRoles(createdUser.TenantID)
+	if err != nil {
+		return params.RegisterResponse{}, err
+	}
+
 	return params.RegisterResponse{
 		Name:  createdUser.Name,
 		Email: createdUser.Email,
