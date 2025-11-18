@@ -8,7 +8,7 @@ import (
 
 type Role struct {
 	gorm.Model
-	Name        string                        `gorm:"unique"`
+	Name        string
 	Permissions []permissionentity.Permission `gorm:"many2many:role_permissions"`
 
 	tenantdb.TenantBase
