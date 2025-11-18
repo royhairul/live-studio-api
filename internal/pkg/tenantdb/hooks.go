@@ -62,9 +62,26 @@ func filterByTenantID(db *gorm.DB) {
 	}
 
 	stmt := db.Statement
-	if stmt.Schema != nil {
-		if _, ok := stmt.Schema.FieldsByName["TenantID"]; ok {
-			db.Where("tenant_id = ?", tenantID)
-		}
+	if stmt.Schema == nil {
+		return
+	}
+
+	tableName := stmt.Schema.Table
+
+	// ----------------------------------------------------
+	// 1️⃣ Rule khusus: FILTER for TABLE "roles"
+	// ----------------------------------------------------
+	if tableName == "roles" {
+		// Role global:       tenant_id IS NULL
+		// Role per tenant:   tenant_id = current tenant
+		db.Where("tenant_id IS NULL OR tenant_id = ?", tenantID)
+		return
+	}
+
+	// ----------------------------------------------------
+	// 2️⃣ Rule general: FILTER "tenant_id" for general if tenant_i exists
+	// ----------------------------------------------------
+	if _, ok := stmt.Schema.FieldsByName["TenantID"]; ok {
+		db.Where("tenant_id = ?", tenantID)
 	}
 }
