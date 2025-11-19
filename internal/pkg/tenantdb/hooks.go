@@ -75,7 +75,7 @@ func filterByTenantID(db *gorm.DB) {
 	if tableName == "roles" {
 		// Role global:       tenant_id IS NULL
 		// Role per tenant:   tenant_id = current tenant
-		db.Where("tenant_id IS NULL OR tenant_id = ?", tenantID)
+		db.Where("tenant_id = '' OR tenant_id = ?", tenantID)
 		return
 	}
 
