@@ -1,14 +1,14 @@
 package params
 
 type CreateUserRequest struct {
-	Name     string `json:"name" binding:"required,min=3"`
-	Email    string `json:"email" binding:"required,email,min=3"`
-	Password string `json:"password" binding:"required,min=3"`
-	RoleID   uint   `json:"roleID" binding:"required"`
+	Name     string `json:"name" validate:"required,min=3"`
+	Email    string `json:"email" validate:"required,email,min=3"`
+	Password string `json:"password" validate:"required,min=3"`
+	RoleID   uint   `json:"roleID" validate:"required"`
 }
 
 type UpdateUserRequest struct {
-	Name   string `json:"name" binding:"required,min=3"`
-	Email  string `json:"email" binding:"required,email,min=3"`
+	Name   string `json:"name" validate:"required,min=3"`
+	Email  string `json:"email" validate:"required,email,min=3"`
 	RoleID *uint  `json:"roleID"`
 }

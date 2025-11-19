@@ -27,6 +27,7 @@ func (s *userServiceImpl) GetAll() ([]params.UserResponse, error) {
 	var responses []params.UserResponse
 	for _, u := range users {
 		responses = append(responses, params.UserResponse{
+			ID:    u.ID.String(),
 			Name:  u.Name,
 			Email: u.Email,
 			Role:  u.Role.Name,
@@ -41,6 +42,7 @@ func (s *userServiceImpl) GetByID(id string) (*params.UserResponse, error) {
 		return nil, err
 	}
 	return &params.UserResponse{
+		ID:    u.ID.String(),
 		Name:  u.Name,
 		Email: u.Email,
 		Role:  u.Role.Name,
