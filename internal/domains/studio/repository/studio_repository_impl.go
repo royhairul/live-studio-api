@@ -26,7 +26,7 @@ func (s *StudioRepositoryImpl) Create(studio *entity.Studio) error {
 
 // Delete implements StudioRepository.
 func (s *StudioRepositoryImpl) Delete(id string) error {
-	if err := s.DB.Delete(entity.Studio{}, "id = ?", id).Error; err != nil {
+	if err := s.DB.Delete(&entity.Studio{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 
