@@ -6,7 +6,7 @@ import (
 )
 
 type TenantBase struct {
-	TenantID string `json:"tenant_id" gorm:"index;not null"`
+	TenantID string `json:"tenant_id" gorm:"index;nullable"`
 }
 
 func (t *TenantBase) BeforeCreate(tx *gorm.DB) (err error) {
