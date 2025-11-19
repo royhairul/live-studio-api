@@ -30,7 +30,7 @@ func (s *ScheduleRepositoryImpl) Create(schedule *entity.Schedule) (*entity.Sche
 
 // Delete implements ScheduleRepository.
 func (s *ScheduleRepositoryImpl) Delete(id uint) error {
-	if err := s.DB.Delete(entity.Schedule{}, "id = ?", id).Error; err != nil {
+	if err := s.DB.Delete(&entity.Schedule{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 	return nil
