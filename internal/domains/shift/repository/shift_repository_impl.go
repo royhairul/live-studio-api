@@ -25,7 +25,7 @@ func (s *ShiftRepositoryImpl) Create(shift *entity.Shift) (*entity.Shift, error)
 
 // Delete implements ShiftRepository.
 func (s *ShiftRepositoryImpl) Delete(id uint) error {
-	if err := s.DB.Delete(entity.Shift{}, "id = ?", id).Error; err != nil {
+	if err := s.DB.Delete(&entity.Shift{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 
