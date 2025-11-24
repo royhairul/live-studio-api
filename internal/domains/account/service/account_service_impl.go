@@ -76,10 +76,9 @@ func (a *AccountServiceImpl) FindOne() (*params.AccountResponse, error) {
 }
 
 func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*params.AccountResponse, error) {
-	// Get Shopee Account info
 	accountShopee, err := a.shopeeSvc.GetShopeeAccount(req.Cookie)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid or expired cookie")
 	}
 
 	account := entity.Account{
@@ -93,37 +92,43 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 		Device:   req.Device,
 	}
 
-	existing, err := a.repository.FindOne(params.AccountFilter{UniqueID: &account.UniqueID, IncludeDeleted: true})
-	if err != nil {
-		// Create new if not found
-		if existing == nil || errors.Is(err, gorm.ErrRecordNotFound) {
-			created, err := a.repository.Create(&account)
-			if err != nil {
-				return nil, err
-			}
-			return params.NewAccountResponse(created), nil
+	// Cari existing berdasarkan UniqueID + TenantID
+	existing, err := a.repository.FindOne(params.AccountFilter{
+		UniqueID:       &account.UniqueID,
+		IncludeDeleted: true,
+	})
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	if existing != nil {
+		// Jika soft deleted, reset DeletedAt
+		if existing.DeletedAt.Valid {
+			existing.DeletedAt = gorm.DeletedAt{}
 		}
-		return nil, err
+
+		// Update fields
+		existing.Name = account.Name
+		existing.Username = account.Username
+		existing.Email = account.Email
+		existing.Cookie = account.Cookie
+		existing.Device = account.Device
+		existing.StudioID = account.StudioID
+
+		updated, err := a.repository.Update(existing)
+		if err != nil {
+			return nil, err
+		}
+		return params.NewAccountResponse(updated), nil
 	}
 
-	if existing.DeletedAt.Valid {
-		existing.DeletedAt = gorm.DeletedAt{}
-	}
-
-	// Update fields if exists
-	existing.Name = account.Name
-	existing.Username = account.Username
-	existing.Email = account.Email
-	existing.Cookie = account.Cookie
-	existing.Device = account.Device
-	existing.StudioID = account.StudioID
-
-	updated, err := a.repository.Save(existing)
+	// Jika tidak ada record, create baru
+	created, err := a.repository.Create(&account)
 	if err != nil {
 		return nil, err
 	}
 
-	return params.NewAccountResponse(updated), nil
+	return params.NewAccountResponse(created), nil
 }
 
 // Update implements AccountService.
