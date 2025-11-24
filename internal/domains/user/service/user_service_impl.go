@@ -8,14 +8,18 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/user/params"
 	"github.com/royhairul/live-studio-api/internal/domains/user/repository"
 	"golang.org/x/crypto/bcrypt"
+
+	hostparams "github.com/royhairul/live-studio-api/internal/domains/host/params"
+	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 )
 
 type userServiceImpl struct {
-	repo repository.UserRepository
+	repo        repository.UserRepository
+	hostService hostservice.HostService
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userServiceImpl{repo}
+func NewUserService(repo repository.UserRepository, hostService hostservice.HostService) UserService {
+	return &userServiceImpl{repo, hostService}
 }
 
 func (s *userServiceImpl) GetAll() ([]params.UserResponse, error) {
@@ -58,6 +62,7 @@ func (s *userServiceImpl) Create(input params.CreateUserRequest) (*entity.User, 
 	if emailRegistered != nil {
 		return nil, errors.New("email already used")
 	}
+
 	hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -74,6 +79,17 @@ func (s *userServiceImpl) Create(input params.CreateUserRequest) (*entity.User, 
 	if err != nil {
 		return nil, err
 	}
+
+	if user.Role.Name == "host" {
+		_, err := s.hostService.Create(hostparams.CreateHostRequest{
+			Name:  input.Name,
+			Phone: input.Phone,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return user, nil
 }
 
