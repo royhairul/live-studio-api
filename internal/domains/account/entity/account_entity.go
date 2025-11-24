@@ -9,7 +9,7 @@ import (
 type Account struct {
 	gorm.Model
 	Name     string              `gorm:"type:varchar(100);not null"`
-	UniqueID string              `gorm:"type:varchar(20);not null;uniqueIndex:idx_tenant_uniqueid"`
+	UniqueID string              `gorm:"type:varchar(20);not null"`
 	Username string              `gorm:"type:varchar(100);not null"`
 	Password string              `gorm:"type:varchar(100)"`
 	Email    string              `gorm:"type:varchar(100);not null"`
@@ -19,5 +19,5 @@ type Account struct {
 	StudioID uint16              `gorm:"not null"`
 	Studio   studioentity.Studio `gorm:"foreignKey:StudioID;references:ID"`
 
-	tenantdb.TenantBase `gorm:"uniqueIndex:idx_tenant_uniqueid"`
+	tenantdb.TenantBase
 }
