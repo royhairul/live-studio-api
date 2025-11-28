@@ -8,29 +8,30 @@ import (
 	"gorm.io/gorm"
 )
 
-// whitelist endpoint
+// whitelist endpoint - these paths skip tenant filtering
 var tenantWhitelist = []string{
 	"/api/auth/login",
 	"/api/auth/register",
 	"/api/auth/forgot-password",
 	"/api/auth/reset-password",
 	"/api/auth/verify-otp",
-	"/api/auth/me",
 }
 
 func isWhitelisted(db *gorm.DB) bool {
-	path, ok := db.Statement.Context.Value("path").(string)
-	fmt.Println("[DEBUG] path:", path)
-
-	if !ok {
+	path := ExtractPath(db.Statement.Context)
+	if path == "" {
+		// no path available
+		fmt.Println("[DEBUG tenantdb] isWhitelisted: no path available")
 		return false
 	}
 
 	for _, w := range tenantWhitelist {
 		if strings.HasPrefix(path, w) {
+			fmt.Printf("[DEBUG tenantdb] isWhitelisted: path='%s' matches '%s' -> true\n", path, w)
 			return true
 		}
 	}
+	fmt.Printf("[DEBUG tenantdb] isWhitelisted: path='%s' -> false\n", path)
 	return false
 }
 
@@ -56,12 +57,18 @@ func setTenantID(db *gorm.DB) {
 }
 
 func filterByTenantID(db *gorm.DB) {
+	// Check whitelist first
 	if isWhitelisted(db) {
+		fmt.Println("[DEBUG tenantdb] filterByTenantID: whitelisted -> skip tenant filtering")
 		return
 	}
 
 	tenantID := ExtractTenant(db.Statement.Context)
+	fmt.Printf("[DEBUG tenantdb] filterByTenantID: extracted tenant='%s'\n", tenantID)
+
+	// Skip filtering if no tenant_id in context
 	if tenantID == "" {
+		fmt.Println("[DEBUG tenantdb] filterByTenantID: no tenant -> skip")
 		return
 	}
 

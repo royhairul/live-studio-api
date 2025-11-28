@@ -31,8 +31,10 @@ func TenantMiddleware() gin.HandlerFunc {
 
 		c.Set("tenant_id", tenant)
 
-		// Buat context baru dengan tenant_id dan path
+		// Buat context baru dengan tenant_id
 		ctx := tenantdb.AttachTenant(c.Request.Context(), tenant)
+		// store request path in global fallback and in the context
+		tenantdb.SetRequestPath(c.Request.URL.Path)
 		ctx = context.WithValue(ctx, "path", c.Request.URL.Path)
 
 		// Simpan ke request context agar GORM bisa akses

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 )
 
 func CORS(ctx *gin.Context) {
@@ -38,6 +39,9 @@ func CORS(ctx *gin.Context) {
 	if ctx.Request.Method == http.MethodOptions {
 		ctx.AbortWithStatus(http.StatusNoContent)
 	}
+
+	// store current request path globally as a fallback for tenantdb whitelist
+	tenantdb.SetRequestPath(ctx.Request.URL.Path)
 
 	ctx.Next()
 }
