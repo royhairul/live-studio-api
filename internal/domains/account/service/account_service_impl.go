@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -50,8 +51,8 @@ func (a *AccountServiceImpl) WithUniqueID(uid string) AccountService {
 	return &instance
 }
 
-func (a *AccountServiceImpl) FindAll() ([]*params.AccountResponse, error) {
-	accounts, err := a.repository.FindAll(a.options)
+func (a *AccountServiceImpl) FindAll(ctx context.Context) ([]*params.AccountResponse, error) {
+	accounts, err := a.repository.FindAll(ctx, a.options)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +65,8 @@ func (a *AccountServiceImpl) FindAll() ([]*params.AccountResponse, error) {
 	return result, nil
 }
 
-func (a *AccountServiceImpl) FindOne() (*params.AccountResponse, error) {
-	account, err := a.repository.FindOne(a.options)
+func (a *AccountServiceImpl) FindOne(ctx context.Context) (*params.AccountResponse, error) {
+	account, err := a.repository.FindOne(ctx, a.options)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +76,7 @@ func (a *AccountServiceImpl) FindOne() (*params.AccountResponse, error) {
 	return result, err
 }
 
-func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*params.AccountResponse, error) {
+func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.CreateAccountRequest) (*params.AccountResponse, error) {
 	accountShopee, err := a.shopeeSvc.GetShopeeAccount(req.Cookie)
 	if err != nil {
 		return nil, fmt.Errorf("invalid or expired cookie")
@@ -93,7 +94,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 	}
 
 	// Cari existing berdasarkan UniqueID + TenantID
-	existing, err := a.repository.FindOne(params.AccountFilter{
+	existing, err := a.repository.FindOne(ctx, params.AccountFilter{
 		UniqueID:       &account.UniqueID,
 		IncludeDeleted: true,
 	})
@@ -115,7 +116,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 		existing.Device = account.Device
 		existing.StudioID = account.StudioID
 
-		updated, err := a.repository.Update(existing)
+		updated, err := a.repository.Update(ctx, existing)
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +124,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 	}
 
 	// Jika tidak ada record, create baru
-	created, err := a.repository.Create(&account)
+	created, err := a.repository.Create(ctx, &account)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +133,14 @@ func (a *AccountServiceImpl) CreateOrUpdate(req params.CreateAccountRequest) (*p
 }
 
 // Update implements AccountService.
-func (a *AccountServiceImpl) Update(id string, req params.UpdateAccountRequest) (*params.AccountResponse, error) {
+func (a *AccountServiceImpl) Update(ctx context.Context, id string, req params.UpdateAccountRequest) (*params.AccountResponse, error) {
 	// Check in database
-	existing, err := a.repository.FindOne(params.AccountFilter{ID: &id})
+	existing, err := a.repository.FindOne(ctx, params.AccountFilter{ID: &id})
 	if err != nil {
 		return nil, err
 	}
 
-	updatedAccount, err := a.repository.Save(existing)
+	updatedAccount, err := a.repository.Save(ctx, existing)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +149,8 @@ func (a *AccountServiceImpl) Update(id string, req params.UpdateAccountRequest) 
 	return result, nil
 }
 
-func (a *AccountServiceImpl) Delete(id string) error {
-	if err := a.repository.Delete(id); err != nil {
+func (a *AccountServiceImpl) Delete(ctx context.Context, id string) error {
+	if err := a.repository.Delete(ctx, id); err != nil {
 		return err
 	}
 

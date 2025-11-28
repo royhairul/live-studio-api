@@ -1,6 +1,7 @@
 package performa
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -42,11 +43,9 @@ func NewPerformaAggregator(
 }
 
 // Calculate implements PerformaAggregator.
-func (p *PerformaAggregatorImpl) Calculate(
-	startDate, endDate *time.Time,
-) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error) {
+func (p *PerformaAggregatorImpl) Calculate(ctx context.Context, startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error) {
 	// Ambil attendance
-	attendances, err := p.attendanceSvc.WithDateRange(*startDate, *endDate).FindAll()
+	attendances, err := p.attendanceSvc.WithDateRange(*startDate, *endDate).FindAll(ctx)
 	if err != nil {
 		return nil, TotalPerformaAccount{}, err
 	}
@@ -54,10 +53,8 @@ func (p *PerformaAggregatorImpl) Calculate(
 	return p.aggregateByAttendances(attendances, startDate, endDate)
 }
 
-func (p *PerformaAggregatorImpl) CalculateByHosts(
-	startDate, endDate *time.Time,
-) ([]*performaparam.PerformaHostSummaryResponse, error) {
-	hosts, err := p.hostSvc.FindAll()
+func (p *PerformaAggregatorImpl) CalculateByHosts(ctx context.Context, startDate, endDate *time.Time) ([]*performaparam.PerformaHostSummaryResponse, error) {
+	hosts, err := p.hostSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +63,7 @@ func (p *PerformaAggregatorImpl) CalculateByHosts(
 
 	for _, host := range hosts {
 		// Gunakan CalculateByHost untuk dapatkan total per host
-		detail, err := p.CalculateByHost(host.ID.String(), startDate, endDate)
+		detail, err := p.CalculateByHost(ctx, host.ID.String(), startDate, endDate)
 		if err != nil {
 			continue // skip host bermasalah tanpa hentikan seluruh proses
 		}
@@ -83,14 +80,11 @@ func (p *PerformaAggregatorImpl) CalculateByHosts(
 	return results, nil
 }
 
-func (p *PerformaAggregatorImpl) CalculateByHost(
-	hostID string,
-	startDate, endDate *time.Time,
-) (performaparam.PerformaHostDetailResponse, error) {
+func (p *PerformaAggregatorImpl) CalculateByHost(ctx context.Context, hostID string, startDate, endDate *time.Time) (performaparam.PerformaHostDetailResponse, error) {
 	attendances, err := p.attendanceSvc.
 		WithHostID(hostID).
 		WithDateRange(*startDate, *endDate).
-		FindAll()
+		FindAll(ctx)
 	if err != nil {
 		return performaparam.PerformaHostDetailResponse{}, err
 	}
@@ -121,7 +115,7 @@ func (p *PerformaAggregatorImpl) CalculateByHost(
 		}
 	}
 
-	host, err := p.hostSvc.FindByID(hostID)
+	host, err := p.hostSvc.FindByID(ctx, hostID)
 	if err != nil {
 		return performaparam.PerformaHostDetailResponse{}, err
 	}
@@ -148,9 +142,9 @@ func (p *PerformaAggregatorImpl) CalculateByHost(
 }
 
 // CalculateByStudio implements PerformaAggregator.
-func (p *PerformaAggregatorImpl) CalculateByStudio(studio_id string, startDate *time.Time, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error) {
+func (p *PerformaAggregatorImpl) CalculateByStudio(ctx context.Context, studio_id string, startDate *time.Time, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error) {
 	// Get Attendances
-	attendances, err := p.attendanceSvc.WithStudioID(studio_id).WithDateRange(*startDate, *endDate).FindAll()
+	attendances, err := p.attendanceSvc.WithStudioID(studio_id).WithDateRange(*startDate, *endDate).FindAll(ctx)
 	if err != nil {
 		return nil, TotalPerformaAccount{}, err
 	}

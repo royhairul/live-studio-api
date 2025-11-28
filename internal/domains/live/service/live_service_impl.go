@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -25,7 +26,7 @@ func NewLiveService(accountSvc accountservice.AccountService, shopeeLiveSvc shop
 
 // GetLive implements LiveService.
 func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
-	accounts, err := l.accountSvc.FindAll()
+	accounts, err := l.accountSvc.FindAll(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +74,7 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 
 // GetLiveDetail implements LiveService.
 func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, productPage string, productPageSize string) (*params.LiveDetailResponse, error) {
-	account, err := l.accountSvc.WithID(accountID).FindOne()
+	account, err := l.accountSvc.WithID(accountID).FindOne(context.Background())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -84,8 +85,8 @@ func (s *AttendanceServiceImpl) WithStudioID(studioID string) AttendanceService 
 	return &instance
 }
 
-func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) {
-	attendances, err := s.repository.FindAll(s.options)
+func (s *AttendanceServiceImpl) FindAll(ctx context.Context) ([]*params.AttendanceResponse, error) {
+	attendances, err := s.repository.FindAll(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -99,10 +100,10 @@ func (s *AttendanceServiceImpl) FindAll() ([]*params.AttendanceResponse, error) 
 }
 
 // FindUncheckedOut implements AttendanceService.
-func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse, error) {
+func (s *AttendanceServiceImpl) FindUncheckedOut(ctx context.Context) ([]*params.AttendanceResponse, error) {
 	var results []*params.AttendanceResponse
 
-	attendances, err := s.repository.FindUncheckedOutByHost()
+	attendances, err := s.repository.FindUncheckedOutByHost(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,23 +127,23 @@ func (s *AttendanceServiceImpl) FindUncheckedOut() ([]*params.AttendanceResponse
 	return results, nil
 }
 
-func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
+func (s *AttendanceServiceImpl) CheckIn(ctx context.Context, req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error) {
 	parsedDate, err := timehandler.ParseDate(*timehandler.DateNow())
 	if err != nil {
 		return nil, err
 	}
 
-	host, err := s.hostRepo.FindByID(req.HostID)
+	host, err := s.hostRepo.FindByID(ctx, req.HostID)
 	if err != nil {
 		return nil, err
 	}
 
-	existAttendance, err := s.repository.FindUncheckedOutByStudio(fmt.Sprintf("%d", req.StudioID), parsedDate)
+	existAttendance, err := s.repository.FindUncheckedOutByStudio(ctx, fmt.Sprintf("%d", req.StudioID), parsedDate)
 	if err == nil && existAttendance != nil {
 		if existAttendance.HostID != nil && *existAttendance.HostID == *host.ID {
 			return nil, fmt.Errorf("host %s already checkin", host.Name)
 		} else {
-			_, err := s.CheckOut(params.AttendanceCheckOutRequest{ID: []uint{existAttendance.ID}})
+			_, err := s.CheckOut(ctx, params.AttendanceCheckOutRequest{ID: []uint{existAttendance.ID}})
 			if err != nil {
 				return nil, fmt.Errorf("failed to auto-checkout previous host: %w", err)
 			}
@@ -161,13 +162,13 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 		Note:        note,
 	}
 
-	created, err := s.repository.Create(&attendance)
+	created, err := s.repository.Create(ctx, &attendance)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create record for account session
-	accounts, err := s.accountSvc.WithStudioID(fmt.Sprintf("%d", req.StudioID)).FindAll()
+	accounts, err := s.accountSvc.WithStudioID(fmt.Sprintf("%d", req.StudioID)).FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -205,11 +206,11 @@ func (s *AttendanceServiceImpl) CheckIn(req params.AttendanceCheckInRequest) (*p
 	return result, nil
 }
 
-func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error) {
+func (s *AttendanceServiceImpl) CheckOut(ctx context.Context, req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error) {
 	var responses []*params.AttendanceResponse
 
 	for _, id := range req.ID {
-		attendance, err := s.repository.FindByID(id)
+		attendance, err := s.repository.FindByID(ctx, id)
 		if err != nil {
 			log.Printf("Gagal menemukan attendance ID %d: %v", id, err)
 			continue
@@ -218,7 +219,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		attendance.CheckedOutAt = timehandler.TimeNow()
 		attendance.Status = "inactive"
 
-		if err := s.repository.Save(attendance); err != nil {
+		if err := s.repository.Save(ctx, attendance); err != nil {
 			log.Printf("Gagal menyimpan attendance ID %d: %v", id, err)
 			continue
 		}
@@ -233,7 +234,7 @@ func (s *AttendanceServiceImpl) CheckOut(req params.AttendanceCheckOutRequest) (
 		}
 
 		for _, session := range accountSessions {
-			account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne()
+			account, err := s.accountSvc.WithID(fmt.Sprintf("%d", session.AccountID)).FindOne(ctx)
 			if err != nil {
 				log.Printf("Failed to get account ID %d: %v", session.AccountID, err)
 				continue

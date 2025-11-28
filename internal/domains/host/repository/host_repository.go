@@ -1,11 +1,15 @@
 package repository
 
-import "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+import (
+	"context"
+
+	"github.com/royhairul/live-studio-api/internal/domains/host/entity"
+)
 
 type HostRepository interface {
-	FindAll() ([]*entity.Host, error)
-	FindByID(id string) (*entity.Host, error)
-	Create(host *entity.Host) (*entity.Host, error)
-	Update(host *entity.Host) (*entity.Host, error)
-	Delete(id string) error
+	FindAll(ctx context.Context) ([]*entity.Host, error)
+	FindByID(ctx context.Context, id string) (*entity.Host, error)
+	Create(ctx context.Context, host *entity.Host) (*entity.Host, error)
+	Update(ctx context.Context, host *entity.Host) (*entity.Host, error)
+	Delete(ctx context.Context, id string) error
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/royhairul/live-studio-api/internal/domains/performa/params"
@@ -43,7 +44,7 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 		return nil, err
 	}
 
-	results, err := p.aggregator.CalculateByHosts(start, end)
+	results, err := p.aggregator.CalculateByHosts(context.Background(), start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 		return nil, err
 	}
 
-	results, err := p.aggregator.CalculateByHost(id, start, end)
+	results, err := p.aggregator.CalculateByHost(context.Background(), id, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -79,13 +80,13 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// === Current Period ===
-	currList, currTotal, err := p.aggregator.Calculate(start, end)
+	currList, currTotal, err := p.aggregator.Calculate(context.Background(), start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build current performa list: %w", err)
 	}
 
 	// === Previous Period ===
-	_, prevTotal, err := p.aggregator.Calculate(start, end)
+	_, prevTotal, err := p.aggregator.Calculate(context.Background(), start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build previous performa list: %w", err)
 	}
@@ -127,7 +128,7 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get All Studio
-	studios, err := p.studioSvc.FindAll()
+	studios, err := p.studioSvc.FindAll(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -142,12 +143,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 	list := []params.PerformaStudioItemResponse{}
 	for _, studio := range studios {
-		_, currTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
+		_, currTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), start, end)
 		if err != nil {
 			return nil, err
 		}
 
-		_, prevTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+		_, prevTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 		if err != nil {
 			return nil, err
 		}
@@ -214,19 +215,19 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get Studio by ID
-	studio, err := p.studioSvc.FindByID(id)
+	studio, err := p.studioSvc.FindByID(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
 
 	// Current Performa
-	currList, currTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
+	currList, currTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), start, end)
 	if err != nil {
 		return nil, err
 	}
 
 	// Previous Performa
-	_, prevTotal, err := p.aggregator.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+	_, prevTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 	if err != nil {
 		return nil, err
 	}

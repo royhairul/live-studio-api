@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"log"
 	"sync"
 	"time"
@@ -70,7 +71,7 @@ func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (
 	}
 
 	// Get all filtered accounts
-	accounts, err := accountQuery.FindAll()
+	accounts, err := accountQuery.FindAll(context.Background())
 	if err != nil {
 		return nil, err
 	}

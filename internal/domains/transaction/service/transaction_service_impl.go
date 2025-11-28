@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -93,7 +94,7 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 	startTime := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 	endTime := time.Date(t.Year(), t.Month(), t.Day()+1, 0, 0, 0, 0, time.UTC)
 
-	accounts, err := s.accountSvc.FindAll()
+	accounts, err := s.accountSvc.FindAll(context.Background())
 	if err != nil {
 		return nil, err
 	}

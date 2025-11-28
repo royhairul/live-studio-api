@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
@@ -17,8 +18,8 @@ func NewAttendanceRepository(db *gorm.DB) AttendanceRepository {
 	return &AttendanceRepositoryImpl{DB: db}
 }
 
-func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *gorm.DB {
-	query := r.DB.Debug().Model(entity.Attendance{}).Preload(clause.Associations)
+func (r *AttendanceRepositoryImpl) BuildQuery(ctx context.Context, filter params.AttendanceFilter) *gorm.DB {
+	query := r.DB.WithContext(ctx).Debug().Model(entity.Attendance{}).Preload(clause.Associations)
 
 	if filter.AccountID != nil {
 		query = query.Where("account_id", filter.AccountID)
@@ -43,28 +44,28 @@ func (r *AttendanceRepositoryImpl) BuildQuery(filter params.AttendanceFilter) *g
 	return query
 }
 
-func (r *AttendanceRepositoryImpl) FindAll(filter params.AttendanceFilter) ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindAll(ctx context.Context, filter params.AttendanceFilter) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	if err := r.BuildQuery(filter).Find(&attendances).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).Find(&attendances).Error; err != nil {
 		return nil, err
 	}
 	return attendances, nil
 }
 
-func (r *AttendanceRepositoryImpl) FindOne(filter params.AttendanceFilter) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindOne(ctx context.Context, filter params.AttendanceFilter) (*entity.Attendance, error) {
 	var attendance *entity.Attendance
-	if err := r.BuildQuery(filter).First(&attendance).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).First(&attendance).Error; err != nil {
 		return nil, err
 	}
 	return attendance, nil
 }
 
-func (r *AttendanceRepositoryImpl) Create(attendance *entity.Attendance) (*entity.Attendance, error) {
-	if err := r.DB.Create(attendance).Error; err != nil {
+func (r *AttendanceRepositoryImpl) Create(ctx context.Context, attendance *entity.Attendance) (*entity.Attendance, error) {
+	if err := r.DB.WithContext(ctx).Create(attendance).Error; err != nil {
 		return nil, err
 	}
 
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload("Schedule").
 		Preload("Host").
 		Preload("Shift").
@@ -77,25 +78,25 @@ func (r *AttendanceRepositoryImpl) Create(attendance *entity.Attendance) (*entit
 	return attendance, nil
 }
 
-func (r *AttendanceRepositoryImpl) Save(attendance *entity.Attendance) error {
-	if err := r.DB.Preload("Schedule").Save(attendance).Error; err != nil {
+func (r *AttendanceRepositoryImpl) Save(ctx context.Context, attendance *entity.Attendance) error {
+	if err := r.DB.WithContext(ctx).Preload("Schedule").Save(attendance).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *AttendanceRepositoryImpl) Delete(id string) error {
-	if err := r.DB.Where("id = ?", id).Error; err != nil {
+func (r *AttendanceRepositoryImpl) Delete(ctx context.Context, id string) error {
+	if err := r.DB.WithContext(ctx).Where("id = ?", id).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *AttendanceRepositoryImpl) FindByID(id uint) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindByID(ctx context.Context, id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload("Schedule").
 		Preload("Host").
 		Preload("Shift").
@@ -107,9 +108,9 @@ func (r *AttendanceRepositoryImpl) FindByID(id uint) (*entity.Attendance, error)
 	return &attendance, nil
 }
 
-func (r *AttendanceRepositoryImpl) FindUncheckedOutByHost() ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindUncheckedOutByHost(ctx context.Context) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload("Schedule").
 		Preload("Shift").
 		Preload("Host").
@@ -124,9 +125,9 @@ func (r *AttendanceRepositoryImpl) FindUncheckedOutByHost() ([]*entity.Attendanc
 }
 
 // FindUncheckedOutByStudio implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindUncheckedOutByStudio(studioID string, date *time.Time) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindUncheckedOutByStudio(ctx context.Context, studioID string, date *time.Time) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	err := r.DB.Where("studio_id = ?", studioID).
+	err := r.DB.WithContext(ctx).Where("studio_id = ?", studioID).
 		Where("date::date = ?", date).
 		Where("checked_out_at IS NULL").
 		First(&attendance).Error
@@ -136,27 +137,27 @@ func (r *AttendanceRepositoryImpl) FindUncheckedOutByStudio(studioID string, dat
 	return &attendance, nil
 }
 
-func (r *AttendanceRepositoryImpl) FindByScheduleID(id uint) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindByScheduleID(ctx context.Context, id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	if err := r.DB.Where("schedule_id = ?", id).First(&attendance).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("schedule_id = ?", id).First(&attendance).Error; err != nil {
 		return nil, err
 	}
 	return &attendance, nil
 }
 
 // FindByHostShiftAndDate implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindByHostShiftAndDate(hostID string, shiftID uint, date time.Time) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindByHostShiftAndDate(ctx context.Context, hostID string, shiftID uint, date time.Time) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	if err := r.DB.Where("host_id = ? AND date = ? AND shift_id = ?", hostID, date, shiftID).First(&attendance).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Where("host_id = ? AND date = ? AND shift_id = ?", hostID, date, shiftID).First(&attendance).Error; err != nil {
 		return nil, err
 	}
 	return &attendance, nil
 }
 
 // FindAllByDateRange implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime *time.Time, endTime *time.Time) ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindAllByDateRange(ctx context.Context, startTime *time.Time, endTime *time.Time) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload("Schedule").
 		Preload("Shift").
 		Preload("Host").
@@ -170,9 +171,9 @@ func (r *AttendanceRepositoryImpl) FindAllByDateRange(startTime *time.Time, endT
 }
 
 // FindAllByHostID implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindAllByHostID(id string) ([]*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindAllByHostID(ctx context.Context, id string) ([]*entity.Attendance, error) {
 	var attendances []*entity.Attendance
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload("Schedule").
 		Preload("Shift").
 		Preload("Host").
@@ -185,9 +186,9 @@ func (r *AttendanceRepositoryImpl) FindAllByHostID(id string) ([]*entity.Attenda
 }
 
 // FindByAccountID implements AttendanceRepository.
-func (r *AttendanceRepositoryImpl) FindByAccountID(id uint) (*entity.Attendance, error) {
+func (r *AttendanceRepositoryImpl) FindByAccountID(ctx context.Context, id uint) (*entity.Attendance, error) {
 	var attendance entity.Attendance
-	err := r.DB.Where("account_id = ?", id).
+	err := r.DB.WithContext(ctx).Where("account_id = ?", id).
 		Where("checked_out_at IS NULL").
 		First(&attendance).Error
 	if err != nil {

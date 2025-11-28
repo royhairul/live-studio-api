@@ -1,12 +1,15 @@
 package repository
 
-import "github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+import (
+	"context"
+
+	"github.com/royhairul/live-studio-api/internal/domains/studio/entity"
+)
 
 type StudioRepository interface {
-	// TODO: define repository methods
-	FindAll() ([]*entity.Studio, error)
-	FindByID(id string) (*entity.Studio, error)
-	Create(studio *entity.Studio) error
-	Save(studio *entity.Studio) error
-	Delete(id string) error
+	FindAll(ctx context.Context) ([]*entity.Studio, error)
+	FindByID(ctx context.Context, id string) (*entity.Studio, error)
+	Create(ctx context.Context, studio *entity.Studio) error
+	Save(ctx context.Context, studio *entity.Studio) error
+	Delete(ctx context.Context, id string) error
 }

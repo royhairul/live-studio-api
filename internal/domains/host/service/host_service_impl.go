@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -29,14 +30,14 @@ func NewHostService(
 }
 
 // Create implements HostService.
-func (h *HostServiceImpl) Create(req params.CreateHostRequest) (*params.HostResponse, error) {
+func (h *HostServiceImpl) Create(ctx context.Context, req params.CreateHostRequest) (*params.HostResponse, error) {
 	host := entity.Host{
 		Name:     req.Name,
 		Phone:    req.Phone,
 		StudioID: req.StudioID,
 	}
 
-	created, err := h.repository.Create(&host)
+	created, err := h.repository.Create(ctx, &host)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +48,8 @@ func (h *HostServiceImpl) Create(req params.CreateHostRequest) (*params.HostResp
 }
 
 // Update implements HostService.
-func (h *HostServiceImpl) Update(id string, hostReq params.UpdateHostRequest) (*params.HostResponse, error) {
-	host, err := h.repository.FindByID(id)
+func (h *HostServiceImpl) Update(ctx context.Context, id string, hostReq params.UpdateHostRequest) (*params.HostResponse, error) {
+	host, err := h.repository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +67,7 @@ func (h *HostServiceImpl) Update(id string, hostReq params.UpdateHostRequest) (*
 		host.Studio = studioentity.Studio{}
 	}
 
-	saved, err := h.repository.Update(host)
+	saved, err := h.repository.Update(ctx, host)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update host : %w", err)
 	}
@@ -79,8 +80,8 @@ func (h *HostServiceImpl) Update(id string, hostReq params.UpdateHostRequest) (*
 }
 
 // FindAll implements HostService.
-func (h *HostServiceImpl) FindAll() ([]*params.HostResponse, error) {
-	hosts, err := h.repository.FindAll()
+func (h *HostServiceImpl) FindAll(ctx context.Context) ([]*params.HostResponse, error) {
+	hosts, err := h.repository.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +95,8 @@ func (h *HostServiceImpl) FindAll() ([]*params.HostResponse, error) {
 }
 
 // FindByID implements HostService.
-func (h *HostServiceImpl) FindByID(id string) (*params.HostResponse, error) {
-	host, err := h.repository.FindByID(id)
+func (h *HostServiceImpl) FindByID(ctx context.Context, id string) (*params.HostResponse, error) {
+	host, err := h.repository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +107,8 @@ func (h *HostServiceImpl) FindByID(id string) (*params.HostResponse, error) {
 }
 
 // Delete implements HostService.
-func (h *HostServiceImpl) Delete(id string) error {
-	if err := h.repository.Delete(id); err != nil {
+func (h *HostServiceImpl) Delete(ctx context.Context, id string) error {
+	if err := h.repository.Delete(ctx, id); err != nil {
 		return err
 	}
 
@@ -115,8 +116,8 @@ func (h *HostServiceImpl) Delete(id string) error {
 }
 
 // FindAllGroupedByStudio implements HostService.
-func (h *HostServiceImpl) FindAllGroupedByStudio() ([]*params.HostGroupedByStudioResponse, error) {
-	hosts, err := h.repository.FindAll()
+func (h *HostServiceImpl) FindAllGroupedByStudio(ctx context.Context) ([]*params.HostGroupedByStudioResponse, error) {
+	hosts, err := h.repository.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}

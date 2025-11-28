@@ -1,12 +1,15 @@
 package service
 
-import "github.com/royhairul/live-studio-api/internal/domains/studio/params"
+import (
+	"context"
+
+	"github.com/royhairul/live-studio-api/internal/domains/studio/params"
+)
 
 type StudioService interface {
-	// TODO: define service methods
-	FindAll() ([]*params.StudioResponse, error)
-	FindByID(id string) (*params.StudioResponse, error)
-	Create(studioReq params.CreateStudioRequest) (*params.StudioResponse, error)
-	Update(id string, studioReq params.UpdateStudioRequest) (*params.StudioResponse, error)
-	Delete(id string) error
+	FindAll(ctx context.Context) ([]*params.StudioResponse, error)
+	FindByID(ctx context.Context, id string) (*params.StudioResponse, error)
+	Create(ctx context.Context, studioReq params.CreateStudioRequest) (*params.StudioResponse, error)
+	Update(ctx context.Context, id string, studioReq params.UpdateStudioRequest) (*params.StudioResponse, error)
+	Delete(ctx context.Context, id string) error
 }

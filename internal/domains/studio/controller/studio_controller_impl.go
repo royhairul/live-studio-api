@@ -34,7 +34,7 @@ func (s *StudioControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	studio, err := s.service.Create(studioReq)
+	studio, err := s.service.Create(ctx.Request.Context(), studioReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -48,7 +48,7 @@ func (s *StudioControllerImpl) Create(ctx *gin.Context) {
 func (s *StudioControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := s.service.Delete(id); err != nil {
+	if err := s.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
@@ -59,7 +59,7 @@ func (s *StudioControllerImpl) Delete(ctx *gin.Context) {
 
 // FindAll implements StudioController.
 func (s *StudioControllerImpl) FindAll(ctx *gin.Context) {
-	studios, err := s.service.FindAll()
+	studios, err := s.service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -73,7 +73,7 @@ func (s *StudioControllerImpl) FindAll(ctx *gin.Context) {
 func (s *StudioControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	studio, err := s.service.FindByID(id)
+	studio, err := s.service.FindByID(ctx.Request.Context(), id)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -91,7 +91,7 @@ func (s *StudioControllerImpl) Update(ctx *gin.Context) {
 		errorhandler.HandleError(ctx, err)
 	}
 
-	studio, err := s.service.Update(id, studioReq)
+	studio, err := s.service.Update(ctx.Request.Context(), id, studioReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

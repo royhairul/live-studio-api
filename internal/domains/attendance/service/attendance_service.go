@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/attendance/params"
@@ -8,11 +9,11 @@ import (
 )
 
 type AttendanceService interface {
-	FindAll() ([]*params.AttendanceResponse, error)
-	FindUncheckedOut() ([]*params.AttendanceResponse, error)
+	FindAll(ctx context.Context) ([]*params.AttendanceResponse, error)
+	FindUncheckedOut(ctx context.Context) ([]*params.AttendanceResponse, error)
 
-	CheckIn(req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error)
-	CheckOut(req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error)
+	CheckIn(ctx context.Context, req params.AttendanceCheckInRequest) (*params.AttendanceResponse, error)
+	CheckOut(ctx context.Context, req params.AttendanceCheckOutRequest) ([]*params.AttendanceResponse, error)
 	GenerateNote(schedule *scheduleentity.Schedule, attendanceDate time.Time, shiftID uint) string
 
 	WithDateRange(startTime, endTime time.Time) AttendanceService

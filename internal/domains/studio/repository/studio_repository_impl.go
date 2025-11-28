@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/royhairul/live-studio-api/internal/domains/studio/entity"
 	"gorm.io/gorm"
 )
@@ -16,8 +18,8 @@ func NewStudioRepository(db *gorm.DB) StudioRepository {
 }
 
 // Create implements StudioRepository.
-func (s *StudioRepositoryImpl) Create(studio *entity.Studio) error {
-	if err := s.DB.Create(studio).Error; err != nil {
+func (s *StudioRepositoryImpl) Create(ctx context.Context, studio *entity.Studio) error {
+	if err := s.DB.WithContext(ctx).Create(studio).Error; err != nil {
 		return err
 	}
 
@@ -25,8 +27,8 @@ func (s *StudioRepositoryImpl) Create(studio *entity.Studio) error {
 }
 
 // Delete implements StudioRepository.
-func (s *StudioRepositoryImpl) Delete(id string) error {
-	if err := s.DB.Delete(&entity.Studio{}, "id = ?", id).Error; err != nil {
+func (s *StudioRepositoryImpl) Delete(ctx context.Context, id string) error {
+	if err := s.DB.WithContext(ctx).Delete(&entity.Studio{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 
@@ -34,9 +36,9 @@ func (s *StudioRepositoryImpl) Delete(id string) error {
 }
 
 // FindAll implements StudioRepository.
-func (s *StudioRepositoryImpl) FindAll() ([]*entity.Studio, error) {
+func (s *StudioRepositoryImpl) FindAll(ctx context.Context) ([]*entity.Studio, error) {
 	var studios []*entity.Studio
-	if err := s.DB.Find(&studios).Error; err != nil {
+	if err := s.DB.WithContext(ctx).Find(&studios).Error; err != nil {
 		return nil, err
 	}
 
@@ -44,9 +46,9 @@ func (s *StudioRepositoryImpl) FindAll() ([]*entity.Studio, error) {
 }
 
 // FindByID implements StudioRepository.
-func (s *StudioRepositoryImpl) FindByID(id string) (*entity.Studio, error) {
+func (s *StudioRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.Studio, error) {
 	var studio entity.Studio
-	if err := s.DB.Where("id = ?", id).First(&studio).Error; err != nil {
+	if err := s.DB.WithContext(ctx).Where("id = ?", id).First(&studio).Error; err != nil {
 		return nil, err
 	}
 
@@ -54,8 +56,8 @@ func (s *StudioRepositoryImpl) FindByID(id string) (*entity.Studio, error) {
 }
 
 // Save implements StudioRepository.
-func (s *StudioRepositoryImpl) Save(studio *entity.Studio) error {
-	if err := s.DB.Save(&studio).Error; err != nil {
+func (s *StudioRepositoryImpl) Save(ctx context.Context, studio *entity.Studio) error {
+	if err := s.DB.WithContext(ctx).Save(&studio).Error; err != nil {
 		return err
 	}
 

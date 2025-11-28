@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/royhairul/live-studio-api/internal/domains/dashboard/params"
@@ -38,7 +39,7 @@ func NewDashboardService(
 }
 
 // DashboardAdmin implements DashboardService.
-func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) (*params.DashboardResponse, error) {
+func (d *DashboardServiceImpl) DashboardAdmin(ctx context.Context, startDate string, endDate string) (*params.DashboardResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -50,7 +51,7 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get All Studio
-	studios, err := d.studioSvc.FindAll()
+	studios, err := d.studioSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 		startDay := timehandler.StartOfDay(day)
 		endDay := timehandler.EndOfDay(day)
 
-		_, total, err := d.performaAgg.Calculate(startDay, endDay)
+		_, total, err := d.performaAgg.Calculate(ctx, startDay, endDay)
 		if err != nil {
 			return nil, err
 		}
@@ -83,8 +84,8 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 	)
 
 	for _, studio := range studios {
-		_, currTotal, _ := d.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), start, end)
-		_, prevTotal, _ := d.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+		_, currTotal, _ := d.performaAgg.CalculateByStudio(ctx, fmt.Sprint(studio.ID), start, end)
+		_, prevTotal, _ := d.performaAgg.CalculateByStudio(ctx, fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 
 		// Tambahkan ke list
 		list = append(list, performaparams.PerformaStudioItemResponse{
@@ -109,12 +110,11 @@ func (d *DashboardServiceImpl) DashboardAdmin(startDate string, endDate string) 
 		prevIncome += prevTotal.Income
 	}
 
-	accounts, err := d.accountSvc.FindAll()
+	accounts, err := d.accountSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	hosts, err := d.hostSvc.FindAll()
+	hosts, err := d.hostSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}

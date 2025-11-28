@@ -21,7 +21,7 @@ func (d *DashboardControllerImpl) Dashboard(ctx *gin.Context) {
 	startDate, _ := ctx.GetQuery("startDate")
 	endDate, _ := ctx.GetQuery("endDate")
 
-	result, err := d.service.DashboardAdmin(startDate, endDate)
+	result, err := d.service.DashboardAdmin(ctx.Request.Context(), startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

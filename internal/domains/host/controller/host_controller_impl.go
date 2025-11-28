@@ -33,7 +33,7 @@ func (h *HostControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	createdHost, err := h.service.Create(hostReq)
+	createdHost, err := h.service.Create(ctx.Request.Context(), hostReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -53,7 +53,7 @@ func (h *HostControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	createdHost, err := h.service.Update(id, hostReq)
+	createdHost, err := h.service.Update(ctx.Request.Context(), id, hostReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -65,7 +65,7 @@ func (h *HostControllerImpl) Update(ctx *gin.Context) {
 
 // FindAll implements HostController.
 func (h *HostControllerImpl) FindAll(ctx *gin.Context) {
-	hosts, err := h.service.FindAll()
+	hosts, err := h.service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -79,7 +79,7 @@ func (h *HostControllerImpl) FindAll(ctx *gin.Context) {
 func (h *HostControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	host, err := h.service.FindByID(id)
+	host, err := h.service.FindByID(ctx.Request.Context(), id)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -93,7 +93,7 @@ func (h *HostControllerImpl) FindByID(ctx *gin.Context) {
 func (h *HostControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := h.service.Delete(id); err != nil {
+	if err := h.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
@@ -104,7 +104,7 @@ func (h *HostControllerImpl) Delete(ctx *gin.Context) {
 
 // FindAllGroupedByStudio implements HostController.
 func (h *HostControllerImpl) FindAllGroupedByStudio(ctx *gin.Context) {
-	hosts, err := h.service.FindAllGroupedByStudio()
+	hosts, err := h.service.FindAllGroupedByStudio(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

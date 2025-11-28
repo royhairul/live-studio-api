@@ -22,7 +22,7 @@ func NewAttendanceController(service service.AttendanceService, validate *valida
 
 // FindAll implements AttendanceController.
 func (c *AttendanceControllerImpl) FindAll(ctx *gin.Context) {
-	attendances, err := c.service.FindAll()
+	attendances, err := c.service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -40,7 +40,7 @@ func (c *AttendanceControllerImpl) FindAll(ctx *gin.Context) {
 
 // FindUncheckedOut implements AttendanceController.
 func (c *AttendanceControllerImpl) FindUncheckedOut(ctx *gin.Context) {
-	attendances, err := c.service.FindUncheckedOut()
+	attendances, err := c.service.FindUncheckedOut(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -64,7 +64,7 @@ func (c *AttendanceControllerImpl) CheckIn(ctx *gin.Context) {
 		return
 	}
 
-	results, err := c.service.CheckIn(req)
+	results, err := c.service.CheckIn(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -87,7 +87,7 @@ func (c *AttendanceControllerImpl) CheckOut(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.CheckOut(req)
+	result, err := c.service.CheckOut(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.NewBadRequestError("error for checkout", err)
 		return

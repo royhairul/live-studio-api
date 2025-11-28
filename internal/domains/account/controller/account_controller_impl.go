@@ -34,7 +34,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 		service = service.WithUniqueID(uniqueId)
 	}
 
-	accounts, err := service.FindAll()
+	accounts, err := service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -47,7 +47,7 @@ func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	account, err := a.service.WithID(id).FindOne()
+	account, err := a.service.WithID(id).FindOne(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -64,7 +64,7 @@ func (a *AccountControllerImpl) CreateOrUpdate(ctx *gin.Context) {
 		return
 	}
 
-	account, err := a.service.CreateOrUpdate(accountReq)
+	account, err := a.service.CreateOrUpdate(ctx.Request.Context(), accountReq)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -89,7 +89,7 @@ func (a *AccountControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	result, err := a.service.Update(id, req)
+	result, err := a.service.Update(ctx.Request.Context(), id, req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -103,7 +103,7 @@ func (a *AccountControllerImpl) Update(ctx *gin.Context) {
 func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := a.service.Delete(id); err != nil {
+	if err := a.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
@@ -116,7 +116,7 @@ func (a *AccountControllerImpl) Delete(ctx *gin.Context) {
 func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
 	studioId := ctx.Param("studioId")
 
-	accounts, err := a.service.WithStudioID(studioId).FindAll()
+	accounts, err := a.service.WithStudioID(studioId).FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

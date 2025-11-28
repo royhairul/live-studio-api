@@ -1,16 +1,17 @@
 package performa
 
 import (
+	"context"
 	"time"
 
 	performaparam "github.com/royhairul/live-studio-api/internal/domains/performa/params"
 )
 
 type PerformaAggregator interface {
-	Calculate(startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error)
-	CalculateByHosts(startDate, endDate *time.Time) ([]*performaparam.PerformaHostSummaryResponse, error)
-	CalculateByHost(host_id string, startDate, endDate *time.Time) (performaparam.PerformaHostDetailResponse, error)
-	CalculateByStudio(studio_id string, startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error)
+	Calculate(ctx context.Context, startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error)
+	CalculateByHosts(ctx context.Context, startDate, endDate *time.Time) ([]*performaparam.PerformaHostSummaryResponse, error)
+	CalculateByHost(ctx context.Context, host_id string, startDate, endDate *time.Time) (performaparam.PerformaHostDetailResponse, error)
+	CalculateByStudio(ctx context.Context, studio_id string, startDate, endDate *time.Time) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error)
 }
 
 type TotalPerformaHost struct {

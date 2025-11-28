@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/royhairul/live-studio-api/database"
+	"github.com/royhairul/live-studio-api/internal/pkg/tenantdb"
 	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 )
 
@@ -71,9 +73,21 @@ func RequireRoles(roleNames ...string) gin.HandlerFunc {
 		c.Set("role_id", claims.Role)
 
 		if claims.TenantID != "" {
+			// store tenant in gin context map
 			c.Set("tenant_id", claims.TenantID)
-			ctx := context.WithValue(c.Request.Context(), "tenant_id", claims.TenantID)
+
+			// attach tenant to the request context using tenantdb helper
+			ctx := tenantdb.AttachTenant(c.Request.Context(), claims.TenantID)
+
+			// store request path for tenantdb whitelist checks (fallback)
+			tenantdb.SetRequestPath(c.Request.URL.Path)
+			ctx = context.WithValue(ctx, "path", c.Request.URL.Path)
+
+			// update request context so GORM callbacks can extract tenant and path
 			c.Request = c.Request.WithContext(ctx)
+
+			// store DB with context so handlers can use tenant-aware DB
+			c.Set("DB", database.DB.WithContext(ctx))
 		}
 
 		c.Next()

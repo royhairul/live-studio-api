@@ -9,7 +9,6 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/user/repository"
 	"golang.org/x/crypto/bcrypt"
 
-	hostparams "github.com/royhairul/live-studio-api/internal/domains/host/params"
 	hostservice "github.com/royhairul/live-studio-api/internal/domains/host/service"
 )
 
@@ -78,16 +77,6 @@ func (s *userServiceImpl) Create(input params.CreateUserRequest) (*entity.User, 
 	user, err := s.repo.Create(u)
 	if err != nil {
 		return nil, err
-	}
-
-	if user.Role.Name == "host" {
-		_, err := s.hostService.Create(hostparams.CreateHostRequest{
-			Name:  input.Name,
-			Phone: input.Phone,
-		})
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return user, nil

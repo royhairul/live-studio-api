@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -161,7 +162,7 @@ func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetR
 	}
 
 	// Ambil semua studio
-	studios, err := s.studioSvc.FindAll()
+	studios, err := s.studioSvc.FindAll(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +186,7 @@ func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetR
 	studioIncome := make(map[uint]int64)
 
 	for _, studio := range studios {
-		performaList, total, err := s.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), &start, &end)
+		performaList, total, err := s.performaAgg.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &start, &end)
 		if err != nil {
 			log.Printf("warn: gagal ambil performa studioID=%d: %v", studio.ID, err)
 			continue
@@ -234,7 +235,7 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 	}
 
 	// Ambil studio terkait
-	studio, err := s.studioSvc.FindByID(fmt.Sprintf("%d", target.StudioID))
+	studio, err := s.studioSvc.FindByID(context.Background(), fmt.Sprintf("%d", target.StudioID))
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +248,7 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 	end := start.AddDate(0, 1, 0).Add(-time.Nanosecond)
 
 	// Gunakan Performa Aggregator untuk studio ini
-	performaList, total, err := s.performaAgg.CalculateByStudio(fmt.Sprint(studio.ID), &start, &end)
+	performaList, total, err := s.performaAgg.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &start, &end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate performa: %v", err)
 	}
