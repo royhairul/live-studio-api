@@ -1,6 +1,7 @@
 package tenantdb
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -19,6 +20,8 @@ var tenantWhitelist = []string{
 
 func isWhitelisted(db *gorm.DB) bool {
 	path, ok := db.Statement.Context.Value("path").(string)
+	fmt.Println("[DEBUG] path:", path)
+
 	if !ok {
 		return false
 	}

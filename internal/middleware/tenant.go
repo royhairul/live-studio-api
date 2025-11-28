@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +31,9 @@ func TenantMiddleware() gin.HandlerFunc {
 
 		c.Set("tenant_id", tenant)
 
-		// Buat context baru dengan tenant_id
+		// Buat context baru dengan tenant_id dan path
 		ctx := tenantdb.AttachTenant(c.Request.Context(), tenant)
+		ctx = context.WithValue(ctx, "path", c.Request.URL.Path)
 
 		// Simpan ke request context agar GORM bisa akses
 		c.Request = c.Request.WithContext(ctx)
