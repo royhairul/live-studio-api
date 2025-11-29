@@ -27,7 +27,7 @@ func (p *PerformaControllerImpl) GetHosts(ctx *gin.Context) {
 	startDate := ctx.Query("startDate")
 	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetHosts(startDate, endDate)
+	result, err := p.service.GetHosts(ctx.Request.Context(), startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -51,7 +51,7 @@ func (p *PerformaControllerImpl) GetHostByID(ctx *gin.Context) {
 		endDate = today
 	}
 
-	result, err := p.service.GetHostByID(id, startDate, endDate)
+	result, err := p.service.GetHostByID(ctx.Request.Context(), id, startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -66,7 +66,7 @@ func (p *PerformaControllerImpl) GetAccounts(ctx *gin.Context) {
 	startDate := ctx.Query("startDate")
 	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetAccounts(startDate, endDate)
+	result, err := p.service.GetAccounts(ctx.Request.Context(), startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -81,7 +81,7 @@ func (p *PerformaControllerImpl) GetStudios(ctx *gin.Context) {
 	startDate := ctx.Query("startDate")
 	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetStudios(startDate, endDate)
+	result, err := p.service.GetStudios(ctx.Request.Context(), startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -98,7 +98,7 @@ func (p *PerformaControllerImpl) GetStudioByID(ctx *gin.Context) {
 	startDate := ctx.Query("startDate")
 	endDate := ctx.Query("endDate")
 
-	result, err := p.service.GetStudioByID(id, startDate, endDate)
+	result, err := p.service.GetStudioByID(ctx.Request.Context(), id, startDate, endDate)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

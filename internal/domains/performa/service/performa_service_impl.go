@@ -38,13 +38,13 @@ func NewPerformaService(
 }
 
 // GetHosts implements PerformaService.
-func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*params.PerformaHostSummaryResponse, error) {
+func (p *PerformaServiceImpl) GetHosts(ctx context.Context, startDate string, endDate string) ([]*params.PerformaHostSummaryResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
 
-	results, err := p.aggregator.CalculateByHosts(context.Background(), start, end)
+	results, err := p.aggregator.CalculateByHosts(ctx, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -53,13 +53,13 @@ func (p *PerformaServiceImpl) GetHosts(startDate string, endDate string) ([]*par
 }
 
 // GetHostByID implements PerformaService.
-func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate string) (*params.PerformaHostDetailResponse, error) {
+func (p *PerformaServiceImpl) GetHostByID(ctx context.Context, id string, startDate string, endDate string) (*params.PerformaHostDetailResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
 	}
 
-	results, err := p.aggregator.CalculateByHost(context.Background(), id, start, end)
+	results, err := p.aggregator.CalculateByHost(ctx, id, start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (p *PerformaServiceImpl) GetHostByID(id string, startDate string, endDate s
 }
 
 // GetAccounts implements PerformaService.
-func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.PerformaAccountResponse, error) {
+func (p *PerformaServiceImpl) GetAccounts(ctx context.Context, startDate, endDate string) (*params.PerformaAccountResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid date range: %w", err)
@@ -80,13 +80,13 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// === Current Period ===
-	currList, currTotal, err := p.aggregator.Calculate(context.Background(), start, end)
+	currList, currTotal, err := p.aggregator.Calculate(ctx, start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build current performa list: %w", err)
 	}
 
 	// === Previous Period ===
-	_, prevTotal, err := p.aggregator.Calculate(context.Background(), start, end)
+	_, prevTotal, err := p.aggregator.Calculate(ctx, start, end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build previous performa list: %w", err)
 	}
@@ -116,7 +116,7 @@ func (p *PerformaServiceImpl) GetAccounts(startDate, endDate string) (*params.Pe
 }
 
 // GetStudios implements PerformaService.
-func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*params.PerformaStudioResponse, error) {
+func (p *PerformaServiceImpl) GetStudios(ctx context.Context, startDate string, endDate string) (*params.PerformaStudioResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get All Studio
-	studios, err := p.studioSvc.FindAll(context.Background())
+	studios, err := p.studioSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -143,12 +143,12 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 
 	list := []params.PerformaStudioItemResponse{}
 	for _, studio := range studios {
-		_, currTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), start, end)
+		_, currTotal, err := p.aggregator.CalculateByStudio(ctx, fmt.Sprint(studio.ID), start, end)
 		if err != nil {
 			return nil, err
 		}
 
-		_, prevTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+		_, prevTotal, err := p.aggregator.CalculateByStudio(ctx, fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +203,7 @@ func (p *PerformaServiceImpl) GetStudios(startDate string, endDate string) (*par
 }
 
 // GetStudioByID implements PerformaService.
-func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate string) (*params.PerformaStudioDetailResponse, error) {
+func (p *PerformaServiceImpl) GetStudioByID(ctx context.Context, id string, startDate string, endDate string) (*params.PerformaStudioDetailResponse, error) {
 	start, end, err := timehandler.ParseDateRange(startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -215,19 +215,19 @@ func (p *PerformaServiceImpl) GetStudioByID(id string, startDate string, endDate
 	prevStart := prevEnd.AddDate(0, 0, -days+1)
 
 	// Get Studio by ID
-	studio, err := p.studioSvc.FindByID(context.Background(), id)
+	studio, err := p.studioSvc.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// Current Performa
-	currList, currTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), start, end)
+	currList, currTotal, err := p.aggregator.CalculateByStudio(ctx, fmt.Sprint(studio.ID), start, end)
 	if err != nil {
 		return nil, err
 	}
 
 	// Previous Performa
-	_, prevTotal, err := p.aggregator.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &prevStart, &prevEnd)
+	_, prevTotal, err := p.aggregator.CalculateByStudio(ctx, fmt.Sprint(studio.ID), &prevStart, &prevEnd)
 	if err != nil {
 		return nil, err
 	}
