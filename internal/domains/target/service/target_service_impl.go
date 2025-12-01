@@ -39,7 +39,7 @@ func NewTargetService(
 }
 
 // Create implements TargetService.
-func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
+func (s *TargetServiceImpl) Create(ctx context.Context, req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
 	parsedTime, err := time.Parse(constants.LayoutMMYY, req.Date)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse date: %v", err)
@@ -52,7 +52,7 @@ func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.Crea
 		StudioID:     req.StudioID,
 	}
 
-	created, err := s.repository.Create(&target)
+	created, err := s.repository.Create(ctx, &target)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,14 @@ func (s *TargetServiceImpl) Create(req params.CreateTargetRequest) (*params.Crea
 }
 
 // CreateOrUpdate implements TargetService.
-func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
+func (s *TargetServiceImpl) CreateOrUpdate(ctx context.Context, req params.CreateTargetRequest) (*params.CreatedTargetResponse, error) {
 	parsedTime, err := time.Parse(constants.LayoutMMYY, req.Date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse date: %v", err)
 	}
 
 	// Check target is created or not found
-	exist, err := s.repository.FindByStudioAndDate(fmt.Sprintf("%d", req.StudioID), parsedTime)
+	exist, err := s.repository.FindByStudioAndDate(ctx, fmt.Sprintf("%d", req.StudioID), parsedTime)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*par
 	var target *entity.Target
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// if not found, create new target
-		target, err = s.repository.Create(&entity.Target{
+		target, err = s.repository.Create(ctx, &entity.Target{
 			Date:         parsedTime,
 			TargetGMV:    req.TargetGMV,
 			TargetIncome: req.TargetIncome,
@@ -86,7 +86,7 @@ func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*par
 		// if already exits, update target
 		exist.TargetGMV = req.TargetGMV
 		exist.TargetIncome = req.TargetIncome
-		target, err = s.repository.Update(exist)
+		target, err = s.repository.Update(ctx, exist)
 	}
 
 	if err != nil {
@@ -97,8 +97,8 @@ func (s *TargetServiceImpl) CreateOrUpdate(req params.CreateTargetRequest) (*par
 }
 
 // Update implements TargetService.
-func (s *TargetServiceImpl) Update(id string, req params.UpdateTargetRequest) (*params.UpdatedTargetResponse, error) {
-	target, err := s.repository.FindByID(id)
+func (s *TargetServiceImpl) Update(ctx context.Context, id string, req params.UpdateTargetRequest) (*params.UpdatedTargetResponse, error) {
+	target, err := s.repository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (s *TargetServiceImpl) Update(id string, req params.UpdateTargetRequest) (*
 	}
 
 	// simpan update
-	updated, err := s.repository.Update(target)
+	updated, err := s.repository.Update(ctx, target)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (s *TargetServiceImpl) Update(id string, req params.UpdateTargetRequest) (*
 }
 
 // FindAll implements TargetService.
-func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetResponse, error) {
+func (s *TargetServiceImpl) FindAll(ctx context.Context, req params.TargetRequest) ([]*params.TargetResponse, error) {
 	var (
 		start, end  time.Time
 		yearInt     int
@@ -162,13 +162,13 @@ func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetR
 	}
 
 	// Ambil semua studio
-	studios, err := s.studioSvc.FindAll(context.Background())
+	studios, err := s.studioSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Ambil semua target
-	targets, err := s.repository.FindAll()
+	targets, err := s.repository.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetR
 	studioIncome := make(map[uint]int64)
 
 	for _, studio := range studios {
-		performaList, total, err := s.performaAgg.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &start, &end)
+		performaList, total, err := s.performaAgg.CalculateByStudio(ctx, fmt.Sprint(studio.ID), &start, &end)
 		if err != nil {
 			log.Printf("warn: gagal ambil performa studioID=%d: %v", studio.ID, err)
 			continue
@@ -227,15 +227,15 @@ func (s *TargetServiceImpl) FindAll(req params.TargetRequest) ([]*params.TargetR
 	return responses, nil
 }
 
-func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) {
+func (s *TargetServiceImpl) FindByID(ctx context.Context, id string) (*params.TargetResponse, error) {
 	// Ambil target by ID
-	target, err := s.repository.FindByID(id)
+	target, err := s.repository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// Ambil studio terkait
-	studio, err := s.studioSvc.FindByID(context.Background(), fmt.Sprintf("%d", target.StudioID))
+	studio, err := s.studioSvc.FindByID(ctx, fmt.Sprintf("%d", target.StudioID))
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 	end := start.AddDate(0, 1, 0).Add(-time.Nanosecond)
 
 	// Gunakan Performa Aggregator untuk studio ini
-	performaList, total, err := s.performaAgg.CalculateByStudio(context.Background(), fmt.Sprint(studio.ID), &start, &end)
+	performaList, total, err := s.performaAgg.CalculateByStudio(ctx, fmt.Sprint(studio.ID), &start, &end)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate performa: %v", err)
 	}
@@ -276,8 +276,8 @@ func (s *TargetServiceImpl) FindByID(id string) (*params.TargetResponse, error) 
 }
 
 // Delete implements TargetService.
-func (s *TargetServiceImpl) Delete(id string) error {
-	if err := s.repository.Delete(id); err != nil {
+func (s *TargetServiceImpl) Delete(ctx context.Context, id string) error {
+	if err := s.repository.Delete(ctx, id); err != nil {
 		return err
 	}
 

@@ -46,7 +46,7 @@ func (f *FinanceControllerImpl) FindAll(ctx *gin.Context) {
 		service = service.WithPaymentMethod(payment)
 	}
 
-	finance, err := service.FindAll(start, end)
+	finance, err := service.FindAll(ctx.Request.Context(), start, end)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return

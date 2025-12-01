@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -17,8 +19,8 @@ func NewTransactionRepository(db *gorm.DB) TransactionRepository {
 }
 
 // Query implements TransactionRepository.
-func (r *TransactionRepositoryImpl) BuildQuery(filter params.TransactionFilter) *gorm.DB {
-	query := r.DB.Model(&entity.Transaction{}).
+func (r *TransactionRepositoryImpl) BuildQuery(ctx context.Context, filter params.TransactionFilter) *gorm.DB {
+	query := r.DB.WithContext(ctx).Model(&entity.Transaction{}).
 		Preload(clause.Associations).
 		Preload("Account.Studio")
 
@@ -51,48 +53,51 @@ func (r *TransactionRepositoryImpl) BuildQuery(filter params.TransactionFilter) 
 }
 
 // Create implements TransactionRepository.
-func (r *TransactionRepositoryImpl) Create(data *entity.Transaction) (*entity.Transaction, error) {
-	if err := r.DB.Create(data).Error; err != nil {
+func (r *TransactionRepositoryImpl) Create(ctx context.Context, data *entity.Transaction) (*entity.Transaction, error) {
+	db := r.DB.WithContext(ctx)
+	if err := db.Create(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := db.First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
 // FindAll implements TransactionRepository.
-func (r *TransactionRepositoryImpl) FindAll(filter params.TransactionFilter) ([]*entity.Transaction, error) {
+func (r *TransactionRepositoryImpl) FindAll(ctx context.Context, filter params.TransactionFilter) ([]*entity.Transaction, error) {
 	var items []*entity.Transaction
-	if err := r.BuildQuery(filter).Find(&items).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindOne implements TransactionRepository.
-func (r *TransactionRepositoryImpl) FindOne(filter params.TransactionFilter) (*entity.Transaction, error) {
+func (r *TransactionRepositoryImpl) FindOne(ctx context.Context, filter params.TransactionFilter) (*entity.Transaction, error) {
 	var item *entity.Transaction
-	if err := r.BuildQuery(filter).First(&item).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return item, nil
 }
 
 // Update implements TransactionRepository.
-func (r *TransactionRepositoryImpl) Update(data *entity.Transaction) (*entity.Transaction, error) {
-	if err := r.DB.Model(&entity.Transaction{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
+func (r *TransactionRepositoryImpl) Update(ctx context.Context, data *entity.Transaction) (*entity.Transaction, error) {
+	db := r.DB.WithContext(ctx)
+	if err := db.Model(&entity.Transaction{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.First(data).Error; err != nil {
+	if err := db.First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
 // Delete implements TransactionRepository.
-func (r *TransactionRepositoryImpl) Delete(id string) error {
-	if err := r.DB.Delete(&entity.Transaction{}, "id = ?", id).Error; err != nil {
+func (r *TransactionRepositoryImpl) Delete(ctx context.Context, id string) error {
+	db := r.DB.WithContext(ctx)
+	if err := db.Delete(&entity.Transaction{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 	return nil

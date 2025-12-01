@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
@@ -16,8 +18,8 @@ func NewAccountsessionRepository(db *gorm.DB) AccountsessionRepository {
 	return &AccountsessionRepositoryImpl{DB: db}
 }
 
-func (r *AccountsessionRepositoryImpl) BuildQuery(filter params.AccountsessionFilter) *gorm.DB {
-	query := r.DB.Model(entity.Accountsession{}).Preload(clause.Associations)
+func (r *AccountsessionRepositoryImpl) BuildQuery(ctx context.Context, filter params.AccountsessionFilter) *gorm.DB {
+	query := r.DB.WithContext(ctx).Model(entity.Accountsession{}).Preload(clause.Associations)
 
 	if filter.AccountID != nil {
 		query = query.Where("account_id = ?", filter.AccountID)
@@ -33,8 +35,8 @@ func (r *AccountsessionRepositoryImpl) BuildQuery(filter params.AccountsessionFi
 }
 
 // Create implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) Create(data *entity.Accountsession) (*entity.Accountsession, error) {
-	if err := r.DB.Create(data).Error; err != nil {
+func (r *AccountsessionRepositoryImpl) Create(ctx context.Context, data *entity.Accountsession) (*entity.Accountsession, error) {
+	if err := r.DB.WithContext(ctx).Create(data).Error; err != nil {
 		return nil, err
 	}
 	if err := r.DB.First(data).Error; err != nil {
@@ -44,34 +46,35 @@ func (r *AccountsessionRepositoryImpl) Create(data *entity.Accountsession) (*ent
 }
 
 // FindAll implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindAll(filter params.AccountsessionFilter) ([]*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindAll(ctx context.Context, filter params.AccountsessionFilter) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.BuildQuery(filter).Find(&items).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindByID implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindOne(filter params.AccountsessionFilter) (*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindOne(ctx context.Context, filter params.AccountsessionFilter) (*entity.Accountsession, error) {
 	var item entity.Accountsession
-	if err := r.BuildQuery(filter).First(&item).Error; err != nil {
+	if err := r.BuildQuery(ctx, filter).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return &item, nil
 }
 
 // FindAllByStudioID implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindAllByStudioID(id string) ([]*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindAllByStudioID(ctx context.Context, id string) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.DB.Where("studio_id = ?", id).Find(&items).Error; err != nil {
+	db := r.DB.WithContext(ctx)
+	if err := db.Where("studio_id = ?", id).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // Update implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) Update(data *entity.Accountsession) (*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) Update(ctx context.Context, data *entity.Accountsession) (*entity.Accountsession, error) {
 	if err := r.DB.Model(&entity.Accountsession{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
@@ -82,7 +85,7 @@ func (r *AccountsessionRepositoryImpl) Update(data *entity.Accountsession) (*ent
 }
 
 // Delete implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) Delete(id string) error {
+func (r *AccountsessionRepositoryImpl) Delete(ctx context.Context, id string) error {
 	if err := r.DB.Delete(&entity.Accountsession{}, "id = ?", id).Error; err != nil {
 		return err
 	}
@@ -90,18 +93,20 @@ func (r *AccountsessionRepositoryImpl) Delete(id string) error {
 }
 
 // FindByAttendanceID implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindAllByAttendanceID(id string) ([]*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindAllByAttendanceID(ctx context.Context, id string) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.DB.Preload("Studio").Preload("Account").Preload("Attendance").Find(&items, "attendance_id = ?", id).Error; err != nil {
+	db := r.DB.WithContext(ctx)
+	if err := db.Preload("Studio").Preload("Account").Preload("Attendance").Find(&items, "attendance_id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindAllByAccountID implements AccountsessionRepository.
-func (r *AccountsessionRepositoryImpl) FindAllByAccountID(id string) ([]*entity.Accountsession, error) {
+func (r *AccountsessionRepositoryImpl) FindAllByAccountID(ctx context.Context, id string) ([]*entity.Accountsession, error) {
 	var items []*entity.Accountsession
-	if err := r.DB.Preload("Account").Preload("Attendance").Find(&items, "account_id = ?", id).Error; err != nil {
+	db := r.DB.WithContext(ctx)
+	if err := db.Preload("Account").Preload("Attendance").Find(&items, "account_id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return items, nil

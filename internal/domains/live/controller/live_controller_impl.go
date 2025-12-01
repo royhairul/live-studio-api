@@ -130,14 +130,16 @@ func (l *LiveControllerImpl) GetLive(ctx *gin.Context) {
 	}
 
 	// --- Kirim data awal ---
-	if data, err := l.service.GetLive(); err == nil {
+	if data, err := l.service.GetLive(ctx.Request.Context()); err == nil {
 		_ = conn.WriteJSON(data)
 	}
 
 	// --- Kirim realtime ---
 	streamRealtime(conn, func() time.Duration {
 		return utils.RandomDuration(2, 10)
-	}, l.service.GetLive)
+	}, func() (any, error) {
+		return l.service.GetLive(ctx.Request.Context())
+	})
 }
 
 // =====================================
@@ -188,7 +190,7 @@ func (l *LiveControllerImpl) GetLiveDetail(ctx *gin.Context) {
 	}
 
 	// Kirim data awal
-	if data, err := l.service.GetLiveDetail(accountID, sessionID, productPage, productPageSize); err == nil {
+	if data, err := l.service.GetLiveDetail(ctx.Request.Context(), accountID, sessionID, productPage, productPageSize); err == nil {
 		_ = conn.WriteJSON(data)
 	}
 
@@ -196,6 +198,6 @@ func (l *LiveControllerImpl) GetLiveDetail(ctx *gin.Context) {
 	streamRealtime(conn, func() time.Duration {
 		return utils.RandomDuration(3, 8)
 	}, func() (any, error) {
-		return l.service.GetLiveDetail(accountID, sessionID, productPage, productPageSize)
+		return l.service.GetLiveDetail(ctx.Request.Context(), accountID, sessionID, productPage, productPageSize)
 	})
 }

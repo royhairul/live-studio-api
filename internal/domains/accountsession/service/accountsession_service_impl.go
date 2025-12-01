@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -47,7 +48,7 @@ func NewAccountsessionService(repository repository.AccountsessionRepository) Ac
 }
 
 // Create implements AccountsessionService.
-func (s *AccountsessionServiceImpl) Create(req params.CreateAccountsessionRequest) (*params.AccountsessionResponse, error) {
+func (s *AccountsessionServiceImpl) Create(ctx context.Context, req params.CreateAccountsessionRequest) (*params.AccountsessionResponse, error) {
 	accountsession := entity.Accountsession{
 		AccountID:     req.AccountID,
 		AttendanceID:  req.AttendanceID,
@@ -55,7 +56,7 @@ func (s *AccountsessionServiceImpl) Create(req params.CreateAccountsessionReques
 		GMVPaidStart:  req.GMVPaidStart,
 	}
 
-	created, err := s.repository.Create(&accountsession)
+	created, err := s.repository.Create(ctx, &accountsession)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +65,8 @@ func (s *AccountsessionServiceImpl) Create(req params.CreateAccountsessionReques
 	return result, nil
 }
 
-func (s *AccountsessionServiceImpl) Update(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
-	accountsession, err := s.repository.FindOne(params.AccountsessionFilter{ID: &id})
+func (s *AccountsessionServiceImpl) Update(ctx context.Context, id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
+	accountsession, err := s.repository.FindOne(ctx, params.AccountsessionFilter{ID: &id})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("accountsession with ID %s not found", id)
@@ -76,7 +77,7 @@ func (s *AccountsessionServiceImpl) Update(id string, req params.UpdateEndSessio
 	accountsession.GMVSalesEnd = req.GMVSalesEnd
 	accountsession.GMVPaidEnd = req.GMVPaidEnd
 
-	updated, err := s.repository.Update(accountsession)
+	updated, err := s.repository.Update(ctx, accountsession)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +86,8 @@ func (s *AccountsessionServiceImpl) Update(id string, req params.UpdateEndSessio
 }
 
 // UpdateEndSession implements AccountsessionService.
-func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
-	accountsession, err := s.repository.FindOne(params.AccountsessionFilter{
+func (s *AccountsessionServiceImpl) UpdateEndSession(ctx context.Context, id string, req params.UpdateEndSessionRequest) (*params.AccountsessionResponse, error) {
+	accountsession, err := s.repository.FindOne(ctx, params.AccountsessionFilter{
 		ID: &id,
 	})
 	if err != nil {
@@ -95,7 +96,7 @@ func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.Updat
 
 	accountsession.GMVSalesEnd = req.GMVSalesEnd
 	accountsession.GMVPaidEnd = req.GMVPaidEnd
-	updated, err := s.repository.Update(accountsession)
+	updated, err := s.repository.Update(ctx, accountsession)
 	if err != nil {
 		return nil, err
 	}
@@ -105,8 +106,8 @@ func (s *AccountsessionServiceImpl) UpdateEndSession(id string, req params.Updat
 }
 
 // FindAll implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse, error) {
-	accountSessions, err := s.repository.FindAll(s.options)
+func (s *AccountsessionServiceImpl) FindAll(ctx context.Context) ([]*params.AccountsessionResponse, error) {
+	accountSessions, err := s.repository.FindAll(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -120,16 +121,15 @@ func (s *AccountsessionServiceImpl) FindAll() ([]*params.AccountsessionResponse,
 }
 
 // FindByID implements AccountsessionService.
-func (s *AccountsessionServiceImpl) FindOne() (*params.AccountsessionResponse, error) {
-	accountSession, err := s.repository.FindOne(s.options)
+func (s *AccountsessionServiceImpl) FindOne(ctx context.Context) (*params.AccountsessionResponse, error) {
+	accountSession, err := s.repository.FindOne(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
-
 	return params.NewAccountsessionResponse(accountSession), nil
 }
 
 // Delete implements AccountsessionService.
-func (s *AccountsessionServiceImpl) Delete(id string) error {
+func (s *AccountsessionServiceImpl) Delete(ctx context.Context, id string) error {
 	panic("unimplemented")
 }

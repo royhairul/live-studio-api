@@ -196,7 +196,7 @@ func (s *AttendanceServiceImpl) CheckIn(ctx context.Context, req params.Attendan
 			accountSessionReq.GMVSalesStart = uint(live[0].ConfirmedSales)
 		}
 
-		_, err = s.accountSessionSvc.Create(accountSessionReq)
+		_, err = s.accountSessionSvc.Create(ctx, accountSessionReq)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create account session for account %s: %w", account.Name, err)
 		}
@@ -227,7 +227,7 @@ func (s *AttendanceServiceImpl) CheckOut(ctx context.Context, req params.Attenda
 		// Update account session with checkout time
 		accountSessions, err := s.accountSessionSvc.
 			WithAttendanceID(fmt.Sprintf("%d", attendance.ID)).
-			FindAll()
+			FindAll(ctx)
 		if err != nil {
 			log.Printf("Failed to get account sessions for attendance ID %d: %v", id, err)
 			continue
@@ -256,6 +256,7 @@ func (s *AttendanceServiceImpl) CheckOut(ctx context.Context, req params.Attenda
 			}
 
 			if _, err := s.accountSessionSvc.UpdateEndSession(
+				ctx,
 				strconv.FormatUint(uint64(session.ID), 10),
 				updateReq,
 			); err != nil {

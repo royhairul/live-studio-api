@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"time"
 
 	"gorm.io/gorm"
@@ -18,38 +19,38 @@ func NewTargetRepository(db *gorm.DB) TargetRepository {
 }
 
 // Create implements TargetRepository.
-func (r *TargetRepositoryImpl) Create(data *entity.Target) (*entity.Target, error) {
-	if err := r.DB.Create(data).Error; err != nil {
+func (r *TargetRepositoryImpl) Create(ctx context.Context, data *entity.Target) (*entity.Target, error) {
+	if err := r.DB.WithContext(ctx).Create(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
 // FindAll implements TargetRepository.
-func (r *TargetRepositoryImpl) FindAll() ([]*entity.Target, error) {
+func (r *TargetRepositoryImpl) FindAll(ctx context.Context) ([]*entity.Target, error) {
 	var items []*entity.Target
-	if err := r.DB.Preload(clause.Associations).Find(&items).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Preload(clause.Associations).Find(&items).Error; err != nil {
 		return nil, err
 	}
 	return items, nil
 }
 
 // FindByID implements TargetRepository.
-func (r *TargetRepositoryImpl) FindByID(id string) (*entity.Target, error) {
+func (r *TargetRepositoryImpl) FindByID(ctx context.Context, id string) (*entity.Target, error) {
 	var item entity.Target
-	if err := r.DB.Preload(clause.Associations).Where("id = ?", id).First(&item).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Preload(clause.Associations).Where("id = ?", id).First(&item).Error; err != nil {
 		return nil, err
 	}
 	return &item, nil
 }
 
 // FindByDate implements TargetRepository.
-func (r *TargetRepositoryImpl) FindByDate(date time.Time) (*entity.Target, error) {
+func (r *TargetRepositoryImpl) FindByDate(ctx context.Context, date time.Time) (*entity.Target, error) {
 	var item *entity.Target
-	err := r.DB.Preload(clause.Associations).Where("date::date = ?", date).First(&item).Error
+	err := r.DB.WithContext(ctx).Preload(clause.Associations).Where("date::date = ?", date).First(&item).Error
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +59,9 @@ func (r *TargetRepositoryImpl) FindByDate(date time.Time) (*entity.Target, error
 }
 
 // FindByStudioAndDate implements TargetRepository.
-func (r *TargetRepositoryImpl) FindByStudioAndDate(studioID string, date time.Time) (*entity.Target, error) {
+func (r *TargetRepositoryImpl) FindByStudioAndDate(ctx context.Context, studioID string, date time.Time) (*entity.Target, error) {
 	var item *entity.Target
-	err := r.DB.
+	err := r.DB.WithContext(ctx).
 		Preload(clause.Associations).
 		Where("studio_id = ?", studioID).
 		Where("date::date = ?", date).
@@ -73,19 +74,19 @@ func (r *TargetRepositoryImpl) FindByStudioAndDate(studioID string, date time.Ti
 }
 
 // Update implements TargetRepository.
-func (r *TargetRepositoryImpl) Update(data *entity.Target) (*entity.Target, error) {
-	if err := r.DB.Model(&entity.Target{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
+func (r *TargetRepositoryImpl) Update(ctx context.Context, data *entity.Target) (*entity.Target, error) {
+	if err := r.DB.WithContext(ctx).Model(&entity.Target{}).Where("id = ?", data.ID).Updates(data).Error; err != nil {
 		return nil, err
 	}
-	if err := r.DB.Preload(clause.Associations).First(data).Error; err != nil {
+	if err := r.DB.WithContext(ctx).Preload(clause.Associations).First(data).Error; err != nil {
 		return nil, err
 	}
 	return data, nil
 }
 
 // Delete implements TargetRepository.
-func (r *TargetRepositoryImpl) Delete(id string) error {
-	if err := r.DB.Delete(&entity.Target{}, "id = ?", id).Error; err != nil {
+func (r *TargetRepositoryImpl) Delete(ctx context.Context, id string) error {
+	if err := r.DB.WithContext(ctx).Delete(&entity.Target{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 	return nil

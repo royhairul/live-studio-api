@@ -85,7 +85,7 @@ func (s *TransactionServiceImpl) WithDate(startTime time.Time, endTime time.Time
 }
 
 // Create implements TransactionService.
-func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]*params.CreatedTransactionResponse, error) {
+func (s *TransactionServiceImpl) Create(ctx context.Context, req params.CreateTransactionRequest) ([]*params.CreatedTransactionResponse, error) {
 	t, err := timehandler.ParseDate(req.Date)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 	startTime := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 	endTime := time.Date(t.Year(), t.Month(), t.Day()+1, 0, 0, 0, 0, time.UTC)
 
-	accounts, err := s.accountSvc.FindAll(context.Background())
+	accounts, err := s.accountSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,6 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 	var response []*params.CreatedTransactionResponse
 
 	for _, account := range accounts {
-
 		responseItem := params.CreatedTransactionResponse{
 			AccountID:      account.ID,
 			AccountName:    account.Name,
@@ -116,7 +115,7 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 			}
 
 			for _, tx := range transactions.List {
-				exists, err := s.repository.FindOne(params.TransactionFilter{UniqueID: &tx.CheckoutID})
+				exists, err := s.repository.FindOne(ctx, params.TransactionFilter{UniqueID: &tx.CheckoutID})
 				if err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
 						log.Println("not found true")
@@ -143,13 +142,12 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 					AccountID:              account.ID,
 				}
 
-				created, err := s.repository.Create(&transaction)
+				created, err := s.repository.Create(ctx, &transaction)
 				if err != nil {
 					return nil, err
 				}
 
 				for _, order := range tx.Orders {
-
 					createdOrder, err := s.orderSvc.Create(orderparams.CreateOrderRequest{
 						SerialNumber:  order.OrderSN,
 						Status:        order.OrderStatus,
@@ -176,77 +174,68 @@ func (s *TransactionServiceImpl) Create(req params.CreateTransactionRequest) ([]
 				if created != nil {
 					responseItem.NewTransaction++
 				}
-
 			}
 		}
-
 		response = append(response, &responseItem)
 	}
-
 	return response, nil
 }
 
 // Update implements TransactionService.
-func (s *TransactionServiceImpl) Update(id string, req params.UpdateTransactionRequest) (*params.TransactionList, error) {
+func (s *TransactionServiceImpl) Update(ctx context.Context, id string, req params.UpdateTransactionRequest) (*params.TransactionList, error) {
 	panic("unimplemented")
 }
 
 // FindAll implements TransactionService.
-func (s *TransactionServiceImpl) FindAll() (*params.TransactionResponse, error) {
-	transactions, err := s.repository.FindAll(s.options)
+func (s *TransactionServiceImpl) FindAll(ctx context.Context) (*params.TransactionResponse, error) {
+	transactions, err := s.repository.FindAll(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
 
 	var list []params.TransactionList
-
 	for _, tx := range transactions {
 		list = append(list, *params.NewTransactionItem(tx))
 	}
-
 	return params.NewTransactionResponse(list), nil
 }
 
 // FindAllGrouped implements TransactionService.
-func (s *TransactionServiceImpl) FindAllGrouped() ([]*params.TransactionGroupedResponse, error) {
-	transactions, err := s.repository.FindAll(s.options)
+func (s *TransactionServiceImpl) FindAllGrouped(ctx context.Context) ([]*params.TransactionGroupedResponse, error) {
+	transactions, err := s.repository.FindAll(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
-
 	results := GroupTransactions(transactions)
 	return results, nil
 }
 
 // FindOne implements TransactionService.
-func (s *TransactionServiceImpl) FindOne() (*params.TransactionList, error) {
-	transaction, err := s.repository.FindOne(s.options)
+func (s *TransactionServiceImpl) FindOne(ctx context.Context) (*params.TransactionList, error) {
+	transaction, err := s.repository.FindOne(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
-
 	result := params.NewTransactionItem(transaction)
 	return result, nil
 }
 
 // Delete implements TransactionService.
-func (s *TransactionServiceImpl) Delete(id string) error {
+func (s *TransactionServiceImpl) Delete(ctx context.Context, id string) error {
 	panic("unimplemented")
 }
 
 // GetTotalCommission implements TransactionService.
-func (s *TransactionServiceImpl) GetTotalCommission() (*params.Commission, error) {
-	transactions, err := s.FindAllGrouped()
+func (s *TransactionServiceImpl) GetTotalCommission(ctx context.Context) (*params.Commission, error) {
+	transactions, err := s.FindAllGrouped(ctx)
 	if err != nil {
 		return &params.Commission{}, err
 	}
-
 	var result params.Commission
 	for _, tx := range transactions {
 		result.Total += tx.Commission.Total
 		result.Paid += tx.Commission.Paid
 		result.Pending += tx.Commission.Pending
 	}
-
 	return &result, nil
 }

@@ -34,7 +34,7 @@ func (c *TransactionControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Create(req)
+	result, err := c.service.Create(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -59,7 +59,7 @@ func (c *TransactionControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Update(id, req)
+	result, err := c.service.Update(ctx.Request.Context(), id, req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -93,7 +93,7 @@ func (c *TransactionControllerImpl) FindAll(ctx *gin.Context) {
 		service = service.WithStudioID(studio)
 	}
 
-	result, err := service.FindAll()
+	result, err := service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -124,7 +124,7 @@ func (c *TransactionControllerImpl) FindAllGrouped(ctx *gin.Context) {
 		service = service.WithDate(*start, *end)
 	}
 
-	result, err := service.FindAllGrouped()
+	result, err := service.FindAllGrouped(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -137,7 +137,7 @@ func (c *TransactionControllerImpl) FindAllGrouped(ctx *gin.Context) {
 func (c *TransactionControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.service.WithID(id).FindOne()
+	result, err := c.service.WithID(id).FindOne(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -150,7 +150,7 @@ func (c *TransactionControllerImpl) FindByID(ctx *gin.Context) {
 func (c *TransactionControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := c.service.Delete(id); err != nil {
+	if err := c.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}

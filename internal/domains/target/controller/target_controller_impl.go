@@ -33,7 +33,7 @@ func (c *TargetControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.CreateOrUpdate(req)
+	result, err := c.service.CreateOrUpdate(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -58,7 +58,7 @@ func (c *TargetControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Update(id, req)
+	result, err := c.service.Update(ctx.Request.Context(), id, req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -79,7 +79,7 @@ func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
 		Studio: studio,
 	}
 
-	result, err := c.service.FindAll(req)
+	result, err := c.service.FindAll(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -92,7 +92,7 @@ func (c *TargetControllerImpl) FindAll(ctx *gin.Context) {
 func (c *TargetControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.service.FindByID(id)
+	result, err := c.service.FindByID(ctx.Request.Context(), id)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -105,7 +105,7 @@ func (c *TargetControllerImpl) FindByID(ctx *gin.Context) {
 func (c *TargetControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := c.service.Delete(id); err != nil {
+	if err := c.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}

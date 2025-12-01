@@ -59,7 +59,7 @@ func NewFinanceService(
 
 // --- Core Logic ---
 
-func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (*params.FinanceResponse, error) {
+func (f *FinanceServiceImpl) FindAll(ctx context.Context, startDate *time.Time, endDate *time.Time) (*params.FinanceResponse, error) {
 	accountQuery := f.accountSvc
 
 	// Apply optional filters for account
@@ -71,7 +71,7 @@ func (f *FinanceServiceImpl) FindAll(startDate *time.Time, endDate *time.Time) (
 	}
 
 	// Get all filtered accounts
-	accounts, err := accountQuery.FindAll(context.Background())
+	accounts, err := accountQuery.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -25,8 +25,8 @@ func NewLiveService(accountSvc accountservice.AccountService, shopeeLiveSvc shop
 }
 
 // GetLive implements LiveService.
-func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
-	accounts, err := l.accountSvc.FindAll(context.Background())
+func (l *LiveServiceImpl) GetLive(ctx context.Context) ([]*params.LiveResponse, error) {
+	accounts, err := l.accountSvc.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +73,8 @@ func (l *LiveServiceImpl) GetLive() ([]*params.LiveResponse, error) {
 }
 
 // GetLiveDetail implements LiveService.
-func (l *LiveServiceImpl) GetLiveDetail(accountID string, sessionID string, productPage string, productPageSize string) (*params.LiveDetailResponse, error) {
-	account, err := l.accountSvc.WithID(accountID).FindOne(context.Background())
+func (l *LiveServiceImpl) GetLiveDetail(ctx context.Context, accountID string, sessionID string, productPage string, productPageSize string) (*params.LiveDetailResponse, error) {
+	account, err := l.accountSvc.WithID(accountID).FindOne(ctx)
 	if err != nil {
 		return nil, err
 	}

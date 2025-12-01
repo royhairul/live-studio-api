@@ -50,7 +50,7 @@ func (p *PerformaAggregatorImpl) Calculate(ctx context.Context, startDate, endDa
 		return nil, TotalPerformaAccount{}, err
 	}
 
-	return p.aggregateByAttendances(attendances, startDate, endDate)
+	return p.aggregateByAttendances(ctx, attendances, startDate, endDate)
 }
 
 func (p *PerformaAggregatorImpl) CalculateByHosts(ctx context.Context, startDate, endDate *time.Time) ([]*performaparam.PerformaHostSummaryResponse, error) {
@@ -95,7 +95,7 @@ func (p *PerformaAggregatorImpl) CalculateByHost(ctx context.Context, hostID str
 	for _, att := range attendances {
 		sessions, err := p.accountsessionSvc.
 			WithAttendanceID(fmt.Sprint(att.ID)).
-			FindAll()
+			FindAll(ctx)
 		if err != nil {
 			continue
 		}
@@ -149,10 +149,11 @@ func (p *PerformaAggregatorImpl) CalculateByStudio(ctx context.Context, studio_i
 		return nil, TotalPerformaAccount{}, err
 	}
 
-	return p.aggregateByAttendances(attendances, startDate, endDate)
+	return p.aggregateByAttendances(ctx, attendances, startDate, endDate)
 }
 
 func (p *PerformaAggregatorImpl) aggregateByAttendances(
+	ctx context.Context,
 	attendances []*attendanceparam.AttendanceResponse,
 	startDate, endDate *time.Time,
 ) ([]performaparam.PerformaStudioDetailItemResponse, TotalPerformaAccount, error) {
@@ -162,7 +163,7 @@ func (p *PerformaAggregatorImpl) aggregateByAttendances(
 	// Kumpulkan semua session
 	var allSessions []*accountsessionparam.AccountsessionResponse
 	for _, att := range attendances {
-		sessions, _ := p.accountsessionSvc.WithAttendanceID(fmt.Sprint(att.ID)).FindAll()
+		sessions, _ := p.accountsessionSvc.WithAttendanceID(fmt.Sprint(att.ID)).FindAll(ctx)
 		allSessions = append(allSessions, sessions...)
 	}
 
@@ -182,13 +183,13 @@ func (p *PerformaAggregatorImpl) aggregateByAttendances(
 	adsMap := map[string]accountadsparam.AccountadsTotalResponse{}
 
 	for id := range accountIDs {
-		tx, err := p.transactionSvc.WithAccountID(id).WithDate(*startDate, *endDate).GetTotalCommission()
+		tx, err := p.transactionSvc.WithAccountID(id).WithDate(*startDate, *endDate).GetTotalCommission(ctx)
 		if err != nil {
 			return nil, TotalPerformaAccount{}, err
 		}
 		txMap[id] = *tx
 
-		ads, err := p.accountadsSvc.WithAccountID(id).WithDateRange(*startDate, *endDate).GetTotalAds()
+		ads, err := p.accountadsSvc.WithAccountID(id).WithDateRange(*startDate, *endDate).GetTotalAds(ctx)
 		if err != nil {
 			return nil, TotalPerformaAccount{}, err
 		}

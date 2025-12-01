@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -25,8 +26,8 @@ func NewAccountadsService(repository repository.AccountadsRepository) Accountads
 }
 
 // GetTotalAds implements AccountadsService.
-func (s *AccountadsServiceImpl) GetTotalAds() (*params.AccountadsTotalResponse, error) {
-	ads, err := s.FindAll()
+func (s *AccountadsServiceImpl) GetTotalAds(ctx context.Context) (*params.AccountadsTotalResponse, error) {
+	ads, err := s.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func (s *AccountadsServiceImpl) GetTotalAds() (*params.AccountadsTotalResponse, 
 }
 
 // Create implements AccountadsService.
-func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
+func (s *AccountadsServiceImpl) Create(ctx context.Context, req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
 	date, err := timehandler.ParseDate(req.Date)
 	if err != nil {
 		return nil, err
@@ -54,7 +55,7 @@ func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*par
 		Spend:     req.Ads,
 	}
 
-	created, err := s.repository.Create(&accountAds)
+	created, err := s.repository.Create(ctx, &accountAds)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (s *AccountadsServiceImpl) Create(req params.CreateAccountadsRequest) (*par
 }
 
 // CreateOrUpdate implements AccountadsService.
-func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
+func (s *AccountadsServiceImpl) CreateOrUpdate(ctx context.Context, req params.CreateAccountadsRequest) (*params.AccountadsResponse, error) {
 	// Parse date dari request
 	parsedDate, err := timehandler.ParseDate(req.Date)
 	if err != nil {
@@ -72,7 +73,7 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 	}
 
 	accountIDStr := fmt.Sprint(req.AccountID)
-	exist, err := s.repository.FindOne(params.AccountadsFilter{
+	exist, err := s.repository.FindOne(ctx, params.AccountadsFilter{
 		AccountID: &accountIDStr,
 		StartDate: parsedDate,
 		EndDate:   parsedDate,
@@ -85,7 +86,7 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 				Date:      parsedDate,
 				Spend:     req.Ads,
 			}
-			created, err := s.repository.Create(&accountAds)
+			created, err := s.repository.Create(ctx, &accountAds)
 			if err != nil {
 				return nil, err
 			}
@@ -100,7 +101,7 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 	exist.Date = parsedDate
 	exist.Spend = req.Ads
 
-	updated, err := s.repository.Update(exist)
+	updated, err := s.repository.Update(ctx, exist)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +110,8 @@ func (s *AccountadsServiceImpl) CreateOrUpdate(req params.CreateAccountadsReques
 }
 
 // Update implements AccountadsService.
-func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error) {
-	item, err := s.repository.FindOne(params.AccountadsFilter{ID: &id})
+func (s *AccountadsServiceImpl) Update(ctx context.Context, id string, req params.UpdateAccountadsRequest) (*params.AccountadsResponse, error) {
+	item, err := s.repository.FindOne(ctx, params.AccountadsFilter{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsReq
 	}
 
 	// simpan ke repository
-	updated, err := s.repository.Update(item)
+	updated, err := s.repository.Update(ctx, item)
 	if err != nil {
 		return nil, err
 	}
@@ -142,8 +143,8 @@ func (s *AccountadsServiceImpl) Update(id string, req params.UpdateAccountadsReq
 }
 
 // FindAll implements AccountadsService.
-func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) {
-	items, err := s.repository.FindAll(s.options)
+func (s *AccountadsServiceImpl) FindAll(ctx context.Context) ([]*params.AccountadsResponse, error) {
+	items, err := s.repository.FindAll(ctx, s.options)
 	if err != nil {
 		return nil, err
 	}
@@ -156,22 +157,20 @@ func (s *AccountadsServiceImpl) FindAll() ([]*params.AccountadsResponse, error) 
 }
 
 // FindByID implements AccountadsService.
-func (s *AccountadsServiceImpl) FindOne(id string) (*params.AccountadsResponse, error) {
-	item, err := s.repository.FindOne(params.AccountadsFilter{ID: &id})
+func (s *AccountadsServiceImpl) FindOne(ctx context.Context, id string) (*params.AccountadsResponse, error) {
+	item, err := s.repository.FindOne(ctx, params.AccountadsFilter{ID: &id})
 	if err != nil {
 		return nil, err
 	}
-
 	result := params.NewAccountadsResponse(item)
 	return result, nil
 }
 
 // Delete implements AccountadsService.
-func (s *AccountadsServiceImpl) Delete(id string) error {
-	if err := s.repository.Delete(id); err != nil {
+func (s *AccountadsServiceImpl) Delete(ctx context.Context, id string) error {
+	if err := s.repository.Delete(ctx, id); err != nil {
 		return err
 	}
-
 	return nil
 }
 

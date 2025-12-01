@@ -33,7 +33,7 @@ func (c *AccountadsControllerImpl) Create(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.CreateOrUpdate(req)
+	result, err := c.service.CreateOrUpdate(ctx.Request.Context(), req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -58,7 +58,7 @@ func (c *AccountadsControllerImpl) Update(ctx *gin.Context) {
 		return
 	}
 
-	result, err := c.service.Update(id, req)
+	result, err := c.service.Update(ctx.Request.Context(), id, req)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -69,7 +69,7 @@ func (c *AccountadsControllerImpl) Update(ctx *gin.Context) {
 }
 
 func (c *AccountadsControllerImpl) FindAll(ctx *gin.Context) {
-	result, err := c.service.FindAll()
+	result, err := c.service.FindAll(ctx.Request.Context())
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -82,7 +82,7 @@ func (c *AccountadsControllerImpl) FindAll(ctx *gin.Context) {
 func (c *AccountadsControllerImpl) FindByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	result, err := c.service.FindOne(id)
+	result, err := c.service.FindOne(ctx.Request.Context(), id)
 	if err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
@@ -95,7 +95,7 @@ func (c *AccountadsControllerImpl) FindByID(ctx *gin.Context) {
 func (c *AccountadsControllerImpl) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := c.service.Delete(id); err != nil {
+	if err := c.service.Delete(ctx.Request.Context(), id); err != nil {
 		errorhandler.HandleError(ctx, err)
 		return
 	}
