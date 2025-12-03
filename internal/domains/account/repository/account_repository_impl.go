@@ -99,12 +99,14 @@ func (a *AccountRepositoryImpl) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// FindByStudio implements AccountRepository.
-func (a *AccountRepositoryImpl) FindByStudio(ctx context.Context, studioId string) ([]*entity.Account, error) {
-	var accounts []*entity.Account
-	if err := a.DB.WithContext(ctx).Preload("Studio").Find(&accounts, "studio_id = ?", studioId).Error; err != nil {
-		return nil, err
+// Restore implements AccountRepository.
+func (a *AccountRepositoryImpl) Restore(ctx context.Context, id string) error {
+	if err := a.DB.
+		WithContext(ctx).
+		Unscoped().Model(&entity.Account{}).
+		Where("id = ?", id).
+		Update("deleted_at", nil).Error; err != nil {
+		return err
 	}
-
-	return accounts, nil
+	return nil
 }

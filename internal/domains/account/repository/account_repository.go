@@ -14,4 +14,5 @@ type AccountRepository interface {
 	Update(ctx context.Context, account *entity.Account) (*entity.Account, error)
 	Save(ctx context.Context, account *entity.Account) (*entity.Account, error)
 	Delete(ctx context.Context, id string) error
+	Restore(ctx context.Context, id string) error
 }
