@@ -105,6 +105,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.Crea
 	if existing != nil {
 		// Jika soft deleted, reset DeletedAt
 		if existing.DeletedAt.Valid {
+			_ = a.repository.Restore(ctx, fmt.Sprint(existing.ID))
 			existing.DeletedAt = gorm.DeletedAt{}
 		}
 
