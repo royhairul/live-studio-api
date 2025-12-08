@@ -1,9 +1,10 @@
 package server
 
 import (
-	"fmt"
+	"context"
 
 	performaagg "github.com/royhairul/live-studio-api/internal/aggregator/performa"
+	"github.com/royhairul/live-studio-api/internal/jobs"
 
 	"github.com/gin-gonic/gin"
 	"github.com/royhairul/live-studio-api/config"
@@ -36,8 +37,18 @@ import (
 	"go.uber.org/fx"
 )
 
-func Start(router *gin.Engine, cfg *config.Config) {
-	router.Run(fmt.Sprintf(":%s", cfg.ServerPort))
+func Start(lc fx.Lifecycle, router *gin.Engine, cfg *config.Config) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go func() {
+				router.Run(":" + cfg.ServerPort)
+			}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return nil
+		},
+	})
 }
 
 func NewApp() *fx.App {
@@ -60,6 +71,8 @@ func NewApp() *fx.App {
 			snowflakeid.InitSnowflake,
 			Start,
 		),
+
+		jobs.Module,
 
 		// Aggregator
 		performaagg.Module,
