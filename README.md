@@ -456,6 +456,7 @@ All API endpoints are prefixed with `/api`.
 |----------|-------------|---------|
 | `SERVER_HOST` | Server host | `localhost` |
 | `SERVER_PORT` | Server port | `8080` |
+| `API_URL` | Full API URL for OpenAPI docs (optional) | Auto-generated from host:port |
 | `ALLOWED_ORIGINS` | CORS allowed origins (comma-separated) | `http://localhost:5173,...` |
 
 ### Database Configuration
@@ -522,6 +523,39 @@ To use Gmail as your SMTP provider:
 | SendGrid | `smtp.sendgrid.net` | `587` | `465` |
 
 > ⚠️ **Note**: For production, consider using a dedicated email service like SendGrid or AWS SES for better deliverability and monitoring.
+
+---
+
+### 🔒 API Documentation Security
+
+API documentation access is controlled by `APP_ENV`:
+
+| APP_ENV | Docs Access | Authentication |
+|---------|-------------|----------------|
+| `development` | ✅ Open | None |
+| `staging` | ✅ Protected | Basic Auth (uses `SUPERADMIN_NAME` / `SUPERADMIN_PASS`) |
+| `production` | ❌ Disabled | Returns 404 |
+| `maintenance` | ❌ Disabled | Returns 404 |
+
+#### Examples
+
+**Development** (docs open):
+```env
+APP_ENV=development
+```
+
+**Staging** (docs with login):
+```env
+APP_ENV=staging
+SUPERADMIN_NAME=your-name
+SUPERADMIN_PASS=your-password
+```
+> Browser will prompt for username/password when accessing `/docs`
+
+**Production** (docs hidden):
+```env
+APP_ENV=production
+```
 
 ---
 
