@@ -1,264 +1,382 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.3",
   "info": {
-    "title": "Live Studio",
-    "description": "API for managing live streaming studios, including host accounts, schedules, attendance, performance tracking, and e-commerce integration.",
-    "version": "1.0.0"
+    "title": "Live Studio API",
+    "description": "API for managing live streaming studios, including host accounts, schedules, attendance, performance tracking, and Shopee e-commerce integration.\n\n## Authentication\nMost endpoints require JWT Bearer token authentication. Obtain a token via `/api/auth/login`.\n\n## Multi-Tenancy\nThis API supports multi-tenant isolation. Each user belongs to a tenant, and data is automatically filtered by tenant.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Live Studio Team"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
   },
+  "servers": [
+    {
+      "url": "https://api.livestudio.id/api",
+      "description": "Production server"
+    },
+    {
+      "url": "https://staging-api.livestudio.id/api",
+      "description": "Staging server"
+    },
+    {
+      "url": "http://localhost:8080/api",
+      "description": "Local development server"
+    }
+  ],
   "tags": [
     {
-      "name": "Auth"
+      "name": "Auth",
+      "description": "Authentication and authorization endpoints"
     },
     {
-      "name": "Host"
+      "name": "User",
+      "description": "User management"
     },
     {
-      "name": "Studio"
+      "name": "Host",
+      "description": "Live streaming hosts (talents) management"
     },
     {
-      "name": "Shift"
+      "name": "Studio",
+      "description": "Physical studios management"
     },
     {
-      "name": "Account"
+      "name": "Shift",
+      "description": "Work shifts configuration"
     },
     {
-      "name": "Finance"
+      "name": "Schedule",
+      "description": "Host scheduling"
     },
     {
-      "name": "Schedule"
+      "name": "Attendance",
+      "description": "Host attendance tracking"
     },
     {
-      "name": "Permission"
+      "name": "Account",
+      "description": "Platform accounts (Shopee)"
     },
     {
-      "name": "Role"
+      "name": "Account Session",
+      "description": "Account session management"
     },
     {
-      "name": "Live"
+      "name": "Account Ads",
+      "description": "Advertising accounts"
     },
     {
-      "name": "User"
+      "name": "Live",
+      "description": "Live streaming sessions"
     },
     {
-      "name": "Attendance"
+      "name": "Performa",
+      "description": "Performance analytics"
     },
     {
-      "name": "Transaction"
+      "name": "Finance",
+      "description": "Financial management"
     },
     {
-      "name": "Order"
+      "name": "Product",
+      "description": "Product catalog"
     },
     {
-      "name": "Performa"
+      "name": "Order",
+      "description": "Order management"
+    },
+    {
+      "name": "Transaction",
+      "description": "Transaction tracking"
+    },
+    {
+      "name": "Target",
+      "description": "Sales/performance targets"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Dashboard data aggregation"
+    },
+    {
+      "name": "Role",
+      "description": "Role-based access control"
+    },
+    {
+      "name": "Permission",
+      "description": "Permission management"
     }
   ],
   "paths": {
+    "/healthcheck": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Check if the API is running",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "message": "Everything OK!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "summary": "Login",
-        "deprecated": false,
-        "description": "",
+        "description": "Authenticate user and get JWT token",
         "tags": ["Auth"],
-        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email",
+                    "description": "User email address"
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "User password"
                   }
                 },
                 "required": ["email", "password"]
               },
               "example": {
-                "email": "ucup2@gmail.com",
-                "password": "123456"
+                "email": "admin@example.com",
+                "password": "password123"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Login successful",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "access_token": {
+                          "type": "string",
+                          "description": "JWT access token"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Login successful",
+                  "data": {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
                 }
               }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/auth/me": {
-      "get": {
-        "summary": "Me",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Auth"],
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "",
-            "required": true,
-            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlVjdXAyIiwidXNlcm5hbWUiOiIiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc1NDk2ODY1NSwiaWF0IjoxNzU0ODgyMjU1fQ.NZ3sE4L2782AT01DHmgg6RTPgVDrtoeYiYCmB18Dgk4",
-            "schema": {
-              "type": "string"
             }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {}
-              },
-              "examples": {}
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "email": "invalid email format",
+                    "password": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
-        },
-        "security": []
+        }
       }
     },
     "/auth/register": {
       "post": {
         "summary": "Register",
-        "deprecated": false,
-        "description": "",
+        "description": "Register a new user account",
         "tags": ["Auth"],
-        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
-                  },
-                  "username": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "User display name"
                   },
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email",
+                    "description": "User email address"
                   },
                   "password": {
-                    "type": "string"
-                  },
-                  "role": {
-                    "type": "integer"
+                    "type": "string",
+                    "description": "User password (min 6 characters)"
                   }
                 },
-                "required": ["name", "username", "email", "password", "role"]
+                "required": ["name", "email", "password"]
               },
               "example": {
-                "name": "Ucup100",
-                "email": "ucup100@gmail.com",
-                "password": "123456",
-                "role": 1
+                "name": "John Doe",
+                "email": "john@example.com",
+                "password": "password123"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "",
+          "201": {
+            "description": "Registration successful",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/BaseResponse"
                 }
               }
-            },
-            "headers": {}
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required",
+                    "email": "invalid email format",
+                    "password": "value is too short (minimum is 6 characters)"
+                  }
+                }
+              }
+            }
           }
-        },
-        "security": []
+        }
       }
     },
-    "/forgot-password": {
+    "/auth/forgot-password": {
       "post": {
         "summary": "Forgot Password",
-        "deprecated": false,
-        "description": "",
+        "description": "Request password reset OTP via email",
         "tags": ["Auth"],
-        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   }
                 },
                 "required": ["email"]
               },
               "example": {
-                "email": "teasas@gmail.com"
+                "email": "user@example.com"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "OTP sent to email"
+          },
+          "404": {
+            "description": "Email not registered"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/reset-password": {
+    "/auth/verify-otp": {
       "post": {
-        "summary": "Reset Password",
-        "deprecated": false,
-        "description": "",
+        "summary": "Verify OTP",
+        "description": "Verify OTP code for password reset",
         "tags": ["Auth"],
-        "parameters": [],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "token": {
-                    "type": "string"
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "otp": {
+                    "type": "string",
+                    "description": "6-digit OTP code"
+                  }
+                },
+                "required": ["email", "otp"]
+              },
+              "example": {
+                "email": "user@example.com",
+                "otp": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP valid"
+          },
+          "400": {
+            "description": "Invalid or expired OTP"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "summary": "Reset Password",
+        "description": "Reset password after OTP verification",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
                   },
                   "password": {
                     "type": "string"
@@ -267,213 +385,280 @@
                     "type": "string"
                   }
                 },
-                "required": ["token", "password", "confirm_password"]
+                "required": ["email", "password", "confirm_password"]
               },
               "example": {
-                "token": "584648",
-                "password": "1234",
-                "confirm_password": "1234"
+                "email": "user@example.com",
+                "password": "newPassword123",
+                "confirm_password": "newPassword123"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Password reset successful"
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get Current User",
+        "description": "Get information about the currently authenticated user",
+        "tags": ["Auth"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Current user information",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {}
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "tenant_id": {
+                          "type": "string"
+                        },
+                        "permissions": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/verify-token": {
+    "/users": {
+      "get": {
+        "summary": "Get All Users",
+        "description": "Get all users (tenant-filtered)",
+        "tags": ["User"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
       "post": {
-        "summary": "Verify Token",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Auth"],
-        "parameters": [],
+        "summary": "Create User",
+        "description": "Create a new user",
+        "tags": ["User"],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "token": {
-                    "type": "string"
-                  }
+                "$ref": "#/components/schemas/UserCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
                 },
-                "required": ["token"]
-              },
-              "example": {
-                "token": "384570"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required",
+                    "email": "invalid email format",
+                    "password": "field is required",
+                    "role_id": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
-        },
-        "security": []
+        }
       }
     },
-    "/host/perform": {
+    "/users/{id}": {
       "get": {
-        "summary": "Host Performa",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Host"],
+        "summary": "Get User by ID",
+        "tags": ["User"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "startTime",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "2025-08-08",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "endTime",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "2025-08-08",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {}
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
+            "description": "User details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
-      }
-    },
-    "/host/perform/284a0b81-00cc-4e9f-afc1-3aabfc3bea0d": {
-      "get": {
-        "summary": "Host Performa Per Host",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Host"],
+        }
+      },
+      "put": {
+        "summary": "Update User",
+        "tags": ["User"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "startTime",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "2025-08-08",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete User",
+        "tags": ["User"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
           {
-            "name": "endTime",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "2025-08-08",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {}
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
+            "description": "User deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
+        }
       }
     },
     "/host": {
       "get": {
-        "summary": "Host GET ALL",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get All Hosts",
+        "description": "Get all hosts",
         "tags": ["Host"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
+            "description": "List of hosts",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/BaseResponse"
                 }
               }
-            },
-            "headers": {}
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
+        }
       },
       "post": {
-        "summary": "Host CREATE",
-        "deprecated": false,
-        "description": "",
+        "summary": "Create Host",
+        "description": "Create a new host",
         "tags": ["Host"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -492,8 +677,8 @@
                 "required": ["name", "phone", "studio_id"]
               },
               "example": {
-                "name": "Joko",
-                "phone": "08123456789",
+                "name": "Jane Live",
+                "phone": "081234567890",
                 "studio_id": 1
               }
             }
@@ -501,99 +686,99 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Host created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required",
+                    "phone": "field is required",
+                    "studio_id": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
-        },
-        "security": []
+        }
       }
     },
     "/host/group-by-studio": {
       "get": {
-        "summary": "Host GET ALL BY STUDIO",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get Hosts Grouped by Studio",
+        "description": "Get all hosts grouped by their studio",
         "tags": ["Host"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Hosts grouped by studio"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/host/2/schedule": {
+    "/host/{id}": {
       "get": {
-        "summary": "Host GET ID Schedules",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get Host by ID",
         "tags": ["Host"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Host details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
-      }
-    },
-    "/host/b78c2159-30da-4651-a557-0ee36fb39434": {
-      "get": {
-        "summary": "Host GET BY ID",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Host"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
+        }
       },
       "put": {
-        "summary": "Host UPDATE",
-        "deprecated": false,
-        "description": "",
+        "summary": "Update Host",
         "tags": ["Host"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -608,148 +793,80 @@
                   "studio_id": {
                     "type": "integer"
                   }
-                },
-                "required": ["name", "phone", "studio_id"]
-              },
-              "example": {
-                "name": "Jokok",
-                "phone": "0823923900239",
-                "studio_id": 2
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Host updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
           }
-        },
-        "security": []
-      }
-    },
-    "/host/2/delete": {
+        }
+      },
       "delete": {
-        "summary": "Host UPDATE Copy",
-        "deprecated": false,
-        "description": "",
+        "summary": "Delete Host",
         "tags": ["Host"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "studio_id": {
-                    "type": "integer"
-                  }
-                },
-                "required": ["studio_id"]
-              },
-              "example": {
-                "studio_id": 10
-              }
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Host deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
+        }
       }
     },
     "/studio": {
       "get": {
-        "summary": "Studio GET ALL",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get All Studios",
         "tags": ["Studio"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "List of studios"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
+        }
       },
       "post": {
-        "summary": "Studio CREATE",
-        "deprecated": false,
-        "description": "",
+        "summary": "Create Studio",
         "tags": ["Studio"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "required": ["name"]
-              },
-              "example": {
-                "name": ""
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/studio/4/edit": {
-      "put": {
-        "summary": "Studio EDIT",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Studio"],
-        "parameters": [],
-        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -762,112 +879,267 @@
                     "type": "string"
                   }
                 },
-                "required": ["name", "address"]
+                "required": ["name"]
               },
               "example": {
-                "name": "On Air",
-                "address": "Banyuwangi"
+                "name": "Studio A",
+                "address": "Jakarta"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Studio created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
-        },
-        "security": []
+        }
       }
     },
-    "/studio/1": {
+    "/studio/{id}": {
       "get": {
-        "summary": "Studio SHOW",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get Studio by ID",
         "tags": ["Studio"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
+            "description": "Studio details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Studio",
+        "tags": ["Studio"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
         },
-        "security": []
+        "responses": {
+          "200": {
+            "description": "Studio updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Studio",
+        "tags": ["Studio"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Studio deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/shift": {
       "get": {
-        "summary": "Shift ALL",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get All Shifts",
         "tags": ["Shift"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "List of shifts"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
-      }
-    },
-    "/shift/4": {
-      "get": {
-        "summary": "Shift SHOW",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Shift"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/shift/create": {
+        }
+      },
       "post": {
-        "summary": "Shift CREATE Copy",
-        "deprecated": false,
-        "description": "",
+        "summary": "Create Shift",
         "tags": ["Shift"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "example": "08:00"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "example": "12:00"
+                  }
+                },
+                "required": ["name", "start_time", "end_time"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shift created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required",
+                    "start_time": "field is required",
+                    "end_time": "field is required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shift/{id}": {
+      "get": {
+        "summary": "Get Shift by ID",
+        "tags": ["Shift"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shift details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Shift",
+        "tags": ["Shift"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -882,75 +1154,470 @@
                   "end_time": {
                     "type": "string"
                   }
-                },
-                "required": ["name", "start_time", "end_time"]
-              },
-              "example": {
-                "name": "Shift Pagi",
-                "start_time": "06:00",
-                "end_time": "09:00"
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Shift updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
           }
-        },
-        "security": []
-      }
-    },
-    "/account": {
-      "get": {
-        "summary": "Account GET ALL BY Studio",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Account"],
+        }
+      },
+      "delete": {
+        "summary": "Delete Shift",
+        "tags": ["Shift"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "studio",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "28",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Shift deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/schedule": {
+      "get": {
+        "summary": "Get All Schedules",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of schedules"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Schedule",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                },
+                "required": ["host_id", "shift_id", "date"]
+              },
+              "example": {
+                "host_id": "550e8400-e29b-41d4-a716-446655440000",
+                "shift_id": 1,
+                "date": "2025-01-15"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Schedule created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "host_id": "field is required",
+                    "shift_id": "field is required",
+                    "studio_id": "field is required",
+                    "date": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
+          }
+        }
+      }
+    },
+    "/schedule/scheduled": {
+      "get": {
+        "summary": "Get Schedules by Shift and Date",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "shift_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered schedules"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/schedule/{id}": {
+      "get": {
+        "summary": "Get Schedule by ID",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schedule details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Schedule",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string"
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
           }
         },
-        "security": []
+        "responses": {
+          "200": {
+            "description": "Schedule updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Schedule",
+        "tags": ["Schedule"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schedule deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/attendance": {
+      "get": {
+        "summary": "Get All Attendance Records",
+        "tags": ["Attendance"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of attendance records"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/attendance/unchecked-out": {
+      "get": {
+        "summary": "Get Unchecked Out Records",
+        "description": "Get hosts who haven't checked out yet",
+        "tags": ["Attendance"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of unchecked-out records"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/attendance/check-in": {
+      "post": {
+        "summary": "Check In",
+        "description": "Record host check-in",
+        "tags": ["Attendance"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "shift_id": {
+                    "type": "integer"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "studio_id": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["host_id", "shift_id", "date"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check-in successful"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "host_id": "field is required",
+                    "shift_id": "field is required",
+                    "studio_id": "field is required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/check-out": {
+      "post": {
+        "summary": "Check Out",
+        "description": "Record host check-out",
+        "tags": ["Attendance"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "Attendance record ID"
+                  }
+                },
+                "required": ["id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check-out successful"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "id": "field is required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account": {
+      "get": {
+        "summary": "Get All Accounts",
+        "tags": ["Account"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "studio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by studio ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accounts"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
       },
       "post": {
-        "summary": "Account CREATE",
-        "deprecated": false,
-        "description": "",
+        "summary": "Create or Update Account",
         "tags": ["Account"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -960,1292 +1627,1775 @@
                     "type": "integer"
                   },
                   "cookie": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Shopee session cookie"
                   }
                 },
                 "required": ["studio_id", "cookie"]
-              },
-              "example": {
-                "studio_id": 1,
-                "cookie": "SPC_EC=.aVRTcXc2eEgwR2RzZnBzUfsPqO071ObSl0DfORiSPUWFKvTQcCSgtIOPZAF5KqidRaanaPU+3MgSagqWf1Ealv95wKiSpNgbLN3BslLNSNjlA0dZgMuHAVTveMJ0XOotRfZ8bK3wh1pCB+URonm5NBZyaVN2M0S/l0zQqXUTSxsClwRhWFtQimd9o441pVwy1er0IAecSClLgxGK3lCfZQ8njqjobwWKXkNB55ydJjiB+cJQDXMJr0VwXWj45VEU;SPC_U=1527518198;REC_T_ID=b690ab96-50ac-11f0-8b4f-722c80dc2fa8;SPC_F=8Afb3lT1Q0pgyOoxz09CcADIYOefPKjo;SPC_R_T_ID=mnStpSCr8kQgQ139PCADpzEoEgoAa4PkFoeHpA5WsC5FIFjfzzpYjFskIJ0+aPyIQfsan+739i0o/Gcm6YPPuxJrM6Rlz0Rrfqvn5co7NK7qZMTSWe9NkUaVBQrLVMLOvoUAuNh1diFwC1YEJEZFBjaExaV7T3/+qoc8QLypnoA=;SPC_R_T_IV=REFjT3BMR2NJUEMyb21iQQ==;SPC_ST=.cG9Ed241Rk1Td2htMVg0bR/AgHonYMjXMepUh0rxAb8GHDtLhrMWKUxGZ1nDebtlG4hCU7PrYUhuuk4pfLKfmjjG09YIGnrb/QTbsdrQ2qp1FVINGXAgKjhjp4oI9i1/hRMhuVxa/VGRsrIKsZCARAdZCv1Y1wR3MPYi873pWpcktjumef0EBWZCz2ALA1Pql7Ii+q4CFIGGTcyeAIJTfkstYuZE9gC+klUKnrq8xm1AD40QKofu8LA3P/UUX3yR;SPC_T_ID=mnStpSCr8kQgQ139PCADpzEoEgoAa4PkFoeHpA5WsC5FIFjfzzpYjFskIJ0+aPyIQfsan+739i0o/Gcm6YPPuxJrM6Rlz0Rrfqvn5co7NK7qZMTSWe9NkUaVBQrLVMLOvoUAuNh1diFwC1YEJEZFBjaExaV7T3/+qoc8QLypnoA=;SPC_T_IV=REFjT3BMR2NJUEMyb21iQQ=="
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/finance/shopee": {
-      "post": {
-        "summary": "Finance Live Report",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Finance"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "page": {
-                    "type": "integer"
-                  },
-                  "pageSize": {
-                    "type": "integer"
-                  },
-                  "orderBy": {
-                    "type": "string"
-                  },
-                  "sort": {
-                    "type": "string"
-                  },
-                  "timeDim": {
-                    "type": "string"
-                  },
-                  "endDate": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "page",
-                  "pageSize",
-                  "orderBy",
-                  "sort",
-                  "timeDim",
-                  "endDate"
-                ]
-              },
-              "example": {
-                "page": 1,
-                "pageSize": 100,
-                "orderBy": "",
-                "sort": "",
-                "timeDim": "1d",
-                "endDate": "2025-03-01"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/finance/shopee/realtime/ws": {
-      "get": {
-        "summary": "Finance Live Report Realtime",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Finance"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "page": {
-                    "type": "integer"
-                  },
-                  "pageSize": {
-                    "type": "integer"
-                  },
-                  "orderBy": {
-                    "type": "string"
-                  },
-                  "sort": {
-                    "type": "string"
-                  },
-                  "timeDim": {
-                    "type": "string"
-                  },
-                  "endDate": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "page",
-                  "pageSize",
-                  "orderBy",
-                  "sort",
-                  "timeDim",
-                  "endDate"
-                ]
-              },
-              "example": {
-                "page": 1,
-                "pageSize": 100,
-                "orderBy": "",
-                "sort": "",
-                "timeDim": "1m",
-                "endDate": "2025-03-01"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/schedule": {
-      "get": {
-        "summary": "Schedule ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Schedule"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      },
-      "post": {
-        "summary": "Schedule CREATE",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Schedule"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_id": {
-                    "type": "string"
-                  },
-                  "shift_id": {
-                    "type": "string"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_id", "shift_id", "date"]
-              },
-              "example": {
-                "host_id": "2",
-                "shift_id": "4",
-                "date": "2025-06-03"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/schedule/scheduled": {
-      "get": {
-        "summary": "Schedule by host, shift, and date",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Schedule"],
-        "parameters": [
-          {
-            "name": "date",
-            "in": "query",
-            "description": "",
-            "required": true,
-            "example": "2025-07-01",
-            "schema": {
-              "type": "string"
-            }
+            "description": "Account created/updated"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "studio_id": "field is required",
+                    "cookie": "field is required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/{id}": {
+      "get": {
+        "summary": "Get Account by ID",
+        "tags": ["Account"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
           {
-            "name": "shift_id",
-            "in": "query",
-            "description": "",
+            "name": "id",
+            "in": "path",
             "required": true,
-            "example": "1",
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_id": {
-                    "type": "string"
-                  },
-                  "shift_id": {
-                    "type": "string"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_id", "shift_id", "date"]
-              },
-              "example": "{\"host_id\": '2', \"shift_id\": '4', \"date\": '2025-06-03'}"
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Account details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
-      }
-    },
-    "/permission": {
-      "get": {
-        "summary": "Permission ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Permission"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "group": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          }
-                        },
-                        "required": ["id", "name", "group", "description"]
-                      }
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/permission/grouped": {
-      "get": {
-        "summary": "Permission ALL Grouped",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Permission"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_id": {
-                    "type": "string"
-                  },
-                  "shift_id": {
-                    "type": "string"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_id", "shift_id", "date"]
-              },
-              "example": ""
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/role": {
-      "post": {
-        "summary": "Role CREATE",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Role"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "permission": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  }
-                },
-                "required": ["name", "permission"]
-              },
-              "example": {
-                "name": "New Role 1",
-                "permissions": [1, 2]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
+        }
       },
-      "get": {
-        "summary": "Role ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Role"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {}
-              },
-              "examples": {}
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/live/shopee": {
-      "get": {
-        "summary": "Live Shopee GET",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Live"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  "shift_id": {
-                    "type": "integer"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_ids", "shift_id", "date"]
-              },
-              "example": {
-                "host_ids": [12],
-                "shift_id": 5,
-                "date": "2025-06-22T01:35:47.700Z"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/superadmin/user": {
-      "post": {
-        "summary": "User CREATE Copy",
-        "deprecated": false,
-        "description": "",
-        "tags": ["User"],
+      "put": {
+        "summary": "Update Account",
+        "tags": ["Account"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "",
+            "name": "id",
+            "in": "path",
             "required": true,
-            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJyb3loYWlydWwiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc0OTg5NzM1NiwiaWF0IjoxNzQ5ODEwOTU2fQ.j20gg1bglg_ZjR0egQXfdyoGRj1AHZRCoofgliymYm4",
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "role": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
                   "name": {
                     "type": "string"
                   },
-                  "username": {
-                    "type": "string"
-                  },
-                  "password": {
+                  "cookie": {
                     "type": "string"
                   }
-                },
-                "required": ["role", "email", "name", "username", "password"]
-              },
-              "example": {
-                "role": "admin",
-                "email": "admin@gmail.com",
-                "name": "admin 404",
-                "username": "admin404",
-                "password": "admin404"
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Account updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
           }
-        },
-        "security": []
-      }
-    },
-    "/superadmin/user/19": {
-      "get": {
-        "summary": "User CREATE",
-        "deprecated": false,
-        "description": "",
-        "tags": ["User"],
+        }
+      },
+      "delete": {
+        "summary": "Delete Account",
+        "tags": ["Account"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "",
+            "name": "id",
+            "in": "path",
             "required": true,
-            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJyb3loYWlydWwiLCJyb2xlIjoic3VwZXJhZG1pbiIsImV4cCI6MTc0OTg5NzA3NSwiaWF0IjoxNzQ5ODEwNjc1fQ.TcyiHUZBq1XvlcglyzI-Q6qQil9mVfK9HZ4Y2zD1ejY",
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "username": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "password": {
-                    "type": "string"
-                  },
-                  "role": {
-                    "type": "string"
-                  },
-                  "studio_id": {
-                    "type": "string"
-                  },
-                  "current_user": {
-                    "type": "integer"
-                  }
-                },
-                "required": [
-                  "username",
-                  "email",
-                  "password",
-                  "role",
-                  "studio_id",
-                  "current_user"
-                ]
-              },
-              "example": {
-                "username": "roy",
-                "email": "roy@gmail.com",
-                "password": "1213",
-                "role": "host",
-                "studio_id": "1",
-                "current_user": 7
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
+            "description": "Account deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/attendance": {
+    "/account-session": {
       "get": {
-        "summary": "Attendance ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Attendance"],
-        "parameters": [],
+        "summary": "Get All Account Sessions",
+        "tags": ["Account Session"],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/attendance/check-in": {
-      "post": {
-        "summary": "Checkin",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Attendance"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  "shift_id": {
-                    "type": "integer"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_ids", "shift_id", "date"]
-              },
-              "example": {
-                "date": "2025-08-20",
-                "shift_id": "1",
-                "host_id": "284a0b81-00cc-4e9f-afc1-3aabfc3bea0d",
-                "studio_id": "28"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/attendance/check-out": {
-      "post": {
-        "summary": "Checkout",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Attendance"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  "shift_id": {
-                    "type": "integer"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_ids", "shift_id", "date"]
-              },
-              "example": {
-                "id": 31
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/attendance/unchecked-out": {
-      "get": {
-        "summary": "Attendance ALL Copy",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Attendance"],
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "host_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer"
-                    }
-                  },
-                  "shift_id": {
-                    "type": "integer"
-                  },
-                  "date": {
-                    "type": "string"
-                  }
-                },
-                "required": ["host_ids", "shift_id", "date"]
-              },
-              "example": ""
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/transaction": {
-      "get": {
-        "summary": "Transaction ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Transaction"],
-        "parameters": [],
-        "responses": {
+            "description": "List of sessions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "500": {
-            "description": "",
-            "headers": {}
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
+        }
       },
       "post": {
-        "summary": "Transaction CREATE",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Transaction"],
-        "parameters": [],
+        "summary": "Create Account Session",
+        "tags": ["Account Session"],
+        "security": [{"bearerAuth": []}],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {}
-              },
-              "example": {
-                "date": "2025-07-25"
+                "properties": {
+                  "account_id": {
+                    "type": "integer"
+                  },
+                  "session_token": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "unique_id": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "est_total_comission": {
-                          "type": "integer"
-                        },
-                        "est_total_comission_with_mcn": {
-                          "type": "integer"
-                        },
-                        "purchase_time": {
-                          "type": "integer"
-                        },
-                        "complete_time": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "unique_id",
-                        "status",
-                        "est_total_comission",
-                        "est_total_comission_with_mcn",
-                        "purchase_time",
-                        "complete_time"
-                      ]
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
+            "description": "Session created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/order": {
+    "/account-session/{id}": {
       "get": {
-        "summary": "Order ALL",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Order"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "serial_number": {
-                            "type": "string"
-                          },
-                          "status": {
-                            "type": "string"
-                          },
-                          "complete_time": {
-                            "type": "integer"
-                          },
-                          "transaction_id": {
-                            "type": "integer"
-                          },
-                          "products": {
-                            "type": "array"
-                          }
-                        },
-                        "required": [
-                          "serial_number",
-                          "status",
-                          "complete_time",
-                          "transaction_id",
-                          "products"
-                        ]
-                      }
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/performa/host": {
-      "get": {
-        "summary": "Performa Host All",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Performa"],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "date": {
-                            "type": "string"
-                          },
-                          "total_duration": {
-                            "type": "integer"
-                          },
-                          "total_sales": {
-                            "type": "integer"
-                          },
-                          "total_paid": {
-                            "type": "integer"
-                          },
-                          "avg_sales": {
-                            "type": "integer"
-                          },
-                          "avg_paid": {
-                            "type": "integer"
-                          },
-                          "list": {
-                            "type": "array"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "name",
-                          "date",
-                          "total_duration",
-                          "total_sales",
-                          "total_paid",
-                          "avg_sales",
-                          "avg_paid",
-                          "list"
-                        ]
-                      }
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/performa/host/284a0b81-00cc-4e9f-afc1-3aabfc3bea0d": {
-      "get": {
-        "summary": "Performa Host By ID",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Performa"],
+        "summary": "Get Session by ID",
+        "tags": ["Account Session"],
+        "security": [{"bearerAuth": []}],
         "parameters": [
           {
-            "name": "startDate",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "{{$date.now|format('yyyy-MM-dd')}}",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "description": "",
-            "required": false,
-            "example": "{{$date.now|format('yyyy-MM-dd')}}",
-            "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "date": {
-                          "type": "string"
-                        },
-                        "total_duration": {
-                          "type": "integer"
-                        },
-                        "total_sales": {
-                          "type": "integer"
-                        },
-                        "total_paid": {
-                          "type": "integer"
-                        },
-                        "avg_sales": {
-                          "type": "integer"
-                        },
-                        "avg_paid": {
-                          "type": "integer"
-                        },
-                        "list": {
-                          "type": "array"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "name",
-                        "date",
-                        "total_duration",
-                        "total_sales",
-                        "total_paid",
-                        "avg_sales",
-                        "avg_paid",
-                        "list"
-                      ]
-                    }
+            "description": "Session details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Session",
+        "tags": ["Account Session"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Session",
+        "tags": ["Account Session"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/accountads": {
+      "get": {
+        "summary": "Get All Ad Accounts",
+        "tags": ["Account Ads"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of ad accounts"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Ad Account",
+        "tags": ["Account Ads"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
                   },
-                  "required": ["message", "data"]
+                  "account_id": {
+                    "type": "integer"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
           }
         },
-        "security": []
+        "responses": {
+          "201": {
+            "description": "Ad account created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/accountads/{id}": {
+      "get": {
+        "summary": "Get Ad Account by ID",
+        "tags": ["Account Ads"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ad account details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Ad Account",
+        "tags": ["Account Ads"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ad account updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Ad Account",
+        "tags": ["Account Ads"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ad account deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/live/shopee": {
+      "get": {
+        "summary": "Get Shopee Live Sessions",
+        "tags": ["Live"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of live sessions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/live/shopee/{id}/{sessionId}": {
+      "get": {
+        "summary": "Get Live Session Details",
+        "tags": ["Live"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Shopee session ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Live session details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/performa/host": {
+      "get": {
+        "summary": "Get All Hosts Performance",
+        "tags": ["Performa"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hosts performance data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/performa/host/{id}": {
+      "get": {
+        "summary": "Get Host Performance by ID",
+        "tags": ["Performa"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Host performance data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/performa/account": {
+      "get": {
+        "summary": "Get All Accounts Performance",
+        "tags": ["Performa"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Accounts performance data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
       }
     },
     "/performa/studio": {
       "get": {
-        "summary": "Performa By Studio",
-        "deprecated": false,
-        "description": "",
+        "summary": "Get All Studios Performance",
         "tags": ["Performa"],
-        "parameters": [],
+        "security": [{"bearerAuth": []}],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "total_duration": {
-                            "type": "integer"
-                          },
-                          "total_sales": {
-                            "type": "integer"
-                          },
-                          "total_paid": {
-                            "type": "integer"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "name",
-                          "total_duration",
-                          "total_sales",
-                          "total_paid"
-                        ]
-                      }
-                    }
-                  },
-                  "required": ["message", "data"]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": []
-      }
-    },
-    "/performa/studio/28": {
-      "get": {
-        "summary": "Show Performa Studio By ID",
-        "deprecated": false,
-        "description": "",
-        "tags": ["Performa"],
-        "parameters": [],
-        "responses": {
+            "description": "Studios performance data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "500": {
-            "description": "",
-            "headers": {}
+            "$ref": "#/components/responses/InternalServerError"
           }
-        },
-        "security": []
+        }
       }
     },
-    "/": {
+    "/performa/studio/{id}": {
       "get": {
-        "summary": "New Request",
-        "deprecated": false,
-        "description": "",
-        "tags": [],
-        "parameters": [],
+        "summary": "Get Studio Performance by ID",
+        "tags": ["Performa"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Studio performance data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/finance": {
+      "get": {
+        "summary": "Get All Financial Records",
+        "tags": ["Finance"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of financial records"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/product": {
+      "get": {
+        "summary": "Get All Products",
+        "tags": ["Product"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of products"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Product",
+        "tags": ["Product"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "sku": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/product/{id}": {
+      "get": {
+        "summary": "Get Product by ID",
+        "tags": ["Product"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Product",
+        "tags": ["Product"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Product",
+        "tags": ["Product"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/order": {
+      "get": {
+        "summary": "Get All Orders",
+        "tags": ["Order"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of orders"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Order",
+        "tags": ["Order"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "201": {
+            "description": "Order created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/order/{id}": {
+      "get": {
+        "summary": "Get Order by ID",
+        "tags": ["Order"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Order",
+        "tags": ["Order"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Order",
+        "tags": ["Order"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/transaction": {
+      "get": {
+        "summary": "Get All Transactions",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of transactions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Transaction",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/transaction/grouped": {
+      "get": {
+        "summary": "Get Transactions Grouped",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Grouped transactions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/transaction/{id}": {
+      "get": {
+        "summary": "Get Transaction by ID",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Transaction",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Transaction",
+        "tags": ["Transaction"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/target": {
+      "get": {
+        "summary": "Get All Targets",
+        "tags": ["Target"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of targets"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Target",
+        "tags": ["Target"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "target_value": {
+                    "type": "number"
+                  },
+                  "period_start": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "period_end": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Target created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {}
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "studio_id": "field is required",
+                    "date": "field is required",
+                    "target_gmv": "field is required",
+                    "target_income": "field is required"
+                  }
                 }
               }
-            },
-            "headers": {}
+            }
+          }
+        }
+      }
+    },
+    "/target/{id}": {
+      "get": {
+        "summary": "Get Target by ID",
+        "tags": ["Target"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Target details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Target",
+        "tags": ["Target"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Target updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Target",
+        "tags": ["Target"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Target deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "summary": "Get Dashboard Data",
+        "description": "Get aggregated dashboard summary data",
+        "tags": ["Dashboard"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Dashboard data"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/role": {
+      "get": {
+        "summary": "Get All Roles",
+        "tags": ["Role"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of roles"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Role",
+        "tags": ["Role"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "required": ["name", "permissions"]
+              },
+              "example": {
+                "name": "manager",
+                "permissions": [1, 2, 3, 5]
+              }
+            }
           }
         },
-        "security": []
+        "responses": {
+          "201": {
+            "description": "Role created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                },
+                "example": {
+                  "error": "Validation Error",
+                  "details": {
+                    "name": "field is required",
+                    "permissions": "field is required"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/role/{id}": {
+      "get": {
+        "summary": "Get Role by ID",
+        "tags": ["Role"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Role",
+        "tags": ["Role"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Role",
+        "tags": ["Role"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/permission": {
+      "get": {
+        "summary": "Get All Permissions",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "List of permissions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Permission",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "group": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Permission created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      }
+    },
+    "/permission/grouped": {
+      "get": {
+        "summary": "Get Permissions Grouped",
+        "description": "Get all permissions grouped by module",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Grouped permissions"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/permission/{id}": {
+      "get": {
+        "summary": "Get Permission by ID",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission details"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Permission",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission updated"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Permission",
+        "tags": ["Permission"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Permission deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     }
   },
   "components": {
-    "schemas": {},
-    "securitySchemes": {}
-  },
-  "servers": [],
-  "security": []
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      },
+      "UserCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role_id": {
+            "type": "integer"
+          }
+        },
+        "required": ["name", "email", "password", "role_id"]
+      },
+      "UserUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Resource not found"
+          },
+          "details": {
+            "type": "string",
+            "description": "Additional error details (optional)",
+            "example": "The requested item does not exist"
+          }
+        },
+        "required": ["error"]
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "description": "Validation error response (HTTP 422). The 'details' object contains field-specific validation errors where keys are field names from the request body and values are the validation error messages.",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error type identifier",
+            "example": "Validation Error"
+          },
+          "details": {
+            "type": "object",
+            "description": "Field-specific validation errors. Keys are field names, values are error messages.",
+            "additionalProperties": {
+              "type": "string",
+              "description": "Validation error message for the field"
+            }
+          }
+        },
+        "required": ["error", "details"]
+      },
+      "UnauthorizedResponse": {
+        "type": "object",
+        "description": "Unauthorized error response (HTTP 401)",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Unauthorized"
+          }
+        },
+        "required": ["error"]
+      },
+      "ForbiddenResponse": {
+        "type": "object",
+        "description": "Forbidden error response (HTTP 403)",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Access denied"
+          }
+        },
+        "required": ["error"]
+      },
+      "NotFoundResponse": {
+        "type": "object",
+        "description": "Not found error response (HTTP 404)",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Resource not found"
+          }
+        },
+        "required": ["error"]
+      },
+      "InternalServerErrorResponse": {
+        "type": "object",
+        "description": "Internal server error response (HTTP 500)",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Internal server error"
+          },
+          "details": {
+            "type": "string",
+            "description": "Error details (only in debug mode)"
+          }
+        },
+        "required": ["error"]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter JWT token obtained from /auth/login"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request - Invalid input data",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized - Missing or invalid authentication token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UnauthorizedResponse"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden - Insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ForbiddenResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found - Resource does not exist",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotFoundResponse"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Unprocessable Entity - Validation failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InternalServerErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  }
 }
