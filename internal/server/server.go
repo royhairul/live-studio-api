@@ -52,7 +52,10 @@ func Start(lc fx.Lifecycle, router *gin.Engine, cfg *config.Config) {
 }
 
 func NewApp() *fx.App {
+	gin.SetMode(gin.ReleaseMode)
+
 	return fx.New(
+		fx.NopLogger,
 		fx.Provide(
 			config.LoadConfig,
 			database.InitDatabase,
