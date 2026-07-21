@@ -16,6 +16,7 @@ func RegisterRoutes(router *gin.RouterGroup, controller controller.AccountContro
 		route.POST("", controller.CreateOrUpdate)
 		route.GET("/:id", controller.FindById)
 		route.PUT("/:id", controller.Update)
+		route.PATCH("/:id", controller.Patch)
 		route.DELETE("/:id", controller.Delete)
 	}
 }

@@ -12,6 +12,7 @@ type AccountService interface {
 	CreateOrUpdate(ctx context.Context, req params.CreateAccountRequest) (*params.AccountResponse, error)
 	Update(ctx context.Context, id string, req params.UpdateAccountRequest) (*params.AccountResponse, error)
 	Delete(ctx context.Context, id string) error
+	Patch(ctx context.Context, id string, req params.PatchAccountRequest) (*params.AccountResponse, error)
 
 	WithID(id string) AccountService
 	WithUniqueID(uid string) AccountService

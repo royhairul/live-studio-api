@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
@@ -83,14 +84,15 @@ func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.Crea
 	}
 
 	account := entity.Account{
-		Name:     utils.GetDisplayName(accountShopee.Nickname, accountShopee.Username),
-		Username: accountShopee.Username,
-		Email:    accountShopee.Email,
-		UniqueID: fmt.Sprintf("%d", accountShopee.ShopId),
-		Platform: "Shopee",
-		Cookie:   req.Cookie,
-		StudioID: req.StudioID,
-		Device:   req.Device,
+		Name:            utils.GetDisplayName(accountShopee.Nickname, accountShopee.Username),
+		Username:        accountShopee.Username,
+		Email:           accountShopee.Email,
+		UniqueID:        fmt.Sprintf("%d", accountShopee.ShopId),
+		Platform:        "Shopee",
+		Cookie:          req.Cookie,
+		CookieUpdatedAt: time.Now(),
+		StudioID:        req.StudioID,
+		Device:          req.Device,
 	}
 
 	// Cari existing berdasarkan UniqueID + TenantID
@@ -114,6 +116,7 @@ func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.Crea
 		existing.Username = account.Username
 		existing.Email = account.Email
 		existing.Cookie = account.Cookie
+		existing.CookieUpdatedAt = time.Now()
 		existing.Device = account.Device
 		existing.StudioID = account.StudioID
 
@@ -156,4 +159,36 @@ func (a *AccountServiceImpl) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// Patch applies partial updates to an account
+func (a *AccountServiceImpl) Patch(ctx context.Context, id string, req params.PatchAccountRequest) (*params.AccountResponse, error) {
+	// Find the existing account
+	existing, err := a.repository.FindOne(ctx, params.AccountFilter{ID: &id})
+	if err != nil {
+		return nil, err
+	}
+
+	// Apply only the fields that are provided (not nil)
+	if req.IsActive != nil {
+		existing.IsActive = *req.IsActive
+	}
+	if req.StudioID != nil {
+		existing.StudioID = *req.StudioID
+	}
+	if req.Cookie != nil {
+		existing.Cookie = *req.Cookie
+		existing.CookieUpdatedAt = time.Now()
+	}
+	if req.Device != nil {
+		existing.Device = *req.Device
+	}
+
+	// Save the updated account
+	updated, err := a.repository.Save(ctx, existing)
+	if err != nil {
+		return nil, err
+	}
+
+	return params.NewAccountResponse(updated), nil
 }

@@ -1768,6 +1768,94 @@
             "$ref": "#/components/responses/NotFound"
           }
         }
+      },
+      "patch": {
+        "summary": "Partial Update Account",
+        "description": "Apply partial updates to an account. Only provided fields will be updated.",
+        "tags": ["Account"],
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "All fields are optional - only provided fields will be updated",
+                "properties": {
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether the account is active"
+                  },
+                  "studio_id": {
+                    "type": "integer",
+                    "description": "Studio ID to assign account to"
+                  },
+                  "cookie": {
+                    "type": "string",
+                    "description": "Session cookie"
+                  },
+                  "device": {
+                    "type": "string",
+                    "description": "Device information"
+                  }
+                }
+              },
+              "examples": {
+                "update_status": {
+                  "summary": "Update status only",
+                  "value": {
+                    "is_active": false
+                  }
+                },
+                "update_cookie": {
+                  "summary": "Update cookie only",
+                  "value": {
+                    "cookie": "new_session_cookie_value"
+                  }
+                },
+                "update_multiple": {
+                  "summary": "Update multiple fields",
+                  "value": {
+                    "is_active": true,
+                    "studio_id": 2,
+                    "device": "iPhone 15 Pro"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/account-session": {
@@ -3207,6 +3295,50 @@
           },
           "data": {
             "type": "object"
+          }
+        }
+      },
+      "AccountResponse": {
+        "type": "object",
+        "description": "Account response with status and age information",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "unique_id": {
+            "type": "string",
+            "description": "Platform unique identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account display name"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Platform name (e.g., shopee)"
+          },
+          "studio_name": {
+            "type": "string"
+          },
+          "cookie": {
+            "type": "string",
+            "description": "Session cookie"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the account is currently active"
+          },
+          "age": {
+            "type": "string",
+            "description": "Human-readable time since last update (e.g., '2d 5h', '3h 30m', 'just now')",
+            "example": "2d 5h"
           }
         }
       },

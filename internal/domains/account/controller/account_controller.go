@@ -8,6 +8,7 @@ type AccountController interface {
 	CreateOrUpdate(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
+	Patch(ctx *gin.Context)
 
 	FindByStudio(ctx *gin.Context)
 }

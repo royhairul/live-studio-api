@@ -125,3 +125,23 @@ func (a *AccountControllerImpl) FindByStudio(ctx *gin.Context) {
 	resp := response.NewBaseResponse("retrieved accounts by studio successfully", accounts)
 	ctx.JSON(http.StatusOK, resp)
 }
+
+// Patch implements AccountController - handles partial updates.
+func (a *AccountControllerImpl) Patch(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var req params.PatchAccountRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid request data", err.Error()))
+		return
+	}
+
+	result, err := a.service.Patch(ctx.Request.Context(), id, req)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("account updated successfully", result)
+	ctx.JSON(http.StatusOK, resp)
+}
