@@ -9,8 +9,9 @@ type ShopeeApiResponse[T any] struct {
 }
 
 type ShopeeApiPaginationResult[T any] struct {
-	Page     int `json:"page"`
-	PageSize int `json:"pageSize"`
-	Total    int `json:"total"`
-	List     []T `json:"list"`
+	Page      int `json:"page"`
+	PageSize  int `json:"pageSize"`
+	Total     int `json:"total"`
+	TotalPage int `json:"totalPage"`
+	List      []T `json:"list"`
 }

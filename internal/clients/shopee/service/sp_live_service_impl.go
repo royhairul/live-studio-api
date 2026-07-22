@@ -49,6 +49,30 @@ func (s ShopeeLiveServiceImpl) GetLiveSessionRT(cookie string) ([]params.ShopeeL
 	return result.Data.List, nil
 }
 
+// GetLiveHistory implements ShopeeLiveService.
+func (s *ShopeeLiveServiceImpl) GetLiveHistory(cookie string, req params.ShopeeLiveHistoryRequest) (params.ShopeeApiPaginationResult[params.ShopeeLiveHistoryItem], error) {
+	var empty params.ShopeeApiPaginationResult[params.ShopeeLiveHistoryItem]
+
+	endpoint := "/supply/api/lm/sellercenter/liveList/v2"
+	query := req.WithDefaults().ToQuery()
+
+	request, err := s.ShopeeClient.NewShopeeRequest("GET", endpoint, query, nil, cookie)
+	if err != nil {
+		return empty, fmt.Errorf("failed to create request to %s: %w", endpoint, err)
+	}
+
+	var result params.ShopeeApiResponse[params.ShopeeApiPaginationResult[params.ShopeeLiveHistoryItem]]
+	if err := s.ShopeeClient.DoShopeeRequest(request, &result); err != nil {
+		return empty, fmt.Errorf("failed to do request to %s: %w", endpoint, err)
+	}
+
+	if result.Error != 0 {
+		return empty, fmt.Errorf("%s", result.ErrorMsg)
+	}
+
+	return result.Data, nil
+}
+
 // GetDashboardOverviewRT implements ShopeeLiveService.
 func (s *ShopeeLiveServiceImpl) GetDashboardOverviewRT(cookie string, sessionID string) (params.ShopeeLiveOverviewResponse, error) {
 	endpoint := "/supply/api/lm/sellercenter/realtime/dashboard/overview"

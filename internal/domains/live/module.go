@@ -5,6 +5,7 @@ import (
 
 	ShopeeService "github.com/royhairul/live-studio-api/internal/clients/shopee/service"
 	"github.com/royhairul/live-studio-api/internal/domains/live/controller"
+	"github.com/royhairul/live-studio-api/internal/domains/live/repository"
 	"github.com/royhairul/live-studio-api/internal/domains/live/service"
 )
 
@@ -12,6 +13,7 @@ var Module = fx.Module(
 	"live",
 	fx.Provide(
 		ShopeeService.NewShopeeLiveService,
+		repository.NewLiveRepository,
 		service.NewLiveService,
 		controller.NewLiveController,
 	),

@@ -4,6 +4,7 @@ import "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 
 type ShopeeLiveService interface {
 	GetLiveSessionRT(cookie string) ([]params.ShopeeLiveReportItemRT, error)
+	GetLiveHistory(cookie string, req params.ShopeeLiveHistoryRequest) (params.ShopeeApiPaginationResult[params.ShopeeLiveHistoryItem], error)
 
 	GetDashboardOverviewRT(cookie, sessionID string) (params.ShopeeLiveOverviewResponse, error)
 	GetDashboardBuyerRT(cookie, sessionID string) ([]params.ShopeeLiveAudienceAnalyticsResponse, error)

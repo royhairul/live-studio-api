@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
+	"github.com/royhairul/live-studio-api/internal/domains/live/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
+	"github.com/royhairul/live-studio-api/internal/domains/live/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/timehandler"
 	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 
 	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
@@ -15,16 +17,27 @@ import (
 	accountservice "github.com/royhairul/live-studio-api/internal/domains/account/service"
 )
 
+// maxSyncPages caps the pagination walk so a bad totalPage from Shopee cannot
+// spin forever.
+const maxSyncPages = 50
+
 type LiveServiceImpl struct {
 	accountSvc    accountservice.AccountService
 	shopeeLiveSvc shopeeservice.ShopeeLiveService
+	repository    repository.LiveRepository
 }
 
-func NewLiveService(accountSvc accountservice.AccountService, shopeeLiveSvc shopeeservice.ShopeeLiveService) LiveService {
-	return &LiveServiceImpl{accountSvc, shopeeLiveSvc}
+func NewLiveService(
+	accountSvc accountservice.AccountService,
+	shopeeLiveSvc shopeeservice.ShopeeLiveService,
+	repository repository.LiveRepository,
+) LiveService {
+	return &LiveServiceImpl{accountSvc, shopeeLiveSvc, repository}
 }
 
-// GetLive implements LiveService.
+// GetLive implements LiveService. It powers the preview stream, so it reports
+// only sessions still on air — Shopee's realtime list also returns sessions that
+// have already finished.
 func (l *LiveServiceImpl) GetLive(ctx context.Context) ([]*params.LiveResponse, error) {
 	accounts, err := l.accountSvc.FindAll(ctx)
 	if err != nil {
@@ -40,36 +53,181 @@ func (l *LiveServiceImpl) GetLive(ctx context.Context) ([]*params.LiveResponse, 
 			continue
 		}
 
-		// Filter berdasarkan tanggal hari ini
-		var todayData []shopeeparams.ShopeeLiveReportItemRT
+		// Keep only sessions that are still running. Shopee's duration is left
+		// untouched — overwriting it with elapsed-since-start would make every
+		// finished session look like it is still on air.
+		liveSessions := make([]shopeeparams.ShopeeLiveReportItemRT, 0, len(realtimeData))
 		for _, session := range realtimeData {
-			if utils.IsToday(session.StartTime) {
-				//  duration
-				session.Duration = time.Now().UnixMilli() - session.StartTime
-
-				//  Change to hours
-				durationHours := float64(session.Duration) / 3600000.0
-
-				// if duration > 0, set OmsetPerHours
-				if durationHours > 0 {
-					session.OmsetPerHour = session.ConfirmedSales / durationHours
-				} else {
-					session.OmsetPerHour = 0
-				}
-				todayData = append(todayData, session)
+			if !utils.IsLive(session.StartTime, session.Duration) {
+				continue
 			}
+
+			session.IsLive = true
+
+			durationHours := float64(session.Duration) / 3600000.0
+			if durationHours > 0 {
+				session.OmsetPerHour = session.ConfirmedSales / durationHours
+			} else {
+				session.OmsetPerHour = 0
+			}
+
+			liveSessions = append(liveSessions, session)
 		}
 
 		allRealtimeData = append(allRealtimeData, &params.LiveResponse{
 			AccountID:   fmt.Sprint(account.ID),
 			AccountName: account.Name,
 			Total:       len(realtimeData),
-			Relive:      len(todayData),
-			ReportLive:  todayData,
+			Relive:      len(liveSessions),
+			ReportLive:  liveSessions,
 		})
 
 	}
 	return allRealtimeData, nil
+}
+
+// GetStoredHistory implements LiveService. History is read from the lives table,
+// so it keeps working when an account's Shopee cookie expires — only the sync
+// endpoints talk to Shopee.
+func (l *LiveServiceImpl) GetStoredHistory(ctx context.Context, filter params.LiveFilter) (*params.StoredLiveResponse, error) {
+	total, err := l.repository.Count(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	lives, err := l.repository.FindAll(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	history := make([]*params.StoredLiveItem, 0, len(lives))
+	for _, live := range lives {
+		history = append(history, params.NewStoredLiveItem(live))
+	}
+
+	totalPage := 0
+	if filter.PageSize > 0 {
+		totalPage = int((total + int64(filter.PageSize) - 1) / int64(filter.PageSize))
+	}
+
+	return &params.StoredLiveResponse{
+		Page:      filter.Page,
+		PageSize:  filter.PageSize,
+		Total:     total,
+		TotalPage: totalPage,
+		History:   history,
+	}, nil
+}
+
+// SyncHistory implements LiveService. It walks every page of the account's live
+// history and upserts each session, so re-running it refreshes figures that
+// settle after a stream ends rather than creating duplicates.
+func (l *LiveServiceImpl) SyncHistory(ctx context.Context, accountID string, req shopeeparams.ShopeeLiveHistoryRequest) (*params.LiveSyncResponse, error) {
+	account, err := l.accountSvc.WithID(accountID).FindOne(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &params.LiveSyncResponse{
+		AccountID:   fmt.Sprint(account.ID),
+		AccountName: account.Name,
+	}
+
+	page := req.WithDefaults().Page
+	for i := 0; i < maxSyncPages; i++ {
+		req.Page = page
+
+		batch, err := l.shopeeLiveSvc.GetLiveHistory(account.Cookie, req)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, session := range batch.List {
+			live := entity.Live{
+				SessionID:  session.SessionID,
+				Title:      session.Title,
+				CoverImage: session.CoverImage,
+				Status:     session.Status,
+				StartTime:  timehandler.ParseInt64MilliDate(session.StartTime),
+				Duration:   session.Duration,
+
+				Views:            session.Views,
+				Viewers:          session.Viewers,
+				PeakViews:        session.PeakViews,
+				AvgViewsDuration: session.AvgViewsDuration,
+				Comments:         session.Comments,
+				Likes:            session.Likes,
+				FollowersGrowth:  session.FollowersGrowth,
+				EngagedUV:        session.EngagedUV,
+				AvgEngagedCCU:    session.AvgEngagedCCU,
+				ThirtyMinsCount:  session.ThirtyMinsCount,
+
+				Atc:               session.Atc,
+				ProductClicks:     session.ProductClicks,
+				ConversionRate:    session.ConversionRate,
+				PlacedOrders:      session.PlacedOrders,
+				PlacedItemSold:    session.PlacedItemSold,
+				PlacedSales:       session.PlacedSales,
+				ConfirmedOrders:   session.ConfirmedOrders,
+				ConfirmedItemSold: session.ConfirmedItemSold,
+				ConfirmedSales:    session.ConfirmedSales,
+				PaidOrders:        session.PaidOrders,
+				PaidSales:         session.PaidSales,
+
+				AccountID: account.ID,
+			}
+
+			created, err := l.repository.Upsert(ctx, &live)
+			if err != nil {
+				return nil, err
+			}
+
+			result.Fetched++
+			if created {
+				result.Created++
+			} else {
+				result.Updated++
+			}
+		}
+
+		if len(batch.List) == 0 || page >= batch.TotalPage {
+			break
+		}
+		page++
+	}
+
+	return result, nil
+}
+
+// SyncAllHistory implements LiveService. A failing account is recorded and
+// skipped rather than aborting the run, so one expired cookie cannot block the
+// rest — same tolerance GetLive applies.
+func (l *LiveServiceImpl) SyncAllHistory(ctx context.Context, req shopeeparams.ShopeeLiveHistoryRequest) ([]*params.LiveSyncResponse, error) {
+	accounts, err := l.accountSvc.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*params.LiveSyncResponse, 0, len(accounts))
+
+	for _, account := range accounts {
+		accountID := fmt.Sprint(account.ID)
+
+		result, err := l.SyncHistory(ctx, accountID, req)
+		if err != nil {
+			log.Printf("Failed to sync live history for account %s: %v", account.Name, err)
+			results = append(results, &params.LiveSyncResponse{
+				AccountID:   accountID,
+				AccountName: account.Name,
+				Error:       err.Error(),
+			})
+			continue
+		}
+
+		results = append(results, result)
+	}
+
+	return results, nil
 }
 
 // GetLiveDetail implements LiveService.
