@@ -19,11 +19,12 @@ type Config struct {
 	JWTExpiredAt string
 }
 
-// LoadConfig membaca file .env dan mengisi struct Config
+// LoadConfig membaca file .env dan mengisi struct Config.
+// Di dalam container tidak ada file .env (env sudah di-inject compose lewat
+// env_file), jadi file yang tidak ditemukan bukan error.
 func LoadConfig() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
 	return &Config{

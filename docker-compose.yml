@@ -3,6 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: live-studio-db
     restart: unless-stopped
+    # Interpolated from ./.env, which compose reads automatically.
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -11,8 +12,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      # Host-side port only; the API always reaches Postgres on 5432 internally.
-      - "${DB_PUBLISHED_PORT:-5432}:5432"
+      # DB_PORT is the host-side port; Postgres always listens on 5432 inside the network.
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-db_livestudio}"]
       interval: 5s
@@ -26,19 +27,22 @@ services:
     image: live-studio-api:latest
     container_name: live-studio-api
     restart: unless-stopped
-    # Every APP_*/JWT_*/EMAIL_*/SUPERADMIN_* value comes from .env (copy .env.example).
+    # Every APP_*/DB_*/JWT_*/EMAIL_*/SUPERADMIN_*/MAILGUN_* value comes from .env
+    # (copy .env.example). .env is gitignored and dockerignored, so it is injected
+    # here at runtime rather than baked into the image.
     env_file:
       - .env
     environment:
-      # These override .env: inside the compose network the database is "db:5432",
-      # and the server must bind on all interfaces to be reachable from the host.
+      # Only the values .env cannot know are overridden. On the compose network the
+      # database answers as "db" on its internal 5432, never on the host's DB_HOST/DB_PORT.
       DB_HOST: db
       DB_PORT: 5432
-      SERVER_HOST: 0.0.0.0
+      # The container always listens on 8080 (Dockerfile EXPOSE + HEALTHCHECK assume it);
+      # .env's SERVER_PORT picks the host-side port in the mapping below.
       SERVER_PORT: 8080
       TZ: ${TZ:-Asia/Jakarta}
     ports:
-      - "${APP_PUBLISHED_PORT:-8080}:8080"
+      - "${SERVER_PORT:-8080}:8080"
     volumes:
       # Keep the cron job's logs/cronjob.log across container restarts
       - applogs:/app/logs
