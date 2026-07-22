@@ -64,6 +64,14 @@ func (p *PerformaServiceImpl) GetHostByID(ctx context.Context, id string, startD
 		return nil, err
 	}
 
+	// Angka engagement berasal dari tabel lives, bukan account_sessions, jadi
+	// dihitung terpisah. Hanya dipakai halaman detail — GetHosts tidak ikut.
+	metrics, err := p.aggregator.CalculateLiveMetricsByHost(ctx, id, start, end)
+	if err != nil {
+		return nil, err
+	}
+	results.PerformaLiveMetrics = metrics
+
 	return &results, nil
 }
 
@@ -86,7 +94,9 @@ func (p *PerformaServiceImpl) GetAccounts(ctx context.Context, startDate, endDat
 	}
 
 	// === Previous Period ===
-	_, prevTotal, err := p.aggregator.Calculate(ctx, start, end)
+	// Rentang sebelumnya, bukan rentang berjalan — sebelumnya keduanya memakai
+	// start/end yang sama sehingga diff dan ratio selalu nol.
+	_, prevTotal, err := p.aggregator.Calculate(ctx, &prevStart, &prevEnd)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build previous performa list: %w", err)
 	}
@@ -110,6 +120,9 @@ func (p *PerformaServiceImpl) GetAccounts(ctx context.Context, startDate, endDat
 			Income:     NewMetric(currTotal.Income, prevTotal.Income),
 		},
 		List: currList,
+
+		// Rasio dihitung dari seluruh sesi sekaligus, bukan rata-rata per akun.
+		PerformaLiveMetrics: currTotal.PerformaLiveMetrics,
 	}
 
 	return results, nil
@@ -134,11 +147,10 @@ func (p *PerformaServiceImpl) GetStudios(ctx context.Context, startDate string, 
 	}
 
 	var (
-		currGMV, prevGMV                             int64
-		currCommissionPaid, prevCommissionPaid       int64
-		currCommissionPending, prevCommissionPending int64
-		currAds, prevAds                             int64
-		currIncome, prevIncome                       int64
+		currGMV, prevGMV                         int64
+		currCommissionTotal, prevCommissionTotal int64
+		currAds, prevAds                         int64
+		currIncome, prevIncome                   int64
 	)
 
 	list := []params.PerformaStudioItemResponse{}
@@ -157,10 +169,14 @@ func (p *PerformaServiceImpl) GetStudios(ctx context.Context, startDate string, 
 			StudioID:   fmt.Sprint(studio.ID),
 			StudioName: studio.Name,
 			PerformaMetricItem: params.PerformaMetricItem{
-				GMV:        currTotal.GMV,
-				Commission: currTotal.CommissionPaid + currTotal.CommissionPending,
-				Ads:        currTotal.Ads,
-				Income:     currTotal.Income,
+				GMV: currTotal.GMV,
+				// Total, bukan paid+pending: Income diturunkan dari total, jadi
+				// memakai paid+pending di sini membuat "Komisi 0" bisa muncul
+				// berdampingan dengan "Pendapatan 542,5 JT".
+				Commission:          currTotal.CommissionTotal,
+				Ads:                 currTotal.Ads,
+				Income:              currTotal.Income,
+				PerformaLiveMetrics: currTotal.PerformaLiveMetrics,
 			},
 		}
 
@@ -169,10 +185,8 @@ func (p *PerformaServiceImpl) GetStudios(ctx context.Context, startDate string, 
 		// Calculate metrics
 		currGMV += currTotal.GMV
 		prevGMV += prevTotal.GMV
-		currCommissionPaid += currTotal.CommissionPaid
-		prevCommissionPaid += prevTotal.CommissionPaid
-		currCommissionPending += currTotal.CommissionPending
-		prevCommissionPending += prevTotal.CommissionPending
+		currCommissionTotal += currTotal.CommissionTotal
+		prevCommissionTotal += prevTotal.CommissionTotal
 		currAds += currTotal.Ads
 		prevAds += prevTotal.Ads
 		currIncome += currTotal.Income
@@ -191,13 +205,21 @@ func (p *PerformaServiceImpl) GetStudios(ctx context.Context, startDate string, 
 			Days:  days,
 		},
 		Metrics: params.Metrics{
-			Commission: NewMetric((currCommissionPaid + currCommissionPending), (prevCommissionPaid + prevCommissionPending)),
+			Commission: NewMetric(currCommissionTotal, prevCommissionTotal),
 			GMV:        NewMetric(currGMV, prevGMV),
 			Ads:        NewMetric(int64(currAds), int64(prevAds)),
 			Income:     NewMetric(currIncome, prevIncome),
 		},
 		List: list,
 	}
+
+	// Rasio lintas studio tidak bisa dijumlahkan dari angka per studio, jadi
+	// dihitung ulang sekali dari seluruh sesi.
+	liveMetrics, err := p.aggregator.CalculateLiveMetrics(ctx, nil, start, end)
+	if err != nil {
+		return nil, err
+	}
+	results.PerformaLiveMetrics = liveMetrics
 
 	return results, nil
 }
@@ -253,9 +275,11 @@ func (p *PerformaServiceImpl) GetStudioByID(ctx context.Context, id string, star
 		Metrics: params.Metrics{
 			GMV:        NewMetric(currTotal.GMV, prevTotal.GMV),
 			Ads:        NewMetric(currTotal.Ads, prevTotal.Ads),
-			Commission: NewMetric((currTotal.CommissionPaid + currTotal.CommissionPending), (prevTotal.CommissionPaid + prevTotal.CommissionPending)),
+			Commission: NewMetric(currTotal.CommissionTotal, prevTotal.CommissionTotal),
 			Income:     NewMetric(currTotal.Income, prevTotal.Income),
 		},
+
+		PerformaLiveMetrics: currTotal.PerformaLiveMetrics,
 	}
 
 	return result, nil

@@ -5,6 +5,9 @@ type PerformaAccountResponse struct {
 	PreviousPeriod PeriodInfo                         `json:"previous_period"`
 	Metrics        Metrics                            `json:"metrics"`
 	List           []PerformaStudioDetailItemResponse `json:"list"`
+
+	// Engagement across every account in the range.
+	PerformaLiveMetrics
 }
 
 type PerformaAccountDetailItemResponse struct {

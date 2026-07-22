@@ -19,6 +19,7 @@ type PerformaHostSummaryResponse struct {
 // === Detail Response (untuk host by ID) ===
 type PerformaHostDetailResponse struct {
 	PerformaHostSummaryResponse
+	PerformaLiveMetrics
 	AvgSales int64                      `json:"avg_sales,omitempty"`
 	AvgPaid  int64                      `json:"avg_paid,omitempty"`
 	Total    *TotalPerformaHost         `json:"total,omitempty"`

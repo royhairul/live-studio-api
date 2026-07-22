@@ -5,6 +5,9 @@ type PerformaStudioResponse struct {
 	PreviousPeriod PeriodInfo                   `json:"previous_period"`
 	Metrics        Metrics                      `json:"metrics"`
 	List           []PerformaStudioItemResponse `json:"list"`
+
+	// Engagement across every studio in the range.
+	PerformaLiveMetrics
 }
 
 type PerformaStudioItemResponse struct {
@@ -20,6 +23,9 @@ type PerformaStudioDetailResponse struct {
 	PreviousPeriod PeriodInfo                         `json:"previous_period"`
 	Metrics        Metrics                            `json:"metrics"`
 	List           []PerformaStudioDetailItemResponse `json:"list"`
+
+	// Engagement across every account in this studio.
+	PerformaLiveMetrics
 }
 
 type PerformaStudioDetailItemResponse struct {
