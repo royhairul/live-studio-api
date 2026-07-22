@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/royhairul/live-studio-api/config"
 	"github.com/royhairul/live-studio-api/database"
 )
 
@@ -17,6 +18,10 @@ func main() {
 		fmt.Println("  refresh  → drop semua tabel + migrate ulang")
 		return
 	}
+
+	// database.DB diisi oleh InitDatabase; tanpa ini nilainya nil dan migrate crash.
+	cfg := config.LoadConfig()
+	database.InitDatabase(cfg)
 
 	command := args[1]
 
