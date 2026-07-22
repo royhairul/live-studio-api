@@ -40,6 +40,10 @@
       "description": "Live streaming hosts (talents) management"
     },
     {
+      "name": "Host Account",
+      "description": "Assignment of platform accounts to hosts (reporting bridge)"
+    },
+    {
       "name": "Studio",
       "description": "Physical studios management"
     },
@@ -135,7 +139,9 @@
       "post": {
         "summary": "Login",
         "description": "Authenticate user and get JWT token",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -153,7 +159,10 @@
                     "description": "User password"
                   }
                 },
-                "required": ["email", "password"]
+                "required": [
+                  "email",
+                  "password"
+                ]
               },
               "example": {
                 "email": "admin@example.com",
@@ -220,7 +229,9 @@
       "post": {
         "summary": "Register",
         "description": "Register a new user account",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -242,7 +253,11 @@
                     "description": "User password (min 6 characters)"
                   }
                 },
-                "required": ["name", "email", "password"]
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ]
               },
               "example": {
                 "name": "John Doe",
@@ -291,7 +306,9 @@
       "post": {
         "summary": "Forgot Password",
         "description": "Request password reset OTP via email",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -304,7 +321,9 @@
                     "format": "email"
                   }
                 },
-                "required": ["email"]
+                "required": [
+                  "email"
+                ]
               },
               "example": {
                 "email": "user@example.com"
@@ -326,7 +345,9 @@
       "post": {
         "summary": "Verify OTP",
         "description": "Verify OTP code for password reset",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -343,7 +364,10 @@
                     "description": "6-digit OTP code"
                   }
                 },
-                "required": ["email", "otp"]
+                "required": [
+                  "email",
+                  "otp"
+                ]
               },
               "example": {
                 "email": "user@example.com",
@@ -366,7 +390,9 @@
       "post": {
         "summary": "Reset Password",
         "description": "Reset password after OTP verification",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -385,7 +411,11 @@
                     "type": "string"
                   }
                 },
-                "required": ["email", "password", "confirm_password"]
+                "required": [
+                  "email",
+                  "password",
+                  "confirm_password"
+                ]
               },
               "example": {
                 "email": "user@example.com",
@@ -406,8 +436,14 @@
       "get": {
         "summary": "Get Current User",
         "description": "Get information about the currently authenticated user",
-        "tags": ["Auth"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Current user information",
@@ -454,8 +490,14 @@
       "get": {
         "summary": "Get All Users",
         "description": "Get all users (tenant-filtered)",
-        "tags": ["User"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of users",
@@ -481,8 +523,14 @@
       "post": {
         "summary": "Create User",
         "description": "Create a new user",
-        "tags": ["User"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -528,8 +576,14 @@
     "/users/{id}": {
       "get": {
         "summary": "Get User by ID",
-        "tags": ["User"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -555,8 +609,14 @@
       },
       "put": {
         "summary": "Update User",
-        "tags": ["User"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -598,8 +658,14 @@
       },
       "delete": {
         "summary": "Delete User",
-        "tags": ["User"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "User"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -631,8 +697,14 @@
       "get": {
         "summary": "Get All Hosts",
         "description": "Get all hosts",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of hosts",
@@ -655,8 +727,14 @@
       "post": {
         "summary": "Create Host",
         "description": "Create a new host",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -674,7 +752,11 @@
                     "type": "integer"
                   }
                 },
-                "required": ["name", "phone", "studio_id"]
+                "required": [
+                  "name",
+                  "phone",
+                  "studio_id"
+                ]
               },
               "example": {
                 "name": "Jane Live",
@@ -719,8 +801,14 @@
       "get": {
         "summary": "Get Hosts Grouped by Studio",
         "description": "Get all hosts grouped by their studio",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Hosts grouped by studio"
@@ -737,8 +825,14 @@
     "/host/{id}": {
       "get": {
         "summary": "Get Host by ID",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -764,8 +858,14 @@
       },
       "put": {
         "summary": "Update Host",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -818,8 +918,14 @@
       },
       "delete": {
         "summary": "Delete Host",
-        "tags": ["Host"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Host"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -844,11 +950,402 @@
         }
       }
     },
+    "/host-account": {
+      "get": {
+        "summary": "List Host Account Assignments",
+        "description": "List which accounts belong to which hosts.\n\nThis is the bridge the performa endpoints use to decide whose numbers a live session belongs to. It replaces attendance for that purpose: attendance records who was present, which is a different question from who owns an account's results.\n\nAssignments are historical — ending one keeps the row, so reports over past periods still resolve to whoever held the account at the time. Results are newest-first by `valid_from` and tenant-scoped.",
+        "tags": [
+          "Host Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "host",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter by host ID"
+          },
+          {
+            "name": "account",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by account ID"
+          },
+          {
+            "name": "studio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by studio ID (joined through the account)"
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            },
+            "description": "Set to `true` to keep only assignments that have not been ended (`valid_to` is null)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of assignments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/HostAccountResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Assign Account to Host",
+        "description": "Assign an account to a host from a given moment.\n\n**One account cannot be held by two hosts at once.** An overlapping assignment is rejected with `400`, naming the host that already holds it — a live session cannot belong to two people, so the ambiguity is blocked on write rather than guessed at read time. The same host holding an account across adjacent spans is fine.\n\n`valid_from` defaults to **midnight today**, so assigning an account part-way through the day still counts that day's earlier sessions. If the account was released by another host later than that, the new assignment starts at the moment of release instead — a same-day handover therefore does not collide.",
+        "tags": [
+          "Host Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "host_id",
+                  "account_id"
+                ],
+                "properties": {
+                  "host_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "account_id": {
+                    "type": "integer"
+                  },
+                  "valid_from": {
+                    "type": "string",
+                    "description": "`YYYY-MM-DD` or an RFC3339 timestamp. Defaults to midnight today."
+                  },
+                  "valid_to": {
+                    "type": "string",
+                    "description": "`YYYY-MM-DD` or an RFC3339 timestamp. Omit to leave the assignment open. Must be after `valid_from`."
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "host_id": "b15d206d-8ebf-4cae-b216-7f9e9b6fdc02",
+                "account_id": 6
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assignment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HostAccountResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid dates, or the account is already held by another host in an overlapping period",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "account already assigned",
+                  "details": "account is held by host Budi for an overlapping period"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/host-account/{id}": {
+      "get": {
+        "summary": "Get Host Account Assignment",
+        "tags": [
+          "Host Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Assignment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HostAccountResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Host Account Assignment",
+        "description": "Patch an assignment. Every field is optional, so an assignment can be ended by sending `valid_to` alone.\n\n**Ending an assignment is not the same as deleting it.** Ending sets `valid_to` and keeps the history, so past reports are unaffected; deleting removes the link entirely and therefore changes reports retroactively.\n\nTo end an assignment *now*, send an RFC3339 timestamp rather than a date — today's date parses to midnight, which can fall before the assignment started and is rejected as an invalid range.\n\nSending `valid_to: \"\"` reopens the assignment; omitting the field leaves it unchanged.",
+        "tags": [
+          "Host Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Assignment ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "host_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "account_id": {
+                    "type": "integer"
+                  },
+                  "valid_from": {
+                    "type": "string",
+                    "description": "`YYYY-MM-DD` or RFC3339"
+                  },
+                  "valid_to": {
+                    "type": "string",
+                    "description": "`YYYY-MM-DD` or RFC3339. An empty string clears it, reopening the assignment."
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "valid_to": "2026-07-22T15:04:05Z"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assignment updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HostAccountResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`valid_to` is not after `valid_from`, or the change would overlap another host's assignment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "invalid date range",
+                  "details": "valid_to must be after valid_from"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Host Account Assignment",
+        "description": "Remove the assignment entirely.\n\n⚠️ This **changes past reports**: sessions during that period stop being attributed to the host. To stop an assignment while keeping history intact, set `valid_to` via `PUT` instead.",
+        "tags": [
+          "Host Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Assignment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Assignment deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
     "/studio": {
       "get": {
         "summary": "Get All Studios",
-        "tags": ["Studio"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Studio"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of studios"
@@ -863,8 +1360,14 @@
       },
       "post": {
         "summary": "Create Studio",
-        "tags": ["Studio"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Studio"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -879,7 +1382,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["name"]
+                "required": [
+                  "name"
+                ]
               },
               "example": {
                 "name": "Studio A",
@@ -920,8 +1425,14 @@
     "/studio/{id}": {
       "get": {
         "summary": "Get Studio by ID",
-        "tags": ["Studio"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Studio"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -946,8 +1457,14 @@
       },
       "put": {
         "summary": "Update Studio",
-        "tags": ["Studio"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Studio"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -996,8 +1513,14 @@
       },
       "delete": {
         "summary": "Delete Studio",
-        "tags": ["Studio"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Studio"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1024,8 +1547,14 @@
     "/shift": {
       "get": {
         "summary": "Get All Shifts",
-        "tags": ["Shift"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Shift"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of shifts"
@@ -1040,8 +1569,14 @@
       },
       "post": {
         "summary": "Create Shift",
-        "tags": ["Shift"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Shift"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1061,7 +1596,11 @@
                     "example": "12:00"
                   }
                 },
-                "required": ["name", "start_time", "end_time"]
+                "required": [
+                  "name",
+                  "start_time",
+                  "end_time"
+                ]
               }
             }
           }
@@ -1100,8 +1639,14 @@
     "/shift/{id}": {
       "get": {
         "summary": "Get Shift by ID",
-        "tags": ["Shift"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Shift"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1126,8 +1671,14 @@
       },
       "put": {
         "summary": "Update Shift",
-        "tags": ["Shift"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Shift"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1179,8 +1730,14 @@
       },
       "delete": {
         "summary": "Delete Shift",
-        "tags": ["Shift"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Shift"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1207,8 +1764,14 @@
     "/schedule": {
       "get": {
         "summary": "Get All Schedules",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of schedules"
@@ -1223,8 +1786,14 @@
       },
       "post": {
         "summary": "Create Schedule",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1244,7 +1813,11 @@
                     "format": "date"
                   }
                 },
-                "required": ["host_id", "shift_id", "date"]
+                "required": [
+                  "host_id",
+                  "shift_id",
+                  "date"
+                ]
               },
               "example": {
                 "host_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -1289,8 +1862,14 @@
     "/schedule/scheduled": {
       "get": {
         "summary": "Get Schedules by Shift and Date",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "shift_id",
@@ -1326,8 +1905,14 @@
     "/schedule/{id}": {
       "get": {
         "summary": "Get Schedule by ID",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1352,8 +1937,14 @@
       },
       "put": {
         "summary": "Update Schedule",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1406,8 +1997,14 @@
       },
       "delete": {
         "summary": "Delete Schedule",
-        "tags": ["Schedule"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Schedule"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1434,8 +2031,14 @@
     "/attendance": {
       "get": {
         "summary": "Get All Attendance Records",
-        "tags": ["Attendance"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of attendance records"
@@ -1453,8 +2056,14 @@
       "get": {
         "summary": "Get Unchecked Out Records",
         "description": "Get hosts who haven't checked out yet",
-        "tags": ["Attendance"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of unchecked-out records"
@@ -1472,8 +2081,14 @@
       "post": {
         "summary": "Check In",
         "description": "Record host check-in",
-        "tags": ["Attendance"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1496,7 +2111,11 @@
                     "type": "integer"
                   }
                 },
-                "required": ["host_id", "shift_id", "date"]
+                "required": [
+                  "host_id",
+                  "shift_id",
+                  "date"
+                ]
               }
             }
           }
@@ -1536,8 +2155,14 @@
       "post": {
         "summary": "Check Out",
         "description": "Record host check-out",
-        "tags": ["Attendance"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Attendance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1550,7 +2175,9 @@
                     "description": "Attendance record ID"
                   }
                 },
-                "required": ["id"]
+                "required": [
+                  "id"
+                ]
               }
             }
           }
@@ -1587,8 +2214,14 @@
     "/account": {
       "get": {
         "summary": "Get All Accounts",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "studio",
@@ -1614,8 +2247,14 @@
       },
       "post": {
         "summary": "Create or Update Account",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1631,7 +2270,10 @@
                     "description": "Shopee session cookie"
                   }
                 },
-                "required": ["studio_id", "cookie"]
+                "required": [
+                  "studio_id",
+                  "cookie"
+                ]
               }
             }
           }
@@ -1669,8 +2311,14 @@
     "/account/{id}": {
       "get": {
         "summary": "Get Account by ID",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1695,8 +2343,14 @@
       },
       "put": {
         "summary": "Update Account",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1745,8 +2399,14 @@
       },
       "delete": {
         "summary": "Delete Account",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1772,8 +2432,14 @@
       "patch": {
         "summary": "Partial Update Account",
         "description": "Apply partial updates to an account. Only provided fields will be updated.",
-        "tags": ["Account"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1861,8 +2527,14 @@
     "/account-session": {
       "get": {
         "summary": "Get All Account Sessions",
-        "tags": ["Account Session"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of sessions"
@@ -1877,8 +2549,14 @@
       },
       "post": {
         "summary": "Create Account Session",
-        "tags": ["Account Session"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1916,8 +2594,14 @@
     "/account-session/{id}": {
       "get": {
         "summary": "Get Session by ID",
-        "tags": ["Account Session"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1942,8 +2626,14 @@
       },
       "put": {
         "summary": "Update Session",
-        "tags": ["Account Session"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1971,8 +2661,14 @@
       },
       "delete": {
         "summary": "Delete Session",
-        "tags": ["Account Session"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -1999,8 +2695,14 @@
     "/accountads": {
       "get": {
         "summary": "Get All Ad Accounts",
-        "tags": ["Account Ads"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Ads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of ad accounts"
@@ -2015,8 +2717,14 @@
       },
       "post": {
         "summary": "Create Ad Account",
-        "tags": ["Account Ads"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Ads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2054,8 +2762,14 @@
     "/accountads/{id}": {
       "get": {
         "summary": "Get Ad Account by ID",
-        "tags": ["Account Ads"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Ads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2080,8 +2794,14 @@
       },
       "put": {
         "summary": "Update Ad Account",
-        "tags": ["Account Ads"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Ads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2112,8 +2832,14 @@
       },
       "delete": {
         "summary": "Delete Ad Account",
-        "tags": ["Account Ads"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Account Ads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2137,29 +2863,43 @@
         }
       }
     },
-    "/live/shopee": {
+    "/live/preview": {
       "get": {
-        "summary": "Get Shopee Live Sessions",
-        "tags": ["Live"],
-        "security": [{"bearerAuth": []}],
+        "summary": "Preview Live Sessions (WebSocket)",
+        "description": "⚠️ **This is a WebSocket endpoint, not a plain GET.** Connect with `ws://`/`wss://`.\n\nStreams the sessions that are **currently on air**, across every account in the tenant. An initial payload is sent on connect, then refreshed every 2–10 seconds.\n\n**Authentication is via a `?token=<jwt>` query parameter**, not the `Authorization` header, because browsers cannot set headers on a WebSocket handshake.\n\n**Keepalive required:** the server sets a 60s read deadline and never sends pings, so a client that stays silent is disconnected. Send any message every ~30s.\n\nOnly ongoing sessions appear. Shopee's realtime list also returns sessions that have already finished, and its `status` field reads 2 for both — so liveness is derived from `startTime + duration` tracking the present. `total` counts everything Shopee returned; `relive` counts what is actually live.",
+        "tags": [
+          "Live"
+        ],
         "responses": {
-          "200": {
-            "description": "List of live sessions"
+          "101": {
+            "description": "Switching Protocols — WebSocket established. Each frame is an array of accounts.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "8",
+                    "name": "nalanavfsh",
+                    "total": 1,
+                    "relive": 0,
+                    "reportLive": []
+                  }
+                ]
+              }
+            }
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalServerError"
+            "description": "Missing, invalid or expired `token` query parameter"
           }
         }
       }
     },
-    "/live/shopee/{id}/{sessionId}": {
+    "/live/preview/detail/{id}/{sessionId}": {
       "get": {
-        "summary": "Get Live Session Details",
-        "tags": ["Live"],
-        "security": [{"bearerAuth": []}],
+        "summary": "Preview Live Session Detail (WebSocket)",
+        "description": "⚠️ **WebSocket endpoint.** Streams the realtime dashboard for one session — overview, viewer profile, viewer source, buyer profile and product list — refreshed every 3–8 seconds.\n\nAuthenticate with `?token=<jwt>` and send a keepalive every ~30s, as with `/live/preview`.",
+        "tags": [
+          "Live"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2178,17 +2918,402 @@
               "type": "string"
             },
             "description": "Shopee session ID"
+          },
+          {
+            "name": "productPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "productPageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Switching Protocols — WebSocket established"
+          },
+          "401": {
+            "description": "Missing, invalid or expired `token` query parameter"
+          }
+        }
+      }
+    },
+    "/live/history": {
+      "get": {
+        "summary": "Get Stored Live History",
+        "description": "Read persisted live sessions from the `lives` table.\n\n**This never contacts Shopee** — it keeps working when an account's session cookie expires. Only `POST /live/history/sync` talks to Shopee; run that to refresh the table.\n\nResults are newest-first and tenant-scoped. Use `/live/history/{id}` for a single account, or the `account` query parameter here.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by account ID"
+          },
+          {
+            "name": "studio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by studio ID (joined through the account)"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Start of the range, inclusive. Must be sent together with `endDate`."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "End of the range, inclusive. Must be sent together with `startDate`."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Live session details"
+            "description": "A page of stored sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StoredLiveResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/live/history/{id}": {
+      "get": {
+        "summary": "Get Stored Live History for One Account",
+        "description": "Same as `GET /live/history`, scoped to one account. Reads from the database; Shopee is never contacted.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID (from `/account`)"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of stored sessions for this account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/StoredLiveResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/live/history/sync": {
+      "post": {
+        "summary": "Sync Live History for All Accounts",
+        "description": "Fetch live-session history for every account in the tenant and persist it to the `lives` table.\n\n**Idempotent** — sessions are matched on `session_id` and upserted, so re-running refreshes figures that settle after a stream ends (notably `confirmedSales`) rather than creating duplicates.\n\nAccepts the same query parameters as `GET /live/shopee/history/{id}`; only sessions inside the `timeDim` window ending at `endDate` are synced, so backfilling older history means calling this repeatedly with earlier `endDate` values.\n\nAn account whose Shopee call fails (e.g. expired cookie) is reported in its own entry via `error` and skipped — one bad account does not fail the run.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-account sync results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LiveSyncResponse"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "message": "synced live history for all accounts successfully",
+                  "data": [
+                    {
+                      "account_id": "6",
+                      "account_name": "Toko Meycan",
+                      "fetched": 3,
+                      "created": 3,
+                      "updated": 0
+                    },
+                    {
+                      "account_id": "7",
+                      "account_name": "Toko Lain",
+                      "fetched": 0,
+                      "created": 0,
+                      "updated": 0,
+                      "error": "failed to do request to /supply/api/lm/sellercenter/liveList/v2: unauthorized"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/live/history/{id}/sync": {
+      "post": {
+        "summary": "Sync Live History for One Account",
+        "description": "Fetch live-session history for a single account and persist it to the `lives` table.\n\n**Idempotent** — sessions are matched on `session_id` and upserted, so re-running refreshes settled figures instead of duplicating rows. Walks every page of the result set, not just the first.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID (from `/account`)"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Sessions fetched per upstream page while walking all pages"
+          },
+          {
+            "name": "timeDim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "1m"
+            },
+            "description": "Length of the window ending at `endDate`"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "End of the window, defaults to today"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LiveSyncResponse"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "synced live history successfully",
+                  "data": {
+                    "account_id": "6",
+                    "account_name": "Toko Meycan",
+                    "fetched": 3,
+                    "created": 0,
+                    "updated": 3
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "description": "Account not found, or Shopee rejected the request (e.g. expired cookie)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -2196,8 +3321,14 @@
     "/performa/host": {
       "get": {
         "summary": "Get All Hosts Performance",
-        "tags": ["Performa"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Performa"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "startDate",
@@ -2232,8 +3363,14 @@
     "/performa/host/{id}": {
       "get": {
         "summary": "Get Host Performance by ID",
-        "tags": ["Performa"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Performa"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2277,8 +3414,14 @@
     "/performa/account": {
       "get": {
         "summary": "Get All Accounts Performance",
-        "tags": ["Performa"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Performa"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Accounts performance data"
@@ -2295,8 +3438,14 @@
     "/performa/studio": {
       "get": {
         "summary": "Get All Studios Performance",
-        "tags": ["Performa"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Performa"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Studios performance data"
@@ -2313,8 +3462,14 @@
     "/performa/studio/{id}": {
       "get": {
         "summary": "Get Studio Performance by ID",
-        "tags": ["Performa"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Performa"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2341,8 +3496,14 @@
     "/finance": {
       "get": {
         "summary": "Get All Financial Records",
-        "tags": ["Finance"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Finance"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of financial records"
@@ -2359,8 +3520,14 @@
     "/product": {
       "get": {
         "summary": "Get All Products",
-        "tags": ["Product"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of products"
@@ -2375,8 +3542,14 @@
       },
       "post": {
         "summary": "Create Product",
-        "tags": ["Product"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2417,8 +3590,14 @@
     "/product/{id}": {
       "get": {
         "summary": "Get Product by ID",
-        "tags": ["Product"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2443,8 +3622,14 @@
       },
       "put": {
         "summary": "Update Product",
-        "tags": ["Product"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2475,8 +3660,14 @@
       },
       "delete": {
         "summary": "Delete Product",
-        "tags": ["Product"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2503,8 +3694,14 @@
     "/order": {
       "get": {
         "summary": "Get All Orders",
-        "tags": ["Order"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Order"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of orders"
@@ -2519,8 +3716,14 @@
       },
       "post": {
         "summary": "Create Order",
-        "tags": ["Order"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Order"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "201": {
             "description": "Order created"
@@ -2540,8 +3743,14 @@
     "/order/{id}": {
       "get": {
         "summary": "Get Order by ID",
-        "tags": ["Order"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Order"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2566,8 +3775,14 @@
       },
       "put": {
         "summary": "Update Order",
-        "tags": ["Order"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Order"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2595,8 +3810,14 @@
       },
       "delete": {
         "summary": "Delete Order",
-        "tags": ["Order"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Order"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2623,8 +3844,14 @@
     "/transaction": {
       "get": {
         "summary": "Get All Transactions",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of transactions"
@@ -2639,8 +3866,14 @@
       },
       "post": {
         "summary": "Create Transaction",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2676,8 +3909,14 @@
     "/transaction/grouped": {
       "get": {
         "summary": "Get Transactions Grouped",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Grouped transactions"
@@ -2694,8 +3933,14 @@
     "/transaction/{id}": {
       "get": {
         "summary": "Get Transaction by ID",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2720,8 +3965,14 @@
       },
       "put": {
         "summary": "Update Transaction",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2749,8 +4000,14 @@
       },
       "delete": {
         "summary": "Delete Transaction",
-        "tags": ["Transaction"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2777,8 +4034,14 @@
     "/target": {
       "get": {
         "summary": "Get All Targets",
-        "tags": ["Target"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Target"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of targets"
@@ -2793,8 +4056,14 @@
       },
       "post": {
         "summary": "Create Target",
-        "tags": ["Target"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Target"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2856,8 +4125,14 @@
     "/target/{id}": {
       "get": {
         "summary": "Get Target by ID",
-        "tags": ["Target"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Target"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2882,8 +4157,14 @@
       },
       "put": {
         "summary": "Update Target",
-        "tags": ["Target"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Target"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2914,8 +4195,14 @@
       },
       "delete": {
         "summary": "Delete Target",
-        "tags": ["Target"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Target"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -2943,8 +4230,14 @@
       "get": {
         "summary": "Get Dashboard Data",
         "description": "Get aggregated dashboard summary data",
-        "tags": ["Dashboard"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Dashboard"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Dashboard data"
@@ -2961,8 +4254,14 @@
     "/role": {
       "get": {
         "summary": "Get All Roles",
-        "tags": ["Role"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Role"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of roles"
@@ -2977,8 +4276,14 @@
       },
       "post": {
         "summary": "Create Role",
-        "tags": ["Role"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Role"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2996,11 +4301,19 @@
                     }
                   }
                 },
-                "required": ["name", "permissions"]
+                "required": [
+                  "name",
+                  "permissions"
+                ]
               },
               "example": {
                 "name": "manager",
-                "permissions": [1, 2, 3, 5]
+                "permissions": [
+                  1,
+                  2,
+                  3,
+                  5
+                ]
               }
             }
           }
@@ -3038,8 +4351,14 @@
     "/role/{id}": {
       "get": {
         "summary": "Get Role by ID",
-        "tags": ["Role"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Role"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3064,8 +4383,14 @@
       },
       "put": {
         "summary": "Update Role",
-        "tags": ["Role"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Role"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3096,8 +4421,14 @@
       },
       "delete": {
         "summary": "Delete Role",
-        "tags": ["Role"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Role"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3124,8 +4455,14 @@
     "/permission": {
       "get": {
         "summary": "Get All Permissions",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of permissions"
@@ -3140,8 +4477,14 @@
       },
       "post": {
         "summary": "Create Permission",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3183,8 +4526,14 @@
       "get": {
         "summary": "Get Permissions Grouped",
         "description": "Get all permissions grouped by module",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Grouped permissions"
@@ -3201,8 +4550,14 @@
     "/permission/{id}": {
       "get": {
         "summary": "Get Permission by ID",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3227,8 +4582,14 @@
       },
       "put": {
         "summary": "Update Permission",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3259,8 +4620,14 @@
       },
       "delete": {
         "summary": "Delete Permission",
-        "tags": ["Permission"],
-        "security": [{"bearerAuth": []}],
+        "tags": [
+          "Permission"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -3295,6 +4662,183 @@
           },
           "data": {
             "type": "object"
+          }
+        }
+      },
+      "StoredLiveResponse": {
+        "type": "object",
+        "description": "A page of persisted live sessions",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total rows matching the filter, across all pages"
+          },
+          "totalPage": {
+            "type": "integer"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredLiveItem"
+            }
+          }
+        }
+      },
+      "StoredLiveItem": {
+        "type": "object",
+        "description": "One persisted live session, served from the lives table. Populated by POST /live/history/sync from Shopee's liveList/v2. Shopee sends JSON null for several metrics (views, peak_views, likes, followers_growth, product_clicks, conversion_rate, paid_orders, paid_sales); those persist as 0, so a 0 means 'not reported' rather than necessarily 'zero'. There is no end time — only start_time plus duration.",
+        "properties": {
+          "session_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "cover_image": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "description": "Shopee session status"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the session started"
+          },
+          "duration": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Milliseconds, as reported by Shopee"
+          },
+          "views": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "viewers": {
+            "type": "integer"
+          },
+          "peak_views": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "avg_views_duration": {
+            "type": "integer",
+            "description": "Milliseconds"
+          },
+          "comments": {
+            "type": "integer"
+          },
+          "likes": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "followers_growth": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "engaged_uv": {
+            "type": "integer"
+          },
+          "avg_engaged_ccu": {
+            "type": "integer"
+          },
+          "thirty_mins_count": {
+            "type": "integer"
+          },
+          "atc": {
+            "type": "integer",
+            "description": "Add to cart count"
+          },
+          "product_clicks": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "placed_orders": {
+            "type": "integer"
+          },
+          "placed_item_sold": {
+            "type": "integer"
+          },
+          "confirmed_orders": {
+            "type": "integer"
+          },
+          "confirmed_item_sold": {
+            "type": "integer"
+          },
+          "paid_orders": {
+            "type": "integer",
+            "description": "Often null from Shopee"
+          },
+          "conversion_rate": {
+            "type": "number",
+            "description": "Often null from Shopee"
+          },
+          "placed_sales": {
+            "type": "number"
+          },
+          "confirmed_sales": {
+            "type": "number"
+          },
+          "paid_sales": {
+            "type": "number",
+            "description": "Often null from Shopee"
+          },
+          "omset_per_hour": {
+            "type": "number",
+            "description": "Derived on read: confirmed_sales / duration in hours"
+          },
+          "account_id": {
+            "type": "integer"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "studio_id": {
+            "type": "integer"
+          },
+          "studio_name": {
+            "type": "string"
+          },
+          "synced_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this row was last refreshed by a sync"
+          }
+        }
+      },
+      "LiveSyncResponse": {
+        "type": "object",
+        "description": "Outcome of persisting one account's live history",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "fetched": {
+            "type": "integer",
+            "description": "Sessions returned by Shopee across all pages"
+          },
+          "created": {
+            "type": "integer",
+            "description": "Rows inserted into `lives`"
+          },
+          "updated": {
+            "type": "integer",
+            "description": "Existing rows refreshed (matched on session_id)"
+          },
+          "error": {
+            "type": "string",
+            "description": "Present only when this account failed; the rest of the run still completes"
           }
         }
       },
@@ -3342,6 +4886,53 @@
           }
         }
       },
+      "HostAccountResponse": {
+        "type": "object",
+        "description": "One assignment of an account to a host, valid for a span of time.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "host_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "host_name": {
+            "type": "string"
+          },
+          "account_id": {
+            "type": "integer"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "studio_id": {
+            "type": "integer",
+            "description": "Resolved through the account, not stored on the assignment"
+          },
+          "studio_name": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Inclusive start of the assignment"
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Exclusive end. `null` means the assignment is still running."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Convenience flag: true when `valid_to` is null"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
       "UserCreateRequest": {
         "type": "object",
         "properties": {
@@ -3359,7 +4950,12 @@
             "type": "integer"
           }
         },
-        "required": ["name", "email", "password", "role_id"]
+        "required": [
+          "name",
+          "email",
+          "password",
+          "role_id"
+        ]
       },
       "UserUpdateRequest": {
         "type": "object",
@@ -3388,7 +4984,9 @@
             "example": "The requested item does not exist"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       },
       "ValidationErrorResponse": {
         "type": "object",
@@ -3408,7 +5006,10 @@
             }
           }
         },
-        "required": ["error", "details"]
+        "required": [
+          "error",
+          "details"
+        ]
       },
       "UnauthorizedResponse": {
         "type": "object",
@@ -3419,7 +5020,9 @@
             "example": "Unauthorized"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       },
       "ForbiddenResponse": {
         "type": "object",
@@ -3430,7 +5033,9 @@
             "example": "Access denied"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       },
       "NotFoundResponse": {
         "type": "object",
@@ -3441,7 +5046,9 @@
             "example": "Resource not found"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       },
       "InternalServerErrorResponse": {
         "type": "object",
@@ -3456,7 +5063,9 @@
             "description": "Error details (only in debug mode)"
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       }
     },
     "securitySchemes": {
