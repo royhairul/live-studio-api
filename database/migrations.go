@@ -12,6 +12,8 @@ import (
 	attendanceentity "github.com/royhairul/live-studio-api/internal/domains/attendance/entity"
 	authentity "github.com/royhairul/live-studio-api/internal/domains/auth/entity"
 	hostentity "github.com/royhairul/live-studio-api/internal/domains/host/entity"
+	hostaccountentity "github.com/royhairul/live-studio-api/internal/domains/hostaccount/entity"
+	liveentity "github.com/royhairul/live-studio-api/internal/domains/live/entity"
 	orderentity "github.com/royhairul/live-studio-api/internal/domains/order/entity"
 	permissionentity "github.com/royhairul/live-studio-api/internal/domains/permission/entity"
 	productentity "github.com/royhairul/live-studio-api/internal/domains/product/entity"
@@ -57,6 +59,12 @@ var modelsList = []interface{}{
 	&transactionentity.Transaction{},
 	&productentity.Product{},
 	&orderentity.Order{},
+
+	// Live sessions
+	&liveentity.Live{},
+
+	// Host ↔ account assignment (reporting bridge, replaces attendance)
+	&hostaccountentity.HostAccount{},
 }
 
 // MigrateDatabase runs auto-migration for all models
