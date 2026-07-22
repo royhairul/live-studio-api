@@ -29,6 +29,18 @@ func ParseInt64Date(timestamp int64) *time.Time {
 	return &t
 }
 
+// ParseInt64MilliDate converts a Unix timestamp in milliseconds into a *time.Time
+// object (in UTC). Shopee's live endpoints report epoch milliseconds, unlike the
+// checkout endpoints handled by ParseInt64Date.
+func ParseInt64MilliDate(timestamp int64) *time.Time {
+	if timestamp <= 0 {
+		return nil
+	}
+
+	t := time.UnixMilli(timestamp).UTC()
+	return &t
+}
+
 // FormatDate formats a *time.Time object into a string using the defined layout.
 func FormatDate(date *time.Time) string {
 	if date == nil {

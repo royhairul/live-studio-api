@@ -75,10 +75,13 @@ func filterByTenantID(db *gorm.DB) {
 	// ----------------------------------------------------
 	// 1️⃣ Rule khusus: FILTER for TABLE "roles"
 	// ----------------------------------------------------
+	// NOTE: the column is table-qualified because several repositories join
+	// `accounts` to filter by studio, and accounts also has a tenant_id — an
+	// unqualified reference makes Postgres reject the query as ambiguous.
 	if tableName == "roles" {
 		// Role global:       tenant_id IS NULL
 		// Role per tenant:   tenant_id = current tenant
-		db.Where("tenant_id = '' OR tenant_id = ?", tenantID)
+		db.Where(tableName+".tenant_id = '' OR "+tableName+".tenant_id = ?", tenantID)
 		return
 	}
 
@@ -86,6 +89,6 @@ func filterByTenantID(db *gorm.DB) {
 	// 2️⃣ Rule general: FILTER "tenant_id" for general if tenant_i exists
 	// ----------------------------------------------------
 	if _, ok := stmt.Schema.FieldsByName["TenantID"]; ok {
-		db.Where("tenant_id = ?", tenantID)
+		db.Where(tableName+".tenant_id = ?", tenantID)
 	}
 }
