@@ -19,11 +19,12 @@ type Config struct {
 	JWTExpiredAt string
 }
 
-// LoadConfig membaca file .env dan mengisi struct Config
+// LoadConfig mengisi struct Config dari environment variable.
+// File .env bersifat opsional: di dalam container, environment variable
+// di-inject langsung oleh Docker/compose sehingga file .env tidak ada.
 func LoadConfig() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, reading configuration from environment variables")
 	}
 
 	return &Config{

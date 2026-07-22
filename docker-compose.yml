@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: live-studio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-db_livestudio}
+      TZ: ${TZ:-Asia/Jakarta}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Host-side port only; the API always reaches Postgres on 5432 internally.
+      - "${DB_PUBLISHED_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-db_livestudio}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: live-studio-api:latest
+    container_name: live-studio-api
+    restart: unless-stopped
+    # Every APP_*/JWT_*/EMAIL_*/SUPERADMIN_* value comes from .env (copy .env.example).
+    env_file:
+      - .env
+    environment:
+      # These override .env: inside the compose network the database is "db:5432",
+      # and the server must bind on all interfaces to be reachable from the host.
+      DB_HOST: db
+      DB_PORT: 5432
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      TZ: ${TZ:-Asia/Jakarta}
+    ports:
+      - "${APP_PUBLISHED_PORT:-8080}:8080"
+    volumes:
+      # Keep the cron job's logs/cronjob.log across container restarts
+      - applogs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  applogs:

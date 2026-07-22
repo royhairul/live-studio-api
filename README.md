@@ -142,6 +142,35 @@ domain/
 
 The server will start on `http://localhost:8080` (or the port specified in your `.env` file).
 
+### 🐳 Running with Docker
+
+The repository ships a multi-stage `Dockerfile` and a `docker-compose.yml` that starts the API together with PostgreSQL.
+
+```bash
+cp .env.example .env   # required: compose reads it via env_file
+docker compose up -d --build
+```
+
+- API → `http://localhost:8080` (change with `APP_PUBLISHED_PORT`)
+- Postgres → `localhost:5432` (change with `DB_PUBLISHED_PORT`)
+
+Compose overrides `DB_HOST=db`, `DB_PORT=5432` and `SERVER_HOST=0.0.0.0` inside the network, so the localhost values in `.env` remain valid for `go run main.go`. Auto-migration and superadmin seeding run on container start, and the API waits for the database healthcheck before booting.
+
+Useful commands:
+
+```bash
+docker compose logs -f api    # follow API logs
+docker compose down           # stop (keeps data)
+docker compose down -v        # stop and drop the database volume
+```
+
+Deployment notes:
+
+- The runtime image is Alpine-based, runs as the non-root user `appuser`, and includes `tzdata` because the app uses `Asia/Jakarta` timestamps.
+- `docs/` is copied into the image since `/docs/openapi.json` is read from disk at request time.
+- Database data lives in the `pgdata` volume and cron logs in the `applogs` volume.
+- For production, set `APP_ENV=production` in `.env` (docs are disabled) and point `DB_HOST` at your managed database instead of using the bundled `db` service.
+
 ### API Documentation
 
 Once the server is running, access the Swagger UI documentation at:
