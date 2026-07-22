@@ -1,6 +1,8 @@
 package service
 
 import (
+	"strings"
+
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/transaction/params"
 )
@@ -27,10 +29,15 @@ func GroupTransactions(
 
 		grouped[tx.AccountID].Total++
 		grouped[tx.AccountID].Commission.Total += tx.TotalCommissionWithMCN
-		if tx.Status == "Waiting For Payment" {
+
+		// Dibandingkan tanpa peka huruf besar-kecil: Shopee mengirim
+		// "Waiting for payment", sedangkan perbandingan persis sebelumnya
+		// mencari "Waiting For Payment" sehingga tidak pernah cocok dan
+		// paid/pending selalu nol.
+		if strings.EqualFold(tx.Status, "Waiting For Payment") {
 			grouped[tx.AccountID].Commission.Paid += tx.TotalCommissionWithMCN
 		}
-		if tx.Status == "Pending" {
+		if strings.EqualFold(tx.Status, "Pending") {
 			grouped[tx.AccountID].Commission.Pending += tx.TotalCommissionWithMCN
 		}
 		grouped[tx.AccountID].List = append(grouped[tx.AccountID].List, *params.NewTransactionItem(tx))
