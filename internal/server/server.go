@@ -18,6 +18,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/dashboard"
 	"github.com/royhairul/live-studio-api/internal/domains/finance"
 	"github.com/royhairul/live-studio-api/internal/domains/host"
+	"github.com/royhairul/live-studio-api/internal/domains/hostaccount"
 	"github.com/royhairul/live-studio-api/internal/domains/live"
 	"github.com/royhairul/live-studio-api/internal/domains/order"
 	"github.com/royhairul/live-studio-api/internal/domains/performa"
@@ -52,10 +53,10 @@ func Start(lc fx.Lifecycle, router *gin.Engine, cfg *config.Config) {
 }
 
 func NewApp() *fx.App {
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 
 	return fx.New(
-		fx.NopLogger,
+		// fx.NopLogger,
 		fx.Provide(
 			config.LoadConfig,
 			database.InitDatabase,
@@ -86,6 +87,7 @@ func NewApp() *fx.App {
 		auth.Module,
 		user.Module,
 		host.Module,
+		hostaccount.Module,
 		studio.Module,
 		shift.Module,
 		schedule.Module,
