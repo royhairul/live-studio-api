@@ -144,10 +144,23 @@ func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.Crea
 
 // Update implements AccountService.
 func (a *AccountServiceImpl) Update(ctx context.Context, id string, req params.UpdateAccountRequest) (*params.AccountResponse, error) {
-	// Check in database
 	existing, err := a.repository.FindOne(ctx, params.AccountFilter{ID: &id})
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errorhandler.NewNotFoundError(fmt.Sprintf("Account with ID %s not found", id))
+		}
 		return nil, err
+	}
+
+	if req.StudioID != nil {
+		existing.StudioID = *req.StudioID
+	}
+	if req.Cookie != nil {
+		existing.Cookie = *req.Cookie
+		existing.CookieUpdatedAt = time.Now()
+	}
+	if req.Device != "" {
+		existing.Device = req.Device
 	}
 
 	updatedAccount, err := a.repository.Save(ctx, existing)

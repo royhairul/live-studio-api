@@ -17,8 +17,8 @@ type AccountControllerImpl struct {
 	validate *validator.Validate
 }
 
-func NewAccountController(service service.AccountService) AccountController {
-	return &AccountControllerImpl{service: service}
+func NewAccountController(service service.AccountService, validate *validator.Validate) AccountController {
+	return &AccountControllerImpl{service: service, validate: validate}
 }
 
 func (a *AccountControllerImpl) FindAll(ctx *gin.Context) {
