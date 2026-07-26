@@ -238,8 +238,13 @@ func (p *PerformaAggregatorImpl) hostLiveSessions(
 // 10-viewer session the same as a 10,000-viewer one.
 type liveAccumulator struct {
 	clicks    int
+	atc       int
 	views     int
+	viewers   int
 	engagedUV int
+
+	confirmedOrders int
+	placedOrders    int
 
 	weightedCR float64
 	sumCR      float64
@@ -260,8 +265,13 @@ func (a *liveAccumulator) add(live *liveentity.Live) {
 	a.seen[live.SessionID] = true
 
 	a.clicks += live.ProductClicks
+	a.atc += live.Atc
 	a.views += live.Views
+	a.viewers += live.Viewers
 	a.engagedUV += live.EngagedUV
+
+	a.confirmedOrders += live.ConfirmedOrders
+	a.placedOrders += live.PlacedOrders
 
 	a.weightedCR += live.ConversionRate * float64(live.Views)
 	a.sumCR += live.ConversionRate
@@ -271,12 +281,27 @@ func (a *liveAccumulator) add(live *liveentity.Live) {
 func (a *liveAccumulator) result() performaparam.PerformaLiveMetrics {
 	metrics := performaparam.PerformaLiveMetrics{ActiveViewers: a.engagedUV}
 
-	if a.views > 0 {
-		metrics.CTR = float64(a.clicks) / float64(a.views)
-		metrics.ConversionRate = a.weightedCR / float64(a.views)
+	// Coba pakai views dulu; fallback ke viewers kalau views kosong.
+	denom := a.views
+	if denom == 0 {
+		denom = a.viewers
+	}
+
+	if denom > 0 {
+		clicks := a.clicks
+		if clicks == 0 {
+			clicks = a.atc
+		}
+		metrics.CTR = float64(clicks) / float64(denom)
+
+		if a.confirmedOrders > 0 {
+			metrics.ConversionRate = float64(a.confirmedOrders) / float64(denom)
+		} else if a.placedOrders > 0 {
+			metrics.ConversionRate = float64(a.placedOrders) / float64(denom)
+		} else {
+			metrics.ConversionRate = a.weightedCR / float64(denom)
+		}
 	} else if a.countCR > 0 {
-		// Shopee kadang tidak melaporkan views sama sekali; pakai rata-rata biasa
-		// supaya conversion rate tidak ikut hilang.
 		metrics.ConversionRate = a.sumCR / float64(a.countCR)
 	}
 
