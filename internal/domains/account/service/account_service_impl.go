@@ -10,6 +10,7 @@ import (
 	"github.com/royhairul/live-studio-api/internal/domains/account/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/account/params"
 	"github.com/royhairul/live-studio-api/internal/domains/account/repository"
+	"github.com/royhairul/live-studio-api/internal/pkg/errorhandler"
 	"github.com/royhairul/live-studio-api/internal/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -80,7 +81,12 @@ func (a *AccountServiceImpl) FindOne(ctx context.Context) (*params.AccountRespon
 func (a *AccountServiceImpl) CreateOrUpdate(ctx context.Context, req params.CreateAccountRequest) (*params.AccountResponse, error) {
 	accountShopee, err := a.shopeeSvc.GetShopeeAccount(req.Cookie)
 	if err != nil {
-		return nil, fmt.Errorf("invalid or expired cookie")
+		// Cookie buruk adalah kesalahan input pengguna, bukan kegagalan server —
+		// balas 400 dengan pesan yang bisa dibaca, bukan 500 "Internal server error".
+		return nil, errorhandler.NewBadRequestError(
+			"Cookie tidak valid atau kedaluwarsa",
+			"Perbarui cookie akun Shopee lalu coba lagi.",
+		)
 	}
 
 	account := entity.Account{

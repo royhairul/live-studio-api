@@ -128,6 +128,32 @@ type LiveSyncResponse struct {
 	Error       string `json:"error,omitempty"`
 }
 
+// LiveSyncWindow reports one 30-day window inside a range sync. Shopee's
+// liveList/v2 returns nothing beyond a 30-day timeDim, so a multi-month backfill
+// is a sequence of these.
+type LiveSyncWindow struct {
+	EndDate string `json:"end_date"`
+	TimeDim string `json:"time_dim"`
+	Fetched int    `json:"fetched"`
+	Created int    `json:"created"`
+	Updated int    `json:"updated"`
+}
+
+// LiveSyncRangeResponse aggregates a multi-window backfill for one account.
+// The Fetched/Created/Updated totals sum every window in Details.
+type LiveSyncRangeResponse struct {
+	AccountID   string           `json:"account_id"`
+	AccountName string           `json:"account_name"`
+	StartDate   string           `json:"start_date"`
+	EndDate     string           `json:"end_date"`
+	Windows     int              `json:"windows"`
+	Fetched     int              `json:"fetched"`
+	Created     int              `json:"created"`
+	Updated     int              `json:"updated"`
+	Details     []LiveSyncWindow `json:"details"`
+	Error       string           `json:"error,omitempty"`
+}
+
 type LiveDetailResponse struct {
 	AccountID     string                                                                       `json:"id"`
 	AccountName   string                                                                       `json:"name"`

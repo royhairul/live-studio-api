@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	shopeeparams "github.com/royhairul/live-studio-api/internal/clients/shopee/params"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
@@ -17,4 +18,8 @@ type LiveService interface {
 
 	SyncHistory(ctx context.Context, accountID string, req shopeeparams.ShopeeLiveHistoryRequest) (*params.LiveSyncResponse, error)
 	SyncAllHistory(ctx context.Context, req shopeeparams.ShopeeLiveHistoryRequest) ([]*params.LiveSyncResponse, error)
+
+	// SyncHistoryRange backfills [start, end] by walking 30-day windows, since
+	// liveList/v2 returns nothing for a timeDim over 30 days.
+	SyncHistoryRange(ctx context.Context, accountID string, base shopeeparams.ShopeeLiveHistoryRequest, start, end time.Time) (*params.LiveSyncRangeResponse, error)
 }

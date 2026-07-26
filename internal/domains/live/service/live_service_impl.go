@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/royhairul/live-studio-api/internal/domains/live/entity"
 	"github.com/royhairul/live-studio-api/internal/domains/live/params"
@@ -20,6 +21,11 @@ import (
 // maxSyncPages caps the pagination walk so a bad totalPage from Shopee cannot
 // spin forever.
 const maxSyncPages = 50
+
+// windowDays is the widest span liveList/v2 will answer in a single call: a
+// timeDim of "31d" comes back empty, so a longer range must be split into
+// windows of at most this many days.
+const windowDays = 30
 
 type LiveServiceImpl struct {
 	accountSvc    accountservice.AccountService
@@ -228,6 +234,64 @@ func (l *LiveServiceImpl) SyncAllHistory(ctx context.Context, req shopeeparams.S
 	}
 
 	return results, nil
+}
+
+// SyncHistoryRange implements LiveService. liveList/v2 answers at most a 30-day
+// window, so a multi-month backfill is walked as a sequence of 30-day windows,
+// newest first, each a full SyncHistory (all pages). Adjacent windows share their
+// boundary day on purpose; Upsert keys on session_id, so that overlap refreshes a
+// row instead of duplicating it, and guarantees no day falls between windows.
+func (l *LiveServiceImpl) SyncHistoryRange(
+	ctx context.Context,
+	accountID string,
+	base shopeeparams.ShopeeLiveHistoryRequest,
+	start, end time.Time,
+) (*params.LiveSyncRangeResponse, error) {
+	account, err := l.accountSvc.WithID(accountID).FindOne(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &params.LiveSyncRangeResponse{
+		AccountID:   fmt.Sprint(account.ID),
+		AccountName: account.Name,
+		StartDate:   timehandler.FormatDate(&start),
+		EndDate:     timehandler.FormatDate(&end),
+	}
+
+	for cur := end; ; cur = cur.AddDate(0, 0, -windowDays) {
+		// Reuse the single-window sync, but force a full walk (page 1) of a
+		// 30-day window ending at cur. name/orderBy/sort/pageSize from base are
+		// preserved, so every query parameter is still sent to Shopee.
+		req := base
+		req.Page = 1
+		req.TimeDim = "30d"
+		req.EndDate = timehandler.FormatDate(&cur)
+
+		window, err := l.SyncHistory(ctx, accountID, req)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Windows++
+		result.Fetched += window.Fetched
+		result.Created += window.Created
+		result.Updated += window.Updated
+		result.Details = append(result.Details, params.LiveSyncWindow{
+			EndDate: req.EndDate,
+			TimeDim: req.TimeDim,
+			Fetched: window.Fetched,
+			Created: window.Created,
+			Updated: window.Updated,
+		})
+
+		// Stop once this window already reaches back to (or past) start.
+		if lower := cur.AddDate(0, 0, -windowDays); !lower.After(start) {
+			break
+		}
+	}
+
+	return result, nil
 }
 
 // GetLiveDetail implements LiveService.

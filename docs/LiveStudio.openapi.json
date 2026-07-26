@@ -3145,6 +3145,97 @@
         }
       }
     },
+    "/live/history/{id}/{sessionId}": {
+      "get": {
+        "summary": "Get Stored Session Detail",
+        "description": "One ended session's dashboard (overview + product breakdown) as a **single GET** — the plain-REST twin of the WebSocket `/preview/detail`. The session has already ended, so there is nothing to stream.\n\nUnlike the WebSocket twin it uses standard `Authorization: Bearer` header auth. It still reaches Shopee once, so the product data depends on the account cookie being valid; an expired cookie surfaces as a `500` with Shopee's message.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Shopee session ID (from `/history`)"
+          },
+          {
+            "name": "productPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "productPageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LiveDetailResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "description": "Shopee rejected the request (e.g. expired cookie)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/live/history/sync": {
       "post": {
         "summary": "Sync Live History for All Accounts",
@@ -3298,6 +3389,148 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "description": "Account not found, or Shopee rejected the request (e.g. expired cookie)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/live/history/{id}/sync/range": {
+      "post": {
+        "summary": "Backfill Live History Range for One Account",
+        "description": "Backfill a multi-month range for one account. `liveList/v2` returns nothing for a `timeDim` over 30 days, so this walks the range in contiguous **30-day windows**, newest first, each a full sync of that window. Adjacent windows share their boundary day on purpose: because upsert keys on `session_id`, the overlap refreshes a row instead of duplicating it and guarantees no day is skipped.\n\nGive the span **either** as `months` (back from `endDate`) **or** as an explicit `startDate`+`endDate`. Like the other sync endpoints it is idempotent.",
+        "tags": [
+          "Live"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Account ID"
+          },
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 3,
+              "minimum": 1,
+              "maximum": 12
+            },
+            "description": "How many months back from `endDate`. Ignored when `startDate` is present."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Start of the range. Takes precedence over `months`."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "End of the range, defaults to today. The newest window ends here."
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Forwarded to every window. `page`/`timeDim` are fixed internally (page 1, 30d)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Range backfill result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LiveSyncRangeResponse"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "synced live history range successfully",
+                  "data": {
+                    "account_id": "6",
+                    "account_name": "Toko Meycan",
+                    "start_date": "2025-05-01",
+                    "end_date": "2025-08-31",
+                    "windows": 5,
+                    "fetched": 3,
+                    "created": 0,
+                    "updated": 3,
+                    "details": [
+                      {
+                        "end_date": "2025-08-31",
+                        "time_dim": "30d",
+                        "fetched": 3,
+                        "created": 0,
+                        "updated": 3
+                      },
+                      {
+                        "end_date": "2025-08-01",
+                        "time_dim": "30d",
+                        "fetched": 0,
+                        "created": 0,
+                        "updated": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`months` outside 1–12, or `startDate` after `endDate`, or a malformed date",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -4839,6 +5072,224 @@
           "error": {
             "type": "string",
             "description": "Present only when this account failed; the rest of the run still completes"
+          }
+        }
+      },
+      "LiveProductItem": {
+        "type": "object",
+        "description": "One product's performance within a live session.",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "coverImage": {
+            "type": "string"
+          },
+          "minPrice": {
+            "type": "number"
+          },
+          "maxPrice": {
+            "type": "number"
+          },
+          "productClicks": {
+            "type": "integer"
+          },
+          "ctr": {
+            "type": "number",
+            "description": "Fraction (0.15 = 15%)"
+          },
+          "atc": {
+            "type": "integer",
+            "description": "Add to cart"
+          },
+          "ordersCreated": {
+            "type": "integer"
+          },
+          "revenue": {
+            "type": "number"
+          },
+          "itemSold": {
+            "type": "integer"
+          },
+          "cor": {
+            "type": "number",
+            "description": "Checkout rate, fraction"
+          },
+          "confirmedOrderCnt": {
+            "type": "integer"
+          },
+          "confirmedRevenue": {
+            "type": "number"
+          },
+          "confirmedItemSold": {
+            "type": "integer"
+          },
+          "confirmedCor": {
+            "type": "number"
+          }
+        }
+      },
+      "LiveDetailResponse": {
+        "type": "object",
+        "description": "One session's dashboard: overview totals plus the product breakdown. Proxied from Shopee, so it depends on the account cookie being valid.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Account ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Account display name"
+          },
+          "overview": {
+            "type": "object",
+            "description": "Session totals as Shopee reports them. Not exhaustive — extra keys may appear.",
+            "additionalProperties": true,
+            "properties": {
+              "ccu": {
+                "type": "integer"
+              },
+              "viewers": {
+                "type": "integer"
+              },
+              "pcu": {
+                "type": "integer",
+                "description": "Peak concurrent users"
+              },
+              "views": {
+                "type": "integer"
+              },
+              "atc": {
+                "type": "integer"
+              },
+              "placedOrder": {
+                "type": "integer"
+              },
+              "placedGmv": {
+                "type": "number"
+              },
+              "confirmedOrder": {
+                "type": "integer"
+              },
+              "confirmedGmv": {
+                "type": "number"
+              },
+              "ctr": {
+                "type": "number"
+              },
+              "co": {
+                "type": "number"
+              }
+            }
+          },
+          "buyer_profile": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "viewer_profile": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "viewer_source": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "products": {
+            "type": "object",
+            "description": "Paginated product list",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "page": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              },
+              "list": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LiveProductItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "LiveSyncWindow": {
+        "type": "object",
+        "description": "One 30-day window within a range backfill.",
+        "properties": {
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "time_dim": {
+            "type": "string",
+            "example": "30d"
+          },
+          "fetched": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "updated": {
+            "type": "integer"
+          }
+        }
+      },
+      "LiveSyncRangeResponse": {
+        "type": "object",
+        "description": "Outcome of a multi-window backfill for one account. Fetched/Created/Updated sum every window in `details`.",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "windows": {
+            "type": "integer",
+            "description": "Number of 30-day windows walked"
+          },
+          "fetched": {
+            "type": "integer"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "updated": {
+            "type": "integer"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LiveSyncWindow"
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Present only when the account failed; other runs still complete"
           }
         }
       },

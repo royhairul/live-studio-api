@@ -90,6 +90,7 @@ WebSocket; **history** is past and comes from the database.
 | `GET` | `/history/:id` | **Database.** Stored sessions, one account | Bearer |
 | `POST` | `/history/sync` | Shopee → database, every account | Bearer |
 | `POST` | `/history/:id/sync` | Shopee → database, one account | Bearer |
+| `POST` | `/history/:id/sync/range` | Shopee → database, one account, multi-month backfill | Bearer |
 
 > ⚠️ The two `/preview` routes are **WebSocket** endpoints, not plain REST. They
 > authenticate via a `?token=` query parameter because browsers cannot set headers on a
@@ -146,6 +147,58 @@ curl -X POST "/api/live/history/6/sync?timeDim=1m&endDate=2025-08-31" -H "Author
 ```
 
 There is deliberately **no scheduler** — trigger it from a UI button or manually.
+
+### Backfilling a multi-month range in one call
+
+`liveList/v2` returns **nothing** for a `timeDim` over 30 days (`31d` comes back empty), so a
+range longer than a month cannot be fetched in a single Shopee call. `/history/:id/sync/range`
+does the chunking for you: it walks the range in contiguous **30-day windows**, newest first,
+each a full `sync` of that window. Adjacent windows share their boundary day on purpose —
+because upsert keys on `session_id`, that overlap refreshes a row instead of duplicating it,
+which also guarantees no day slips between windows.
+
+Give the span **either** as `months` (back from `endDate`) **or** as an explicit
+`startDate`+`endDate`:
+
+| Query | Default | Notes |
+|-------|---------|-------|
+| `months` | `3` | Integer 1–12. Ignored when `startDate` is present. |
+| `startDate` | — | `YYYY-MM-DD`. Takes precedence over `months`. |
+| `endDate` | today | `YYYY-MM-DD`. The newest window ends here. |
+| `pageSize`, `name`, `orderBy`, `sort` | as `sync` | Forwarded to every window. `page`/`timeDim` are fixed internally (page 1, `30d`) to guarantee full coverage. |
+
+```bash
+# 3 months back from today
+curl -X POST "/api/live/history/6/sync/range?months=3" -H "Authorization: Bearer $TOKEN"
+
+# explicit range
+curl -X POST "/api/live/history/6/sync/range?startDate=2025-05-01&endDate=2025-08-31" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+The response sums every window and lists them under `details`:
+
+```jsonc
+{
+  "account_id": "6",
+  "account_name": "Toko Meycan",
+  "start_date": "2025-05-01",
+  "end_date": "2025-08-31",
+  "windows": 5,
+  "fetched": 3, "created": 0, "updated": 3,   // totals across all windows
+  "details": [
+    { "end_date": "2025-08-31", "time_dim": "30d", "fetched": 3, "created": 0, "updated": 3 },
+    { "end_date": "2025-08-01", "time_dim": "30d", "fetched": 0, "created": 0, "updated": 0 },
+    { "end_date": "2025-07-02", "time_dim": "30d", "fetched": 0, "created": 0, "updated": 0 },
+    { "end_date": "2025-06-02", "time_dim": "30d", "fetched": 0, "created": 0, "updated": 0 },
+    { "end_date": "2025-05-03", "time_dim": "30d", "fetched": 0, "created": 0, "updated": 0 }
+  ]
+}
+```
+
+`months` over 12, or a `startDate` after `endDate`, is rejected with `400`. Like the other sync
+endpoints, this one is idempotent — re-running turns `created` into `updated` rather than
+duplicating rows.
 
 ## 📝 Request/Response Examples
 

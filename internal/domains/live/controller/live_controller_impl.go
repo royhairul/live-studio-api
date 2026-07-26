@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -67,6 +69,7 @@ func setupWebSocket(ctx *gin.Context) (*websocket.Conn, error) {
 // 🔹 Helper streaming realtime
 // ==============================
 func streamRealtime[T any](
+	ctx context.Context,
 	conn *websocket.Conn,
 	intervalFunc func() time.Duration,
 	fetchFunc func() (T, error),
@@ -75,16 +78,25 @@ func streamRealtime[T any](
 	ticker := time.NewTicker(intervalFunc())
 	defer ticker.Stop()
 
-	for range ticker.C {
-		data, err := fetchFunc()
-		if err != nil {
-			log.Println("⚠️ realtime fetch error:", err)
-			continue
-		}
-
-		if err := conn.WriteJSON(data); err != nil {
-			log.Println("❌ websocket write error:", err)
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("🛑 realtime stream stopped:", ctx.Err())
 			return
+		case <-ticker.C:
+			data, err := fetchFunc()
+			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+				log.Println("⚠️ realtime fetch error:", err)
+				continue
+			}
+
+			if err := conn.WriteJSON(data); err != nil {
+				log.Println("❌ websocket write error:", err)
+				return
+			}
 		}
 	}
 }
@@ -141,7 +153,7 @@ func (l *LiveControllerImpl) GetLive(ctx *gin.Context) {
 	}
 
 	// --- Kirim realtime ---
-	streamRealtime(conn, func() time.Duration {
+	streamRealtime(ctx.Request.Context(), conn, func() time.Duration {
 		return utils.RandomDuration(2, 10)
 	}, func() (any, error) {
 		return l.service.GetLive(ctx.Request.Context())
@@ -210,6 +222,41 @@ func (l *LiveControllerImpl) GetStoredHistory(ctx *gin.Context) {
 }
 
 // =====================================
+// 🔹 Handler: Detail Sesi Riwayat (REST, sekali GET)
+// =====================================
+//
+// GetStoredHistoryDetail is the plain-REST twin of GetLiveDetail. It returns the
+// exact same LiveDetailResponse (overview + product breakdown) but as one JSON
+// response instead of a WebSocket stream — used from the history page, where the
+// session has already ended and there is nothing left to stream.
+//
+// Auth and tenant come from the route group middleware (Bearer), unlike the
+// WebSocket twin which authenticates via ?token= because browsers cannot set
+// headers on a handshake. It still reaches Shopee once, so the product data
+// depends on the account cookie being valid.
+func (l *LiveControllerImpl) GetStoredHistoryDetail(ctx *gin.Context) {
+	accountID := ctx.Param("id")
+	sessionID := ctx.Param("sessionId")
+
+	if sessionID == "" {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid session", "session ID is required"))
+		return
+	}
+
+	productPage := ctx.DefaultQuery("productPage", "1")
+	productPageSize := ctx.DefaultQuery("productPageSize", "10")
+
+	detail, err := l.service.GetLiveDetail(ctx.Request.Context(), accountID, sessionID, productPage, productPageSize)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("retrieved live detail successfully", detail)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// =====================================
 // 🔹 Handler: Simpan Riwayat Live ke DB
 // =====================================
 func (l *LiveControllerImpl) SyncHistory(ctx *gin.Context) {
@@ -241,6 +288,55 @@ func (l *LiveControllerImpl) SyncAllHistory(ctx *gin.Context) {
 	}
 
 	resp := response.NewBaseResponse("synced live history for all accounts successfully", results)
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// SyncHistoryRange backfills one account over a multi-month range by chunking it
+// into <=30-day windows — liveList/v2 returns nothing for a timeDim past 30 days.
+// The span is given either as startDate+endDate, or as months back from endDate.
+func (l *LiveControllerImpl) SyncHistoryRange(ctx *gin.Context) {
+	base, ok := bindHistoryRequest(ctx)
+	if !ok {
+		return
+	}
+
+	// endDate is already defaulted to today by bindHistoryRequest.
+	end, err := timehandler.ParseDate(base.EndDate)
+	if err != nil {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid endDate", "endDate must be YYYY-MM-DD"))
+		return
+	}
+
+	// start = explicit startDate, else <months> before endDate (default 3).
+	var start *time.Time
+	if s := ctx.Query("startDate"); s != "" {
+		start, err = timehandler.ParseDate(s)
+		if err != nil {
+			errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid startDate", "startDate must be YYYY-MM-DD"))
+			return
+		}
+	} else {
+		months, err := strconv.Atoi(ctx.DefaultQuery("months", "3"))
+		if err != nil || months < 1 || months > 12 {
+			errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid months", "months must be a number between 1 and 12"))
+			return
+		}
+		s := end.AddDate(0, -months, 0)
+		start = &s
+	}
+
+	if start.After(*end) {
+		errorhandler.HandleError(ctx, errorhandler.NewBadRequestError("invalid range", "startDate must be on or before endDate"))
+		return
+	}
+
+	result, err := l.service.SyncHistoryRange(ctx.Request.Context(), ctx.Param("id"), base, *start, *end)
+	if err != nil {
+		errorhandler.HandleError(ctx, err)
+		return
+	}
+
+	resp := response.NewBaseResponse("synced live history range successfully", result)
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -328,7 +424,7 @@ func (l *LiveControllerImpl) GetLiveDetail(ctx *gin.Context) {
 	}
 
 	// Kirim realtime
-	streamRealtime(conn, func() time.Duration {
+	streamRealtime(ctx.Request.Context(), conn, func() time.Duration {
 		return utils.RandomDuration(3, 8)
 	}, func() (any, error) {
 		return l.service.GetLiveDetail(ctx.Request.Context(), accountID, sessionID, productPage, productPageSize)
