@@ -3,6 +3,7 @@ package performa
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	performaparam "github.com/royhairul/live-studio-api/internal/domains/performa/params"
@@ -67,7 +68,14 @@ func (p *PerformaAggregatorImpl) CalculateByHosts(ctx context.Context, startDate
 		// Gunakan CalculateByHost untuk dapatkan total per host
 		detail, err := p.CalculateByHost(ctx, host.ID.String(), startDate, endDate)
 		if err != nil {
-			continue // skip host bermasalah tanpa hentikan seluruh proses
+			// Jangan skip host yang gagal dihitung: tetap tampilkan dengan nilai
+			// nol supaya daftar host utuh di frontend.
+			log.Printf("warn: gagal hitung performa hostID=%s: %v", host.ID, err)
+			results = append(results, &performaparam.PerformaHostSummaryResponse{
+				ID:   host.ID.String(),
+				Name: host.Name,
+			})
+			continue
 		}
 
 		results = append(results, &performaparam.PerformaHostSummaryResponse{
